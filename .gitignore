@@ -90,6 +90,11 @@ prod/Dragon3/data/dataset/
 /dev/dragon3-desktop/test_output/
 /dev/dragon3-desktop/test_output_full/
 /prod/Dragon3/backend/public-testfiles/
+/dev/selladocamara/cloudflared.deb
+/prod/Dragon3/backend/scripts/Generador/dragon3-desktop/test_output/
+/prod/Dragon3/backend/scripts/Generador/dragon3-desktop/testv5/test_output/
+/prod/Dragon3/backend/scripts/Generador/generadorMBH_v4/selladocamara/cloudflared.deb
+/prod/Dragon3/backend/scripts/Generador/generadorv22/Dossier_Tecnocampus/
 dev/celulas/laboratorio/venv_ml/
 **/*.so
 **/*.dmg
