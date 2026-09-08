@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Dragon3 - Mi Espacio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Panel de usuario de Dragon3 Forensic Analysis System">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+  <style>
+    :root {
+  --primary-dark: #182237;
+  --accent-green: #16dfac;
+  --accent-green-dark: #12b995;
+  --accent-green-light: rgba(22, 223, 172, 0.1);
+  --panel-bg: #1a1d22;
+  --panel-bg-light: #23272f;
+  --text-light: #e5e7eb;
+  --text-light-secondary: rgba(229, 231, 235, 0.7);
+  --border-color: #2d3748;
+  --border-color-light: rgba(45, 55, 72, 0.5);
+  --error-color: #fd6a6a;
+  --warning-color: #d97706;
+  --success-color: #16dfac;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 80px;
+  --header-height: 72px;
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Asegúrate de incluir esta regla para ocultar elementos con la clase .oculto */
+.oculto {
+  display: none !important;
+}
+
+    /* Estilos base (mantenidos de tu versión original) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header (mantenido de tu versión original) */
+    header.head-blade {
+      background: rgba(24, 34, 55, 0.98);
+      color: var(--text-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow-md);
+      border-bottom: 1px solid var(--border-color);
+      height: var(--header-height);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Layout principal (optimizado) */
+    main.container {
+      flex: 1;
+      max-width: 100vw;
+      margin: 0;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-areas: "sidebar main";
+      gap: 1rem;
+    }
+
+    /* Sidebar (optimizado) */
+    #sidebar {
+      grid-area: sidebar;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-width: var(--sidebar-width);
+      max-width: var(--sidebar-width);
+      font-size: 0.92em;
+      height: calc(100vh - var(--header-height) - 2rem);
+      position: sticky;
+      top: calc(var(--header-height) + 1rem);
+      align-self: flex-start;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-green) transparent;
+    }
+
+    /* Paneles (optimizados) */
+    .panel {
+      background: var(--panel-bg);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    /* ===== NUEVOS ESTILOS PARA LA TABLA MEJORADA ===== */
+    .historial-container {
+      margin-top: 1rem;
+    }
+
+    .filtros-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--panel-bg-light);
+      max-height: calc(100vh - 300px);
+      overflow-y: auto;
+    }
+
+    table.historial-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85em;
+    }
+
+    table.historial-table th {
+      background: rgba(22, 223, 172, 0.09);
+      color: var(--accent-green);
+      font-weight: 600;
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-base);
+      white-space: nowrap;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    table.historial-table th:hover {
+      background: rgba(22, 223, 172, 0.15);
+    }
+
+    table.historial-table th.sort-asc::after {
+      content: ' ↑';
+      font-size: 0.9em;
+      color: var(--accent-green);
+    }
+
+    table.historial-table th.sort-desc::after {
+      content: ' ↓';
+      font-size: 0.9em;
+      color: var(--accent-green);
+    }
+
+    table.historial-table td {
+      padding: 0.5rem 0.8rem;
+      border-top: 1px solid var(--border-color-light);
+      background: rgba(24, 34, 55, 0.15);
+      vertical-align: middle;
+      transition: background var(--transition-base);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    table.historial-table tr:hover td {
+      background: rgba(22, 223, 172, 0.08);
+    }
+
+    /* Badges optimizados */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25em 0.6em;
+      border-radius: 50px;
+      font-size: 0.82em;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .badge-autentico {
+      background: rgba(22, 223, 172, 0.16);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+    }
+
+    .badge-artificial {
+      background: rgba(253, 106, 106, 0.12);
+      color: var(--error-color);
+      border: 1px solid var(--error-color);
+    }
+
+    .badge-indeterminado {
+      background: rgba(229, 231, 235, 0.09);
+      color: var(--text-light-secondary);
+      border: 1px solid var(--text-light-secondary);
+    }
+
+    /* Botones de acción optimizados */
+    .action-btn {
+      font-size: 0.85em;
+      padding: 0.4em 0.8em;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--accent-green);
+      color: #1a1d22;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--transition-base);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-green-dark);
+    }
+
+    .action-btn.secundario {
+      background: transparent;
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+    }
+
+    .action-btn.danger {
+      background: transparent;
+      color: var(--error-color);
+      border: 1px solid var(--error-color);
+    }
+
+    .action-btn.danger:hover {
+      background: rgba(253, 106, 106, 0.1);
+    }
+
+    /* Paginación mejorada */
+    .paginacion {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .paginacion button {
+      padding: 0.4em 0.8em;
+      border-radius: var(--radius-sm);
+      background: rgba(24, 34, 55, 0.4);
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      min-width: 32px;
+      font-size: 0.85em;
+    }
+
+    .paginacion button:hover {
+      background: var(--accent-green-light);
+      color: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .paginacion button.active {
+      background: var(--accent-green);
+      color: var(--primary-dark);
+    }
+
+    /* Modal JSON mejorado */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-base);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .analisis-json-modal {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      max-height: 90vh;
+      background: var(--panel-bg);
+      color: var(--text-light);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      padding: 1.5rem;
+      z-index: 9999;
+      overflow: hidden;
+      border: 2px solid var(--accent-green);
+      transform: translateY(20px);
+      transition: transform var(--transition-base);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-overlay.active .analisis-json-modal {
+      transform: translateY(0);
+    }
+
+    .analisis-json-modal h2 {
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .json-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .json-modal-search {
+      flex: 1;
+      max-width: 300px;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: rgba(24, 34, 55, 0.4);
+      color: var(--text-light);
+      margin-left: 1rem;
+    }
+
+    .json-modal-content {
+      flex: 1;
+      overflow-y: auto;
+      background: #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.4;
+      position: relative;
+    }
+
+    .json-modal-content pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-size: 0.88em;
+    }
+
+    .close-json-modal {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: var(--accent-green-dark);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 1.8rem;
+      height: 1.8rem;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-base);
+      z-index: 1;
+    }
+
+    .close-json-modal:hover {
+      background: var(--accent-green);
+      color: #1a1d22;
+      transform: rotate(90deg);
+    }
+
+    /* JSON syntax highlighting */
+    .hljs {
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    /* Confirmación de borrado */
+    .confirm-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-base);
+    }
+
+    .confirm-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .confirm-modal-content {
+      background: var(--panel-bg);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      border: 2px solid var(--error-color);
+    }
+
+    .confirm-modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      main.container {
+        grid-template-columns: 1fr;
+        grid-template-areas: "main";
+        padding: 0.75rem;
+      }
+      
+      #sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        width: 100%;
+        height: auto;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height var(--transition-base);
+        z-index: 900;
+        background: var(--primary-dark);
+        box-shadow: var(--shadow-md);
+      }
+      
+      #sidebar.active {
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      
+      .sidebar-toggle {
+        display: flex !important;
+      }
+
+      .table-responsive {
+        max-height: calc(100vh - 350px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      :root {
+        --sidebar-width: 100%;
+      }
+
+      .panel {
+        padding: 1rem;
+      }
+
+      .filtros-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .action-btn {
+        padding: 0.4em 0.6em;
+        font-size: 0.8em;
+      }
+
+      table.historial-table td, 
+      table.historial-table th {
+        padding: 0.4rem 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="head-blade">
+    <div class="logo-blade-corp" tabindex="0" aria-label="Blade Corporation Logo">
+      <img class="logo-blade-corp-child" alt="Logo Blade" src="./public/group-1@2x.png" loading="lazy" width="32" height="32">
+      <div class="blade-corporation">Blade Corporation</div>
+    </div>
+    <button class="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+      ☰
+    </button>
+    <nav class="menu" aria-label="Main navigation">
+      <button id="btnHome" class="button" type="button" aria-label="Go to homepage">
+        <span aria-hidden="true">🏠</span> Inicio
+      </button>
+      <button id="btnLogout" class="button" type="button" aria-label="Logout">
+        <span aria-hidden="true">🚪</span> Cerrar sesión
+      </button>
+    </nav>
+  </header>
+  
+  <main class="container">
+    <div id="sidebar" role="complementary" aria-label="User panel">
+      <!-- Contenido del sidebar (mantenido de tu versión original) -->
+      <section class="panel" id="bienvenida" aria-labelledby="bienvenida-heading">
+        <h2 id="bienvenida-heading">Bienvenido/a, <span id="nombreUsuario"></span></h2>
+        <div id="infoUsuario" aria-live="polite">
+          <span id="tipoUsuario" aria-label="User type"></span>
+          <span id="estadoCuenta" aria-label="Account status"></span>
+          <span id="emailUsuario" aria-label="User email"></span>
+          <span id="creditosUsuario" aria-label="Available credits"></span>
+        </div>
+        <div id="alertas" class="oculto" role="alert" aria-live="assertive"></div>
+      </section>
+      
+      <section class="panel" id="perfil" aria-labelledby="perfil-heading">
+        <h2 id="perfil-heading">Mi Perfil</h2>
+        <div id="datosPerfil" aria-live="polite"></div>
+        <div class="form-container">
+          <button type="button" id="btnEditarPerfil" class="button" aria-label="Edit profile">
+            ✏️ Editar
+          </button>
+          <button type="button" id="btnCambiarPassword" class="button secundario" aria-label="Change password">
+            🔒 Contraseña
+          </button>
+        </div>
+        <div id="formEditarPerfil" class="oculto"></div>
+        <div id="formCambiarPassword" class="oculto"></div>
+        <button type="button" id="btnUpgradeEnterprise" class="button secundario" style="margin-top: 0.75rem;" aria-label="Upgrade to Enterprise">
+          ⭐ Enterprise
+        </button>
+      </section>
+      
+      <section class="panel" id="estadisticas" aria-labelledby="estadisticas-heading">
+        <h2 id="estadisticas-heading">Estadísticas</h2>
+        <div id="estadisticasUsuario" aria-live="polite"></div>
+      </section>
+    </div>
+    
+    <div id="mainPanels" role="main">
+  <!-- Sección de análisis de archivos (mantenida de tu versión original) -->
+  <section class="panel" id="analisisArchivos" aria-labelledby="analisisArchivos-heading">
+    <h2 id="analisisArchivos-heading">🔍 Análisis de archivos</h2>
+    <div class="file-upload-container" id="dropZone">
+      <div class="file-upload-icon">📁</div>
+      <label for="inputArchivo" class="file-upload-label">Arrastra archivos aquí o haz clic para seleccionar</label>
+      <form id="formAnalizarArchivo" method="POST" enctype="multipart/form-data" class="form-container">
+        <div class="input-group">
+          <label for="inputArchivo">Seleccionar archivo (imagen, PDF o video)</label>
+          <input type="file" id="inputArchivo" class="input" name="archivo" accept="image/*,application/pdf,video/*" required aria-describedby="fileHelp">
+        </div>
+        <button type="submit" class="button" id="btnAnalizar" aria-label="Analyze file">
+          🔄 Analizar
+        </button>
+      </form>
+      <small id="fileHelp">Tamaño máximo: 50MB. Formatos: JPG, PNG, PDF, MP4, MOV</small>
+    </div>
+    <div id="trazabilidadAnalisis" class="oculto" aria-live="polite"></div>
+    <div id="resultadoAnalisis" aria-live="polite"></div>
+    <div id="spinnerAnalisis" class="spinner-analisis oculto" aria-live="assertive">
+      <div class="loader" aria-hidden="true"></div>
+      <span>Analizando archivo...</span>
+    </div>
+  </section>
+
+  <!-- Panel de estadísticas visuales (nuevo) -->
+  <section class="panel" id="estadisticasGraficas" aria-labelledby="estadisticasGraficas-heading">
+    <h2 id="estadisticasGraficas-heading">📈 Estadísticas Visuales</h2>
+    <div style="display:flex;gap:2em;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;">
+        <canvas id="graficaTipos" width="220" height="220" aria-label="Gráfica tipos de análisis"></canvas>
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <canvas id="graficaDecisiones" width="220" height="220" aria-label="Gráfica decisiones de análisis"></canvas>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Sección de historial de análisis (MEJORADA) -->
+  <section class="panel" id="historialAnalisis" aria-labelledby="historialAnalisis-heading">
+    <h2 id="historialAnalisis-heading">📊 Historial de análisis</h2>
+    <div class="filtros-container">
+      <div class="input-group" style="flex: 1; min-width: 200px;">
+        <input type="text" id="inputBusquedaHistorial" class="input" placeholder="Buscar análisis..." aria-label="Search analysis history">
+      </div>
+      <div class="input-group" style="min-width: 150px;">
+        <select id="filtroTipoHistorial" class="input" aria-label="Filter by file type">
+          <option value="">Todos los tipos</option>
+          <option value="imagen">Imagen</option>
+          <option value="pdf">PDF</option>
+          <option value="video">Video</option>
+        </select>
+      </div>
+      <div class="input-group" style="min-width: 150px;">
+        <select id="filtroDecisionHistorial" class="input" aria-label="Filter by analysis decision">
+          <option value="">Todas</option>
+          <option value="humano">Humano</option>
+          <option value="artificial">Artificial</option>
+          <option value="indeterminado">Indeterminado</option>
+        </select>
+      </div>
+      <button id="btnRefrescarHistorial" class="button secundario" style="margin-left: auto;">
+        <span aria-hidden="true">🔄</span> Actualizar
+      </button>
+    </div>
+    
+    <div class="table-responsive">
+      <table id="tablaHistorialAnalisis" class="historial-table" aria-describedby="historialAnalisis-heading">
+        <thead>
+          <tr>
+            <th class="col-fecha" scope="col" data-sort="date">Fecha</th>
+            <th class="col-nombre" scope="col" data-sort="name">Nombre</th>
+            <th class="col-tipo" scope="col" data-sort="type">Tipo</th>
+            <th class="col-confianza" scope="col" data-sort="confidence">Confianza</th>
+            <th class="col-decision" scope="col" data-sort="decision">Decisión</th>
+            <th class="col-acciones" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="historialBody" aria-live="polite">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2rem;">
+              <div class="spinner-analisis">
+                <div class="loader" aria-hidden="true"></div>
+                <span>Cargando historial...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="paginacionHistorial" class="paginacion" aria-label="Pagination">
+      <button disabled aria-label="Previous page">«</button>
+      <button class="active" aria-label="Page 1">1</button>
+      <button aria-label="Next page">»</button>
+    </div>
+    
+    <div id="contadorHistorial" style="text-align: right; font-size: 0.85em; color: var(--text-light-secondary); margin-top: 0.5rem;">
+      Mostrando 0 de 0 análisis
+    </div>
+  </section>
+
+      <!-- Modal para mostrar JSON detallado del análisis (MEJORADO) -->
+      <div id="jsonModalOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="jsonModalTitle">
+        <div id="jsonModal" class="analisis-json-modal" tabindex="-1">
+          <button class="close-json-modal" id="btnCerrarJsonModal" title="Cerrar" aria-label="Close modal">×</button>
+          <div class="json-modal-header">
+            <h2 id="jsonModalTitle">Detalles del Análisis</h2>
+            <input type="text" id="jsonModalSearch" class="json-modal-search" placeholder="Buscar en JSON..." aria-label="Search in JSON">
+          </div>
+          <div class="json-modal-content">
+            <pre id="jsonModalContent"><code class="language-json">Cargando detalles del análisis...</code></pre>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal de confirmación para borrar análisis -->
+      <div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+        <div class="confirm-modal-content">
+          <h2 id="confirmModalTitle">Confirmar eliminación</h2>
+          <p id="confirmModalMessage">¿Estás seguro de que deseas eliminar este análisis? Esta acción no se puede deshacer.</p>
+          <div class="confirm-modal-buttons">
+            <button id="confirmModalCancel" class="button secundario">Cancelar</button>
+            <button id="confirmModalDelete" class="button danger">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Paneles adicionales (mantenidos de tu versión original) -->
+      <section class="panel oculto" id="enterprisePanel" aria-labelledby="enterprisePanel-heading">
+        <h2 id="enterprisePanel-heading">🏢 Panel Enterprise</h2>
+        <div id="gestionUsuariosOrg" aria-live="polite"></div>
+      </section>
+      
+      <section class="panel oculto" id="adminPanel" aria-labelledby="adminPanel-heading">
+        <h2 id="adminPanel-heading">🛠️ Panel Administrador</h2>
+        <div id="healthCheckAdmin" aria-live="polite"></div>
+        <div id="gestionGlobalAdmin" aria-live="polite"></div>
+      </section>
+    </div>
+  </main>
+  
+  <footer class="footer" role="contentinfo">
+    <div class="footer-links">
+      <a href="mailto:soporte@bladecorporation.net">📧 Soporte</a>
+      <a href="index.html">🏠 Inicio</a>
+      <a href="https://www.bladecorporation.net" target="_blank" rel="noopener noreferrer">🏛️ Corporativo</a>
+      <a href="#">📝 Términos</a>
+      <a href="#">🔒 Privacidad</a>
+    </div>
+    <div class="copyright">
+      © 2025 Dragon3 Forensic Analysis System | Blade Corporation
+    </div>
+  </footer>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="scripts/mi-espacio.js" defer></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle sidebar en móviles
+      const sidebarToggle = document.querySelector('.sidebar-toggle');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          sidebar.classList.toggle('active');
+        });
+      }
+      
+      // Drag and drop para archivos
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('inputArchivo');
+      
+      if (dropZone && fileInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+          dropZone.classList.add('active');
+        }
+        
+        function unhighlight() {
+          dropZone.classList.remove('active');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files.length) {
+            fileInput.files = files;
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+          }
+        }
+      }
+      
+      // Funcionalidad de ordenación de tabla
+      const table = document.getElementById('tablaHistorialAnalisis');
+      if (table) {
+        const headers = table.querySelectorAll('th[data-sort]');
+        headers.forEach(header => {
+          header.addEventListener('click', () => {
+            const sortType = header.getAttribute('data-sort');
+            const isAsc = header.classList.contains('sort-asc');
+            const isDesc = header.classList.contains('sort-desc');
+            
+            // Limpiar clases de ordenación
+            headers.forEach(h => {
+              h.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // Establecer nueva dirección de ordenación
+            if (!isAsc && !isDesc) {
+              header.classList.add('sort-asc');
+            } else if (isAsc) {
+              header.classList.remove('sort-asc');
+              header.classList.add('sort-desc');
+            } else {
+              header.classList.remove('sort-desc');
+            }
+            
+            // Disparar evento personalizado para que mi-espacio.js maneje la ordenación
+            const event = new CustomEvent('sortTable', {
+              detail: {
+                column: sortType,
+                direction: header.classList.contains('sort-asc') ? 'asc' : 
+                          header.classList.contains('sort-desc') ? 'desc' : 'asc'
+              }
+            });
+            table.dispatchEvent(event);
+          });
+        });
+      }
+      
+      // Funcionalidad del modal JSON mejorado
+      const jsonModalOverlay = document.getElementById('jsonModalOverlay');
+      const btnCerrarJsonModal = document.getElementById('btnCerrarJsonModal');
+      const jsonModalSearch = document.getElementById('jsonModalSearch');
+      
+      if (jsonModalOverlay && btnCerrarJsonModal) {
+        function mostrarJsonModal(data) {
+          const jsonModalContent = document.getElementById('jsonModalContent');
+          if (jsonModalContent) {
+            try {
+              // Intentar formatear el JSON si es una cadena
+              const jsonData = typeof data === 'string' ? JSON.parse(data) : data;
+              jsonModalContent.textContent = JSON.stringify(jsonData, null, 2);
+              hljs.highlightElement(jsonModalContent);
+            } catch(e) {
+              jsonModalContent.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            }
+          }
+          jsonModalOverlay.classList.add('active');
+          document.getElementById('jsonModal').focus();
+          document.body.style.overflow = 'hidden';
+        }
+        
+        function cerrarJsonModal() {
+          jsonModalOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        
+        jsonModalOverlay.addEventListener('click', function(e) {
+          if (e.target === jsonModalOverlay) {
+            cerrarJsonModal();
+          }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && jsonModalOverlay.classList.contains('active')) {
+            cerrarJsonModal();
+          }
+        });
+        
+        // Búsqueda en JSON
+        if (jsonModalSearch) {
+          jsonModalSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const content = document.getElementById('jsonModalContent');
+            if (content) {
+              const text = content.textContent;
+              if (searchTerm) {
+                const highlighted = text.replace(
+                  new RegExp(searchTerm, 'gi'),
+                  match => `<span style="background-color: yellow; color: black;">${match}</span>`
+                );
+                content.innerHTML = highlighted;
+              } else {
+                content.textContent = text;
+                hljs.highlightElement(content);
+              }
+            }
+          });
+        }
+        
+        // Exponer función global para mi-espacio.js
+        window.mostrarDetallesAnalisis = mostrarJsonModal;
+        
+        btnCerrarJsonModal.addEventListener('click', cerrarJsonModal);
+      }
+      
+      // Confirmación para borrar análisis
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmModalCancel = document.getElementById('confirmModalCancel');
+      const confirmModalDelete = document.getElementById('confirmModalDelete');
+      
+      if (confirmModal && confirmModalCancel && confirmModalDelete) {
+        let currentAnalysisIdToDelete = null;
+        
+        function showConfirmModal(analysisId, analysisName) {
+          currentAnalysisIdToDelete = analysisId;
+          document.getElementById('confirmModalMessage').textContent = 
+            `¿Estás seguro de que deseas eliminar el análisis "${analysisName}"? Esta acción no se puede deshacer.`;
+          confirmModal.classList.add('active');
+        }
+        
+        function hideConfirmModal() {
+          confirmModal.classList.remove('active');
+          currentAnalysisIdToDelete = null;
+        }
+        
+        confirmModalCancel.addEventListener('click', hideConfirmModal);
+        confirmModal.addEventListener('click', function(e) {
+          if (e.target === confirmModal) {
+            hideConfirmModal();
+          }
+        });
+        
+        confirmModalDelete.addEventListener('click', function() {
+          if (currentAnalysisIdToDelete && window.borrarAnalisis) {
+            window.borrarAnalisis(currentAnalysisIdToDelete);
+          }
+          hideConfirmModal();
+        });
+        
+        // Exponer función global para mi-espacio.js
+        window.mostrarConfirmacionBorrado = showConfirmModal;
+      }
+      
+      // Botón de refrescar historial
+      const btnRefrescarHistorial = document.getElementById('btnRefrescarHistorial');
+      if (btnRefrescarHistorial) {
+        btnRefrescarHistorial.addEventListener('click', function() {
+          if (window.cargarHistorial) {
+            window.cargarHistorial();
+          }
+        });
+      }
+      
+      // Filtros de búsqueda
+      const inputBusqueda = document.getElementById('inputBusquedaHistorial');
+      const filtroTipo = document.getElementById('filtroTipoHistorial');
+      const filtroDecision = document.getElementById('filtroDecisionHistorial');
+      
+      function aplicarFiltros() {
+        const event = new CustomEvent('filterTable', {
+          detail: {
+            search: inputBusqueda.value,
+            type: filtroTipo.value,
+            decision: filtroDecision.value
+          }
+        });
+        if (table) table.dispatchEvent(event);
+      }
+      
+      if (inputBusqueda) inputBusqueda.addEventListener('input', aplicarFiltros);
+      if (filtroTipo) filtroTipo.addEventListener('change', aplicarFiltros);
+      if (filtroDecision) filtroDecision.addEventListener('change', aplicarFiltros);
+    });
+  </script>
+</body>
+</html>

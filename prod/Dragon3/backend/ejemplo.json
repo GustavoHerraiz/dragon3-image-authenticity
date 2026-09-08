@@ -1,0 +1,667 @@
+Ejemplo de documento: {
+  "_id": "692c6a7a59e3b0656dda912b",
+  "usuarioId": "689f02a29cf14634fa963fdc",
+  "usuarioTipo": "registrado",
+  "nombreArchivo": "ChatGPT Image 7 ago 2025, 17_21_39-689f02a29cf14634fa963fdc-1764518522415-8d4c35db-3884-4793-b14d-ff89e95e12d6.png",
+  "nombreOriginal": "ChatGPT Image 7 ago 2025, 17_21_39.png",
+  "tipo": "imagen",
+  "resultado": {
+    "resumen": {
+      "decision": "Artificial",
+      "confianza": 0.98,
+      "modeloPrincipal": "Dragon3_FAANG_Streams_Bidireccional (DEGRADADO)",
+      "explicacion": "PRIORIDAD 1 (FORENSE): Firma o huella digital inequívoca de generación IA detectada.\n[Forense Firma IA]: C2PA detectado - origen indeterminado\n[Red Superior]: Categoría ML (IGNORADA): humano (33% confianza) · scores: humano=0.33, ia_generado=0.33, editado=0.34",
+      "score": 0.34,
+      "consensoPorcentaje": 0.5,
+      "totalAnalizadores": 10,
+      "analizadoresOmitidos": [
+        {
+          "nombre": "analizadorValidator",
+          "motivo": "omitido"
+        },
+        {
+          "nombre": "analizadorMensajeria",
+          "motivo": "omitido"
+        }
+      ]
+    },
+    "detalles": {
+      "analizadores": {
+        "analizadorArtefactos": {
+          "esAutentico": true,
+          "confianza": 1,
+          "idAnalizador": "analizadorArtefactos",
+          "version": "1.0.0",
+          "detalles": {
+            "evaluacionGeneral": "Análisis de artefactos (luminancia/IA/GAN) sin alertas mayores.",
+            "puntuacionArtefactos": "10.0/10",
+            "hallazgosClave": [],
+            "propiedadesBasicasImagen": {
+              "dimensiones": "1024x1536 px",
+              "resolucion": "72 DPI",
+              "formato": "png"
+            },
+            "indiciosFotomontaje": "Bajo",
+            "indiciosGeneracionIA": "Bajo",
+            "blockinessDetectada": "No significativa (2.8)",
+            "razonamiento": [
+              "El análisis de artefactos otorga una puntuación de 10.0/10. Esto sugiere una imagen con patrones naturales o sin indicios fuertes de IA/GAN.",
+              "Propiedades de Luminancia: Entropía 6.61, Gradiente Promedio 2.63."
+            ],
+            "mensaje": "Análisis de artefactos (luminancia/IA/GAN) sin alertas mayores.",
+            "herramientaIdentificada": "Posible Cámara/Editor Gráfico",
+            "tipoHerramienta": "Captura/Edicion Humana"
+          },
+          "metadatos": {
+            "datosParaRedEspejoArtefactos": [
+              0.128,
+              0.192,
+              0.06,
+              0.06,
+              0.06,
+              0.6666666666666666,
+              0.8262323178362309,
+              0.17376768216376914,
+              0.0329105452443952,
+              0
+            ],
+            "AnalisisLuminanciaIA_v3": true,
+            "EntropiaLuminancia": 6.61,
+            "GradientePromedioLuminancia": 2.63,
+            "MediaLuminancia": 176.64,
+            "DesviacionEstandarLuminancia": 34.33,
+            "Blockiness": 2.83,
+            "PicosAltosY": 0,
+            "ArtefactosDetectados": {
+              "suavidadExcesivaIA": false,
+              "patronesGAN": false,
+              "checkerboardGAN": false,
+              "bordesInconsistentes": false,
+              "texturasInconsistentes": false,
+              "contrasteExtremoLuma": false,
+              "patronesRepetitivosIA": false,
+              "compresionExcesivaJPEG": false,
+              "compresionMuyExcesivaJPEG": false
+            },
+            "tiempoAnalisisMs": 480.21
+          },
+          "processingTime": 484.26,
+          "exitoso": true
+        },
+        "analizadorPantalla": {
+          "esAutentico": true,
+          "confianza": 0.5,
+          "detalles": {
+            "tipoCaptura": "Indeterminado",
+            "mensaje": "Análisis no concluyente",
+            "patronRejillaDetectado": false,
+            "metadatos": {
+              "formato": "png",
+              "dimensiones": "1024x1536",
+              "densidad": 72,
+              "tiempoMetaExtraccionMs": 15.4,
+              "vectorCaracteristicas": [
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0.12,
+                1,
+                0,
+                0.5
+              ]
+            }
+          },
+          "processingTime": 512.73,
+          "version": "3.4.0-FAANG",
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "nombreOriginal": "ChatGPT Image 7 ago 2025, 17_21_39.png",
+          "usuarioId": "689f02a29cf14634fa963fdc",
+          "clientId": "server_route",
+          "timestamp": "2025-11-30T15:02:25.702Z",
+          "exitoso": true
+        },
+        "analizadorC2PA": {
+          "esAutentico": false,
+          "confianza": 0.4,
+          "score": 5,
+          "detalles": {
+            "mensaje": "Sin firmas digitales reconocidas",
+            "razonamiento": [
+              "⚪ **Sin Firmas Detectadas:** No se encontraron ni manifiestos C2PA ni huellas de software conocido en los metadatos.",
+              "ℹ️ Esto puede indicar una imagen 'limpia' (stripped), una captura de pantalla, o una herramienta de cámara que no deja firmas estándar."
+            ],
+            "explicacionForense": "⚪ **Sin Firmas Detectadas:** No se encontraron ni manifiestos C2PA ni huellas de software conocido en los metadatos.\n\nℹ️ Esto puede indicar una imagen 'limpia' (stripped), una captura de pantalla, o una herramienta de cámara que no deja firmas estándar.",
+            "herramientaIdentificada": "Ninguna",
+            "tipoHerramienta": "Desconocido",
+            "hayFirmaDigital": false,
+            "c2paDetected": false,
+            "c2paValid": false
+          },
+          "metadatos": {
+            "Software": "Ninguna",
+            "C2PA": false
+          },
+          "processingTime": 570.13,
+          "version": "1.0.0",
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "timestamp": "2025-11-30T15:02:25.729Z",
+          "exitoso": true
+        },
+        "analizadorMBH": {
+          "esAutentico": false,
+          "confianza": 0.5,
+          "idAnalizador": "analizadorMBH",
+          "version": "1.0.0",
+          "detalles": {
+            "selloDetectado": false,
+            "tipo": "ausente",
+            "mensaje": "Esta imagen no contiene el sello MBH. Su ausencia no implica manipulación, pero carece de esta capa de autenticación específica."
+          },
+          "metadatos": {
+            "numeroSello": null,
+            "timestamp": null,
+            "hashCalculado": null,
+            "formato": "png",
+            "ancho": 1024,
+            "alto": 1536,
+            "densidad": 72,
+            "tiempoAnalisisMs": 549.89
+          },
+          "score": 5,
+          "processingTime": 550.39,
+          "exitoso": true
+        },
+        "analizadorValidator": {
+          "resumen": {
+            "decision": "Formato_Invalido",
+            "confianza": 0,
+            "score": 0,
+            "motivo": "Formato no analizable: No es JPEG",
+            "aplicacionProbable": "Formato no Soportado"
+          },
+          "detalles": {
+            "mensaje": "Formato no analizable: No es JPEG",
+            "razonamiento": "El analizador Validator se especializa en la compresión **con pérdida (lossy)** de JPEG (Tablas DQT). Los formatos sin pérdida, como **PNG** o WEBP, no tienen estas huellas binarias. Por lo tanto, este módulo no puede aportar datos estructurales y se omite.",
+            "herramientaIdentificada": "Formato no Soportado",
+            "tipoHerramienta": "Lossless Exclusion",
+            "score": 0,
+            "compresion": {
+              "esJpeg": false,
+              "calidadEstimada": 0,
+              "dqtFingerprint": null,
+              "tablasEncontradas": 0
+            },
+            "hash": null
+          },
+          "metadata": {
+            "analyzer": "analizadorValidator",
+            "version": "7.0.3-LOSSLESS_EXPLAIN_FIX",
+            "timestamp": "2025-11-30T15:02:25.738Z",
+            "rutaArchivo": "ChatGPT Image 7 ago 2025, 17_21_39-689f02a29cf14634fa963fdc-1764514944778-28bf07fa-2a13-448d-b2e7-2ef77f1ede1f.png"
+          },
+          "exitoso": true,
+          "processingTime": 544.11,
+          "version": "1.0.0"
+        },
+        "analizadorResolucion": {
+          "esAutentico": true,
+          "confianza": 0.6,
+          "detalles": {
+            "resolucion": "1024x1536",
+            "proporcion": "0.67",
+            "mensaje": "Resolución aceptable con metadatos limitados",
+            "clasificacionProporcion": "Proporción atípica",
+            "fabricante": "No disponible",
+            "modelo": "No disponible"
+          },
+          "processingTime": 555.21,
+          "version": "3.3.0-FAANG",
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "nombreOriginal": "ChatGPT Image 7 ago 2025, 17_21_39.png",
+          "usuarioId": "689f02a29cf14634fa963fdc",
+          "clientId": "server_route",
+          "timestamp": "2025-11-30T15:02:25.195Z",
+          "exitoso": true
+        },
+        "analizadorMensajeria": {
+          "decision": "Formato_Invalido",
+          "confianza": 0.1,
+          "resumen": {
+            "decision": "Formato_Invalido",
+            "confianza": 0.1,
+            "score": 0,
+            "motivo": "Formato PNG no analizable.",
+            "formato": "png",
+            "ancho": 0,
+            "alto": 0,
+            "exifPresent": false,
+            "calidadJPEGEstimada": 0
+          },
+          "detalles": {
+            "error": "Formato PNG no analizable.",
+            "explicacionForenseNarrativa": "El analizador de mensajería solo puede procesar imágenes **JPEG**. Los formatos como PNG (sin pérdida) **no tienen Tablas de Cuantificación (DQT)**, que son las huellas binarias necesarias para detectar la re-compresión de aplicaciones. Por lo tanto, el análisis de mensajería es **inútil** para este formato."
+          },
+          "exitoso": true,
+          "processingTime": 560.72,
+          "metadata": {
+            "analyzer": "analizadorMensajeria",
+            "version": "1.2.6-PNG_LOSSLESS_FIX",
+            "timestamp": "2025-11-30T15:02:25.748Z"
+          },
+          "version": "1.0.0"
+        },
+        "analizadorExif": {
+          "resumen": {
+            "decision": "Indeterminado",
+            "confianza": 0.5,
+            "score": 5,
+            "motivo": "🟠 ORIGEN INDETERMINADO"
+          },
+          "esAutentico": false,
+          "confianza": 0.5,
+          "score": 5,
+          "detalles": {
+            "mensaje": "🟠 ORIGEN INDETERMINADO",
+            "razonamiento": [
+              "🟠 ORIGEN INDETERMINADO",
+              "[VOTO NN] Inferencia ML OK. Votó Indeterminado con 4% de confianza."
+            ],
+            "herramientaIdentificada": "Desconocido",
+            "tipoHerramienta": "Indeterminado",
+            "score": 5,
+            "huellas": 7,
+            "historialEdicion": null,
+            "hash": "ff64680893267b2dcae991964fc69e880ddb68fc6e057f7cd91d131ac3712d99"
+          },
+          "metadatos": {
+            "datosParaRedEspejoExif": [
+              0,
+              1,
+              0,
+              0.5,
+              0.5,
+              1,
+              0.5,
+              0,
+              0.5
+            ]
+          },
+          "analisisHibrido": {
+            "redEspejoExif": {
+              "decisionNN": "Indeterminado",
+              "scoreNN": 0.481,
+              "confianzaNN": 0.04,
+              "warning": "Inferencia ML OK. Votó Indeterminado con 4% de confianza.",
+              "features": [
+                0,
+                1,
+                0,
+                0.5,
+                0.5,
+                1,
+                0.5,
+                0,
+                0.5
+              ],
+              "processingTime": 14
+            }
+          },
+          "processingTime": 602.9,
+          "version": "1.0.0",
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "usuarioId": "689f02a29cf14634fa963fdc",
+          "clientId": "server_route",
+          "timestamp": "2025-11-30T15:02:25.776Z",
+          "exitoso": true
+        },
+        "analizadorFirmasDigitales": {
+          "esAutentico": false,
+          "confianza": 0.4,
+          "idAnalizador": "analizadorFirmasDigitales.js",
+          "version": "1.0.0",
+          "detalles": {
+            "hayFirmaDigital": true,
+            "tipoFirmaDigital": "c2pa-indeterminado",
+            "esConfiable": null,
+            "mensaje": "C2PA detectado - origen indeterminado",
+            "c2paDetected": true,
+            "c2paEsIA": false,
+            "bloqueC2PA": "self#jumbf=/c2pa/urn:c2pa:184b5c30-ba7b-4a72-89ba-28275510418f/c2pa.signature"
+          },
+          "metadatos": {
+            "software": null,
+            "copyright": null,
+            "artist": null,
+            "huellaAIEncontrada": false,
+            "selloDetectado": false,
+            "edicionDetectada": false
+          },
+          "metadatosXMP_IPTC": {
+            "creatorTool": null,
+            "history": null,
+            "rights": null,
+            "description": null,
+            "byline": null,
+            "copyrightNotice": null
+          },
+          "contentCredentials": null,
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "nombreOriginal": "ChatGPT Image 7 ago 2025, 17_21_39.png",
+          "usuarioId": "689f02a29cf14634fa963fdc",
+          "clientId": "server_route",
+          "timestamp": "2025-11-30T15:02:25.911Z",
+          "processingTime": 734.17,
+          "exitoso": true
+        },
+        "analizadorDefinicion": {
+          "esAutentico": true,
+          "confianza": 0.62,
+          "idAnalizador": "analizadorDefinicion",
+          "version": "1.0.0",
+          "score": 6.2,
+          "detalles": {
+            "gradientePromedioBruto": 2.37,
+            "nitidezEvaluada": "Baja",
+            "evaluacionScore": "Alta Probabilidad Humano",
+            "mensajeScore": "Análisis de definición completado. Nitidez: Baja. Score: 6.2/10 (Alta Probabilidad Humano)."
+          },
+          "metadatos": {
+            "formato": "png",
+            "ancho": 1024,
+            "alto": 1536,
+            "densidad": 72,
+            "resolucionHorizontal": 72,
+            "resolucionVertical": 72,
+            "complejidad": 0.812889241307225,
+            "uniformidad": 0.7769,
+            "tiempoAnalisisMs": 752.87
+          },
+          "processingTime": 755.95,
+          "exitoso": true
+        }
+      },
+      "consenso": {
+        "esAutentico": null,
+        "decisionIndeterminada": true,
+        "confianza": "baja",
+        "porcentajeAutentico": 0.5,
+        "confianzaPromedio": 0.56,
+        "totalVotos": 8,
+        "votosPositivos": 4,
+        "fuentes": [
+          {
+            "fuente": "local",
+            "analizador": "analizadorArtefactos",
+            "processingTime": 484.26
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorPantalla",
+            "processingTime": 512.73
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorC2PA",
+            "processingTime": 570.13
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorMBH",
+            "processingTime": 550.39
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorResolucion",
+            "processingTime": 555.21
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorExif",
+            "processingTime": 602.9
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorFirmasDigitales",
+            "processingTime": 734.17
+          },
+          {
+            "fuente": "local",
+            "analizador": "analizadorDefinicion",
+            "processingTime": 755.95
+          }
+        ],
+        "algoritmo": "consenso_votation_faang",
+        "analizadoresIncluidos": [
+          {
+            "nombre": "analizadorArtefactos",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorPantalla",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorC2PA",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorMBH",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorResolucion",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorExif",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorFirmasDigitales",
+            "motivo": "normal"
+          },
+          {
+            "nombre": "analizadorDefinicion",
+            "motivo": "normal"
+          }
+        ],
+        "analizadoresOmitidos": [
+          {
+            "nombre": "analizadorValidator",
+            "motivo": "omitido"
+          },
+          {
+            "nombre": "analizadorMensajeria",
+            "motivo": "omitido"
+          }
+        ],
+        "totalAnalizadores": 10,
+        "totalOmitidos": 2,
+        "softwareEdicion": "Ninguna",
+        "metadatosExif": {
+          "datosParaRedEspejoArtefactos": [
+            0.128,
+            0.192,
+            0.06,
+            0.06,
+            0.06,
+            0.6666666666666666,
+            0.8262323178362309,
+            0.17376768216376914,
+            0.0329105452443952,
+            0
+          ],
+          "AnalisisLuminanciaIA_v3": true,
+          "EntropiaLuminancia": 6.61,
+          "GradientePromedioLuminancia": 2.63,
+          "MediaLuminancia": 176.64,
+          "DesviacionEstandarLuminancia": 34.33,
+          "Blockiness": 2.83,
+          "PicosAltosY": 0,
+          "ArtefactosDetectados": {
+            "suavidadExcesivaIA": false,
+            "patronesGAN": false,
+            "checkerboardGAN": false,
+            "bordesInconsistentes": false,
+            "texturasInconsistentes": false,
+            "contrasteExtremoLuma": false,
+            "patronesRepetitivosIA": false,
+            "compresionExcesivaJPEG": false,
+            "compresionMuyExcesivaJPEG": false
+          },
+          "tiempoAnalisisMs": 752.87,
+          "Software": "Ninguna",
+          "C2PA": false,
+          "numeroSello": null,
+          "timestamp": null,
+          "hashCalculado": null,
+          "formato": "png",
+          "ancho": 1024,
+          "alto": 1536,
+          "densidad": 72,
+          "datosParaRedEspejoExif": [
+            0,
+            1,
+            0,
+            0.5,
+            0.5,
+            1,
+            0.5,
+            0,
+            0.5
+          ],
+          "software": null,
+          "copyright": null,
+          "artist": null,
+          "huellaAIEncontrada": false,
+          "selloDetectado": false,
+          "edicionDetectada": false,
+          "resolucionHorizontal": 72,
+          "resolucionVertical": 72,
+          "complejidad": 0.812889241307225,
+          "uniformidad": 0.7769
+        },
+        "iaGeneradorIdentificado": null,
+        "explicacion": "Zona gris detectada: Evidencia forense mixta o débil (Votos Humanos: 50%, Confianza Media: 56%). Revisión manual recomendada."
+      },
+      "redSuperior": {
+        "categoria": "humano",
+        "confianza": 0.33,
+        "scores": {
+          "humano": 0.33,
+          "ia_generado": 0.33,
+          "editado": 0.34
+        },
+        "metadata": {
+          "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+          "archivoId": "d3f1aad6-8ae6-4253-9307-9d9712d4eeaf",
+          "version": "4.2.1-FAANG-Forensic-Compat",
+          "degraded": true,
+          "error": "Red Superior no inicializada",
+          "errorCode": "PREDICTION_ERROR",
+          "duration": "2.437",
+          "durationMs": 3,
+          "timestamp": 1764514945943,
+          "timestampPrecise": "166981.822",
+          "forensics": {
+            "tracked": true,
+            "sessionId": "1b7de63b-082c-48a2-b569-8177f30e63ef",
+            "fallback": true
+          }
+        }
+      },
+      "seguridad": {
+        "valid": true,
+        "fileHash": "ff64680893267b2dcae991964fc69e880ddb68fc6e057f7cd91d131ac3712d99",
+        "fileSize": 2223456,
+        "format": "png",
+        "duration": 4.87,
+        "validationsPassed": [
+          "size",
+          "format",
+          "hash",
+          "headers",
+          "content"
+        ],
+        "timestamp": 1764514944836,
+        "threatLevel": "clean"
+      }
+    },
+    "paraInforme": {
+      "explicacionExtendida": "PRIORIDAD 1 (FORENSE): Firma o huella digital inequívoca de generación IA detectada.\n[Forense Firma IA]: C2PA detectado - origen indeterminado\n[Red Superior]: Categoría ML (IGNORADA): humano (33% confianza) · scores: humano=0.33, ia_generado=0.33, editado=0.34",
+      "tiempoTotal": 1125,
+      "hashImagen": "ff64680893267b2dcae991964fc69e880ddb68fc6e057f7cd91d131ac3712d99",
+      "correlationId": "1b7de63b-082c-48a2-b569-8177f30e63ef"
+    },
+    "estado": "completado",
+    "cacheMetadata": {
+      "cachedAt": "2025-11-30T15:02:25.955Z",
+      "ttl": 3600,
+      "confianza": 0.98,
+      "version": "3.0.0-FAANG",
+      "hashPrefix": "ff64680893267b2d"
+    },
+    "cacheHit": true,
+    "timestamp": "2025-11-30T16:02:02.628Z",
+    "cacheDuration": 8.22,
+    "metadata": {
+      "analyzerType": "imagen",
+      "processingTime": 178.55,
+      "correlationId": "918ae638-90af-41bc-a84b-0bc395ecf5a3",
+      "timestamp": "2025-11-30T16:02:02.635Z",
+      "version": "3.0.0-FAANG"
+    }
+  },
+  "resultadoResumen": {
+    "decision": "Artificial",
+    "confianza": 98,
+    "modeloPrincipal": "Dragon3_FAANG_Streams_Bidireccional (DEGRADADO)",
+    "archivoId": null,
+    "nombreOriginal": null,
+    "timestamp": "2025-11-30T16:02:02.691Z"
+  },
+  "hashArchivo": "ff64680893267b2dcae991964fc69e880ddb68fc6e057f7cd91d131ac3712d99",
+  "imagenId": "undefined_1764518527416_ay17g4qt9",
+  "mensaje": null,
+  "rutas": {
+    "archivoOriginal": "/var/www/Dragon3/backend/uploads/689f02a29cf14634fa963fdc/imagenes/ChatGPT Image 7 ago 2025, 17_21_39-689f02a29cf14634fa963fdc-1764518522415-8d4c35db-3884-4793-b14d-ff89e95e12d6.png",
+    "archivosTemporales": [],
+    "informePDF": "/var/www/Dragon3/archivos/689f02a29cf14634fa963fdc/informes/Informe_689f02a29cf14634fa963fdc_692c6a7a59e3b0656dda912b.pdf"
+  },
+  "informeEstado": "generado",
+  "informeIntentos": 0,
+  "correlationId": "req_1764518527416_3tozp7o75",
+  "sesionInfo": {
+    "timestamp": "2025-11-30T16:02:02.638Z"
+  },
+  "rawStored": true,
+  "rawCompressed": true,
+  "rawHash": "26c343d93db7d9aaa66dab1bfcd90fc3cc980151c3e75cb0810d2994c1ba4ccd",
+  "rawSize": 4226,
+  "rawTimestamp": "2025-11-30T16:02:02.690Z",
+  "redSuperior": {
+    "procesadoEnRed": false,
+    "nodosProcesamiento": []
+  },
+  "performance": {
+    "faseAnalisis": {
+      "modelosUtilizados": []
+    }
+  },
+  "auditoria": {
+    "nivelSeguridad": "Medio",
+    "fechaCreacion": "2025-11-30T16:02:02.638Z"
+  },
+  "createdAt": "2025-11-30T16:02:02.639Z",
+  "updatedAt": "2025-11-30T16:02:07.416Z",
+  "__v": 0,
+  "rawJsonCompressed": "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"
+}

@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "nombre": "evolucion-cargar-imagen",
+  "descripcion": "Plan generado automáticamente a partir de células: cargar-imagen",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": {
+        "payload": "$.contexto.archivo"
+      }
+    }
+  ],
+  "salidaFinal": "$.cargar-imagen.resultado",
+  "detenerseEnError": false,
+  "telemetria": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen",
+    "extraer-metadatos-exif"
+  ],
+  "nombreBase": "evolucion-cargar-imagen-extraer-metadatos-exif",
+  "motivo": "Combinación exitosa: freq 3, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen",
+      "extraer-metadatos-exif"
+    ],
+    "frecuencia": 3,
+    "ratioExito": 1,
+    "tiempoPromedio": 1.1787799999995816,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

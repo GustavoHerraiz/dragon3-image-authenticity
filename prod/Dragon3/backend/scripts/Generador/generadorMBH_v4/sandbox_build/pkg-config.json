@@ -1,0 +1,13 @@
+{
+  "name": "dragon-sandbox",
+  "bin": "core_blindado.js",
+  "pkg": {
+    "assets": [
+      "interface.html",
+      "matematicas/**/*"
+    ],
+    "targets": [
+      "node18-linux-x64"
+    ]
+  }
+}

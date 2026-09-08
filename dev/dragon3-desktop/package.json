@@ -1,0 +1,95 @@
+{
+  "name": "dragon3-desktop",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Marca de agua forense para fotógrafos - Dragon3",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test:step1": "node src/tests/test_step1.js",
+    "test:report": "node src/tests/test_report.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.33.5",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1",
+"node-rsa": "^2.0.0"
+  },
+  "devDependencies": {
+    "chai": "^5.1.0",
+    "electron": "33.0.0",
+    "electron-builder": "^26.15.3",
+    "javascript-obfuscator": "^4.2.2",
+    "mocha": "^10.7.0"
+  },
+  "build": {
+    "appId": "com.dragon3.app",
+    "productName": "Dragon3 Watermark",
+    "copyright": "Copyright © 2026 Dragon3",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "src/**/*",
+      "renderer/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/exiftool/",
+        "to": "exiftool/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "resources/icon.icns",
+      "category": "public.app-category.photography"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "resources/icon.png",
+      "category": "Graphics"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    }
+  },
+  "author": {
+    "name": "Dragon3 Team",
+    "email": "info@dragon3.com"
+  },
+  "license": "Proprietary"
+}

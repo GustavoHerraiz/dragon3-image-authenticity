@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "extraer-metadatos-exif",
+  "motivo": "Cuello de botella: p95=53ms, promedio=23ms (ratio 2.3)",
+  "evidencia": {
+    "p95": 52.506598938504155,
+    "promedio": 22.72115077301362,
+    "total": 26,
+    "ratio": 2.310912834611675,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 1,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

@@ -1,0 +1,15 @@
+{
+  "tipo": "ajuste-peso",
+  "celulaId": "extraer-metadatos-exif",
+  "pesoActual": 1,
+  "pesoPropuesto": 0.9,
+  "accion": "reducir",
+  "motivo": "Precisión baja (50%) o contribución baja (50%)",
+  "evidencia": {
+    "precision": 0.5,
+    "contribucion": 0.5,
+    "total": 20,
+    "tiempoPromedio": 24.947028478673893
+  },
+  "confianza": 1
+}

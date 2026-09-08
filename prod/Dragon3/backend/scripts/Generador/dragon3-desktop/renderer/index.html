@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dragon3 - Marca de Agua Forense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🐉 Dragon3</h1>
+      <span id="licencia-status" style="font-size:13px; color:#ffd93d;">Cargando...</span>
+      <button id="btn-activar-premium" style="background:#2a4a7a; border:1px solid #4a6a9a; color:#e0e0e0; padding:6px 14px; border-radius:4px; cursor:pointer; margin-right:5px;">🔓 Activar Premium</button>
+      <button id="btn-configuracion" style="background:#2a2a4a; border:1px solid #444; color:#e0e0e0; padding:6px 14px; border-radius:4px; cursor:pointer;">⚙️ Configuración</button>
+    </header>
+
+    <div id="contenedor-principal" style="display:flex; gap:20px; margin:20px 0; align-items:flex-start;">
+      
+      <!-- ============================================================
+           PANEL IZQUIERDO: EXPLORADOR DE CARPETAS
+           ============================================================ -->
+      <div id="explorador-container" style="flex:0 0 280px; background:#24292f; border-radius:8px; border:1px solid #3a3f47; padding:12px; max-height:70vh; overflow-y:auto;">
+        <h3 style="margin-top:0; color:#16dfac; font-size:15px; font-weight:600; border-bottom:1px solid #3a3f47; padding-bottom:8px;">📂 Explorador</h3>
+        <div id="arbol-container" style="font-size:14px;">
+          <span style="color:#888;">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           PANEL DERECHO: CONTENIDO PRINCIPAL
+           ============================================================ -->
+      <div style="flex:1; min-width:0;">
+        <main>
+          <!-- Panel de Proyectos -->
+          <div class="panel" id="panel-proyectos">
+            <h2>📁 Proyecto Activo</h2>
+            <div class="campo">
+              <label for="selector-proyecto">Seleccionar proyecto:</label>
+              <select id="selector-proyecto">
+                <option value="">-- Crear nuevo --</option>
+              </select>
+              <button id="btn-nuevo-proyecto">➕ Nuevo</button>
+            </div>
+
+            <div id="form-nuevo-proyecto" style="display:none; margin-top:10px; background:#0a0a1a; padding:10px; border-radius:4px;">
+              <div class="campo">
+                <label for="nombre-proyecto">Nombre del proyecto (carpeta):</label>
+                <input type="text" id="nombre-proyecto" placeholder="Ej. Casas de Mataró" autofocus>
+              </div>
+              <div class="campo">
+                <label for="descripcion-proyecto">Descripción del proyecto:</label>
+                <input type="text" id="descripcion-proyecto" placeholder="Breve descripción (opcional)">
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px;">
+                <button id="btn-crear-proyecto" style="background:#0f3460;">Crear proyecto</button>
+                <button id="btn-cancelar-proyecto" style="background:#555;">Cancelar</button>
+              </div>
+            </div>
+
+            <div id="detalles-proyecto" style="display:none; margin-top:10px; background:#0a0a1a; padding:10px; border-radius:4px;">
+              <p><strong>Nombre del proyecto:</strong> <span id="proy-nombre"></span></p>
+              <p><strong>Descripción:</strong> <span id="proy-descripcion"></span></p>
+              <p><strong>Imágenes selladas:</strong> <span id="proy-contador">0</span></p>
+            </div>
+
+            <div id="gestion-archivos" style="margin-top:10px;">
+              <button id="btn-refrescar-archivos" style="margin-right:10px;">🔄 Refrescar archivos</button>
+              <button id="btn-eliminar-carpeta" style="color:#ff6b6b;">🗑️ Eliminar carpeta del proyecto</button>
+              <button id="btn-generar-pdf" style="margin-left:10px; background:#2a4a7a;">📄 Generar informe PDF</button>
+              <div id="lista-archivos" style="margin-top:10px; max-height:150px; overflow-y:auto; background:#0a0a1a; padding:8px; border-radius:4px; font-size:12px;">
+                <span style="color:#888;">Selecciona un proyecto para ver sus archivos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel de Sellar -->
+          <div class="panel" id="panel-sellar">
+            <h2>🖼️ Sellar imagen</h2>
+            <div class="campo">
+              <button id="btn-seleccionar-entrada">Seleccionar imagen</button>
+              <span id="ruta-entrada" class="ruta"></span>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+              <button id="btn-sellar">🔒 Sellar imagen</button>
+              <button id="btn-sellar-lote" style="background:#2a4a7a;">📦 Sellar por lotes</button>
+            </div>
+            <div id="progreso-sellado" class="progreso"></div>
+
+            <div id="campos-sellado" style="display:none; margin-top:10px; padding:10px; background:#0a0a1a; border-radius:4px;">
+              <div class="campo"><label>Cliente:</label><input type="text" id="cliente" placeholder="Cliente"></div>
+              <div class="campo"><label>Obra:</label><input type="text" id="obra" placeholder="Obra"></div>
+              <div class="campo"><label>Colección:</label><input type="text" id="coleccion" placeholder="Colección (opcional)"></div>
+              <div class="campo"><label>Derechos:</label><input type="text" id="derechos" placeholder="Derechos" value="Todos los derechos reservados"></div>
+              <div class="campo"><label>Email de contacto:</label><input type="email" id="email-contacto" placeholder="Email para contacto"></div>
+              <div class="campo checkbox">
+                <label><input type="checkbox" id="compartir-blade"> Compartir metadatos con Blade Verification Network</label>
+              </div>
+              <div class="campo">
+                <label>Carpeta dentro del proyecto:</label>
+                <select id="selector-subcarpeta"><option value="">(Raíz del proyecto)</option></select>
+                <button id="btn-nueva-subcarpeta" style="margin-left:10px;">➕ Nueva carpeta</button>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                <button id="btn-ejecutar-sellar" style="background:#0f3460;">🔒 Ejecutar sellado</button>
+                <button id="btn-ejecutar-lote" style="background:#2a4a7a;">📦 Ejecutar lote</button>
+                <button id="btn-cancelar-sellado" style="background:#555;">Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progreso Lote -->
+          <div id="panel-progreso" style="display:none; margin-top:15px; padding:10px; background:#0a0a1a; border-radius:4px;">
+            <div style="display:flex; justify-content:space-between;">
+              <span id="progreso-texto">Preparando...</span>
+              <span id="progreso-contador">0 / 0</span>
+            </div>
+            <div style="width:100%; background:#333; border-radius:4px; margin:5px 0; height:20px; overflow:hidden;">
+              <div id="progreso-barra" style="width:0%; height:100%; background:#0f3460; transition:width 0.3s;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#888;">
+              <span id="progreso-tiempo">⏱️ 0s</span>
+              <span id="progreso-archivo">Procesando: ...</span>
+              <span id="progreso-estado">⏳ Procesando...</span>
+            </div>
+            <button id="btn-cancelar-lote" style="margin-top:5px; background:#ff6b6b; border:none; color:white; padding:4px 12px; border-radius:4px; cursor:pointer; display:none;">Cancelar</button>
+          </div>
+
+          <!-- Panel de Análisis -->
+          <div class="panel" id="panel-analisis">
+            <h2>🔍 Analizar imagen</h2>
+            <div class="campo">
+              <button id="btn-seleccionar-analisis">Seleccionar imagen</button>
+              <span id="ruta-analisis" class="ruta"></span>
+            </div>
+            <div class="campo">
+              <label>Modo:</label>
+              <select id="modo-analisis">
+                <option value="rapido">Rápido (V6)</option>
+                <option value="forense">Forense (V5)</option>
+              </select>
+            </div>
+            <div class="campo">
+              <button id="btn-analizar">🔬 Analizar</button>
+            </div>
+            <div id="resultado-analisis" class="resultado"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <footer>
+      <div id="logs">Logs aparecerán aquí</div>
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       MODAL DE ACTIVACIÓN PREMIUM
+       ============================================================ -->
+  <div id="modal-activar-premium" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
+    <div style="background:#1a1a2e; padding:30px; border-radius:8px; width:450px; max-width:100%; max-height:90vh; overflow-y:auto; position:relative;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#ffd93d;">🔓 Activar Premium</h2>
+        <button id="btn-cerrar-activar-premium" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">✕</button>
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px; color:#ccc;">Email asociado a la licencia</label>
+        <input type="email" id="input-email-premium" placeholder="Ej. cliente@ejemplo.com" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+        <div style="font-size:11px; color:#888; margin-top:4px;">Introduce el email que utilizaste al comprar la licencia.</div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px; color:#ccc;">Clave de activación</label>
+        <input type="text" id="input-clave-premium" placeholder="Ej. A1B2C3D4E5F6G7H8" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px; text-transform:uppercase;">
+        <div style="font-size:11px; color:#888; margin-top:4px;">Introduce la clave que recibiste por email.</div>
+      </div>
+      <div id="mensaje-activacion" style="margin-bottom:15px; font-size:13px; min-height:20px;"></div>
+      <div style="display:flex; gap:10px;">
+        <button id="btn-activar-premium-confirmar" style="flex:1; padding:12px; background:#ffd93d; color:#0a0a1a; border:none; border-radius:6px; font-weight:700; font-size:15px; cursor:pointer;">✅ Activar</button>
+        <button id="btn-cancelar-activar-premium" style="padding:12px 24px; background:#555; color:#e0e0e0; border:none; border-radius:6px; cursor:pointer;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL DE CONFIGURACIÓN
+       ============================================================ -->
+  <div id="modal-configuracion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
+    <div style="background:#1a1a2e; padding:30px; border-radius:8px; width:650px; max-width:100%; max-height:90vh; overflow-y:auto; position:relative;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#ffd93d;">⚙️ Configuración</h2>
+        <button id="btn-cerrar-configuracion" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">✕</button>
+      </div>
+
+      <!-- SECCIÓN 1: CARPETA RAÍZ DE PROYECTOS -->
+      <div style="margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #2a2a4a;">
+        <h3 style="color:#ffd93d; margin-top:0; font-size:16px;">📁 Carpeta raíz de proyectos</h3>
+        <div class="campo" style="margin-bottom:0;">
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="config-ruta-proyectos" placeholder="Selecciona la carpeta raíz..." readonly style="flex:1; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <button id="btn-config-seleccionar-carpeta" style="padding:10px 16px; background:#2a2a4a; border:1px solid #444; color:#e0e0e0; border-radius:6px; cursor:pointer;">Examinar</button>
+          </div>
+          <div style="font-size:11px; color:#888; margin-top:4px;">
+            Dragon3 vigilará <strong>recursivamente</strong> esta carpeta y todas sus subcarpetas. 
+            Cuando guardes una imagen en cualquier subcarpeta, se sellará automáticamente y la versión sellada se guardará junto al original.
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: PERFIL -->
+      <div style="margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #2a2a4a;">
+        <h3 style="color:#ffd93d; margin-top:0; font-size:16px;">👤 Perfil del fotógrafo</h3>
+        <div class="campo"><label>Nombre del fotógrafo o estudio:</label><input type="text" id="config-nombre-autor" placeholder="Ej. Gustavo Herraiz Fotografía"></div>
+        <div class="campo"><label>Email de contacto:</label><input type="email" id="config-email-autor" placeholder="Ej. gustavo@ejemplo.com"></div>
+        <div class="campo"><label>Web:</label><input type="text" id="config-web-autor" placeholder="www.ejemplo.com"></div>
+        <div class="campo"><label>Teléfono:</label><input type="text" id="config-telefono-autor" placeholder="Teléfono de contacto"></div>
+        <div class="campo"><label>Dirección profesional:</label><input type="text" id="config-direccion-autor" placeholder="Dirección del estudio"></div>
+        <div class="campo"><label>Descripción o eslogan:</label><input type="text" id="config-descripcion-autor" placeholder="Ej. Fotografía creativa y de estudio"></div>
+        <div class="campo"><label>Redes sociales:</label><input type="text" id="config-redes-autor" placeholder="Enlaces a Instagram, LinkedIn, etc."></div>
+        <div class="campo">
+          <label>Logo (ruta del archivo):</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="config-logo-path" placeholder="Selecciona un archivo de imagen..." readonly style="flex:1; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <button id="btn-config-seleccionar-logo" style="padding:10px 16px; background:#2a2a4a; border:1px solid #444; color:#e0e0e0; border-radius:6px; cursor:pointer;">Examinar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: PREFERENCIAS DE SELLADO -->
+      <div style="margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #2a2a4a;">
+        <h3 style="color:#ffd93d; margin-top:0; font-size:16px;">⚙️ Preferencias de sellado</h3>
+        <div class="campo">
+          <label>Derechos por defecto:</label>
+          <select id="config-derechos-defecto" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <option value="Cesión de derechos al cliente, reservándose el de autoría">Cesión de derechos al cliente, reservándose el de autoría</option>
+            <option value="Todos los derechos reservados">Todos los derechos reservados</option>
+            <option value="Uso editorial">Uso editorial</option>
+            <option value="Creative Commons">Creative Commons</option>
+          </select>
+        </div>
+        <div class="campo" style="margin-bottom:0;">
+          <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+            <input type="checkbox" id="config-compartir-blade-defecto">
+            <label for="config-compartir-blade-defecto" style="font-size:13px; color:#ccc;">🔗 Compartir metadatos con Blade Verification Network (por defecto)</label>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Colección por defecto (opcional):</label>
+          <input type="text" id="config-coleccion-defecto" placeholder="Ej. Patrimonio cultural">
+        </div>
+      </div>
+
+      <!-- SECCIÓN 4: PREFIJO PERSONALIZADO -->
+      <div style="margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #2a2a4a;">
+        <h3 style="color:#ffd93d; margin-top:0; font-size:16px;">🔑 Prefijo para IDs de sellos</h3>
+        <div class="campo" style="margin-bottom:0;">
+          <input type="text" id="config-prefijo-usuario" placeholder="Ej. GF3" maxlength="4" style="text-transform:uppercase; width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+          <div style="font-size:11px; color:#888; margin-top:4px;">Si lo dejas vacío, se generará automáticamente un prefijo único.</div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 5: AUTOMATIZACIÓN -->
+      <div style="margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #2a2a4a;">
+        <h3 style="color:#ffd93d; margin-top:0; font-size:16px;">🤖 Automatización</h3>
+
+        <div class="campo" style="margin-bottom:0;">
+          <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+            <input type="checkbox" id="config-activar-watcher" checked>
+            <label for="config-activar-watcher" style="font-size:13px; color:#ccc;">🔁 Activar vigilancia automática</label>
+          </div>
+          <div style="font-size:11px; color:#888; margin-top:4px;">Si está activado, Dragon3 vigilará la carpeta raíz y todas sus subcarpetas.</div>
+        </div>
+
+        <div class="campo" style="margin-top:10px;">
+          <label>Modo de sellado automático:</label>
+          <select id="config-modo-automatico" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <option value="1">Automático (sellado silencioso)</option>
+            <option value="0">Preguntar (abrir interfaz)</option>
+          </select>
+          <div style="font-size:11px; color:#888; margin-top:4px;">En modo automático, las imágenes se sellan sin intervención. En modo "Preguntar", se abre la interfaz para confirmar.</div>
+        </div>
+
+        <div class="campo">
+          <label>Proyecto por defecto:</label>
+          <select id="config-proyecto-defecto" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <option value="">-- Selecciona un proyecto --</option>
+          </select>
+          <div style="font-size:11px; color:#888; margin-top:4px;">Proyecto donde se guardarán las imágenes selladas automáticamente.</div>
+        </div>
+
+        <div class="campo">
+          <label>Subcarpeta por defecto (opcional):</label>
+          <input type="text" id="config-subcarpeta-defecto" placeholder="Ej. Automáticos">
+          <div style="font-size:11px; color:#888; margin-top:4px;">Si se especifica, las imágenes se guardarán en esta subcarpeta dentro del proyecto.</div>
+        </div>
+
+        <div class="campo">
+          <label>Cliente por defecto:</label>
+          <input type="text" id="config-cliente-defecto" placeholder="Ej. Cliente habitual">
+        </div>
+
+        <div class="campo">
+          <label>Obra por defecto:</label>
+          <input type="text" id="config-obra-defecto" placeholder="Ej. Obra habitual">
+        </div>
+
+        <div class="campo" style="margin-top:10px;">
+          <label>Qué hacer con el original después de sellar (solo en modo manual):</label>
+          <select id="config-mover-original" style="width:100%; padding:10px 12px; background:#0a0a1a; border:1px solid #333; color:#e0e0e0; border-radius:6px;">
+            <option value="mover">Mover a subcarpeta "Originales"</option>
+            <option value="eliminar">Eliminar</option>
+            <option value="dejar">Dejar en la carpeta de entrada</option>
+          </select>
+          <div style="font-size:11px; color:#888; margin-top:4px;">En modo automático, el original siempre se deja en la carpeta donde se guardó.</div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div style="display:flex; gap:10px; margin-top:20px; padding-top:15px; border-top:1px solid #2a2a4a;">
+        <button id="btn-guardar-configuracion" style="flex:1; padding:14px; background:#ffd93d; color:#0a0a1a; border:none; border-radius:6px; font-weight:700; font-size:16px; cursor:pointer;">Guardar configuración</button>
+        <button id="btn-cancelar-configuracion" style="padding:14px 24px; background:#555; color:#e0e0e0; border:none; border-radius:6px; cursor:pointer;">Cancelar</button>
+      </div>
+      <div id="config-mensaje" style="margin-top:12px; font-size:13px;"></div>
+    </div>
+  </div>
+
+  <!-- MODAL PROMPT -->
+  <div id="modal-prompt" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a2e; padding:30px; border-radius:8px; width:400px; max-width:90%;">
+      <h3 id="modal-prompt-titulo" style="margin-top:0;">Entrada de texto</h3>
+      <input type="text" id="modal-prompt-input" style="width:100%; padding:8px; background:#0a0a1a; border:1px solid #333; color:white; border-radius:4px; margin:10px 0;">
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button id="modal-prompt-cancelar" style="background:#555;">Cancelar</button>
+        <button id="modal-prompt-aceptar" style="background:#0f3460;">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

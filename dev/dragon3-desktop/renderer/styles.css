@@ -1,0 +1,17 @@
+body { font-family: sans-serif; margin: 0; background: #1a1a2e; color: #eee; }
+#app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+.panel { background: #16213e; padding: 15px; border-radius: 8px; }
+.panel h2 { margin-top: 0; }
+button { background: #0f3460; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+button:hover { background: #1a4a7a; }
+input, select { background: #0a0a1a; color: white; border: 1px solid #333; padding: 6px; border-radius: 4px; width: 100%; margin: 5px 0; }
+#logs { background: #0a0a1a; padding: 10px; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px; border-radius: 4px; }
+.log-info { color: #8be9fd; }
+.log-ok { color: #50fa7b; }
+.log-error { color: #ff5555; }
+.resultado-ok { background: #1b3a2a; padding: 10px; border-radius: 4px; }
+.resultado-error { background: #3a1b1b; padding: 10px; border-radius: 4px; }
+#lista-proyectos { list-style: none; padding: 0; }
+#lista-proyectos li { background: #0a0a1a; margin: 5px 0; padding: 5px 10px; border-radius: 4px; }

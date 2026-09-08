@@ -1,0 +1,12 @@
+RESULTADOS TEST COMPRESIÓN V20
+==============================
+Q-100: OK | Hits: 100 | Conf: 99.0%
+Q-90: OK | Hits: 100 | Conf: 99.0%
+Q-80: OK | Hits: 100 | Conf: 99.0%
+Q-70: OK | Hits: 100 | Conf: 99.0%
+Q-60: OK | Hits: 100 | Conf: 99.0%
+Q-50: OK | Hits: 100 | Conf: 99.0%
+Q-40: OK | Hits: 100 | Conf: 99.0%
+Q-30: OK | Hits: 100 | Conf: 99.0%
+Q-20: OK | Hits: 100 | Conf: 99.0%
+Q-10: OK | Hits: 100 | Conf: 99.0%

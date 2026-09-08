@@ -1,0 +1,15 @@
+{
+  "tipo": "ajuste-peso",
+  "celulaId": "detectar-sellos-autenticidad",
+  "pesoActual": 1,
+  "pesoPropuesto": 0.9,
+  "accion": "reducir",
+  "motivo": "Precisión baja (40%) o contribución baja (40%)",
+  "evidencia": {
+    "precision": 0.4,
+    "contribucion": 0.4,
+    "total": 20,
+    "tiempoPromedio": 29.242435661839853
+  },
+  "confianza": 0.8
+}

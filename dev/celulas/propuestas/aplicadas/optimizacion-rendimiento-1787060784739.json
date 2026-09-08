@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "detectar-patrones-forenses",
+  "motivo": "Cuello de botella: p95=176ms, promedio=92ms (ratio 1.9)",
+  "evidencia": {
+    "p95": 175.95388200005982,
+    "promedio": 91.82218250002188,
+    "total": 2,
+    "ratio": 1.9162459136714365,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 0.9581229568357182,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

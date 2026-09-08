@@ -1,0 +1,77 @@
+{
+  "imagen": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\test_sharpen_optimo\\blur_sigma_5_sharpen_5.jpg",
+  "mejor_offset": {
+    "x": 4,
+    "y": 10,
+    "energia": 1107.930315468227,
+    "adn": "001101101111110010010000",
+    "distancia": 7
+  },
+  "vector_desplazamiento": {
+    "dx": 4,
+    "dy": 10
+  },
+  "secuencia_completa": "100001000001001110011101001101001110010011110011",
+  "top_offsets": [
+    {
+      "offset": "(4,10)",
+      "energia": 1107.930315468227,
+      "adn": "001101101111110010010000",
+      "distancia": 7
+    },
+    {
+      "offset": "(5,10)",
+      "energia": 1004.8907023466537,
+      "adn": "101100101111110010010000",
+      "distancia": 7
+    },
+    {
+      "offset": "(3,7)",
+      "energia": 1069.6692140877794,
+      "adn": "001100000111011111110010",
+      "distancia": 8
+    },
+    {
+      "offset": "(4,4)",
+      "energia": 1086.0432015831489,
+      "adn": "110100000011010111010111",
+      "distancia": 8
+    },
+    {
+      "offset": "(4,11)",
+      "energia": 1078.288224192499,
+      "adn": "001111101111100000010000",
+      "distancia": 8
+    },
+    {
+      "offset": "(7,9)",
+      "energia": 1229.0567279637462,
+      "adn": "101100101111110000011100",
+      "distancia": 8
+    },
+    {
+      "offset": "(9,15)",
+      "energia": 1412.1817488050356,
+      "adn": "000100111001001000011001",
+      "distancia": 8
+    },
+    {
+      "offset": "(13,14)",
+      "energia": 1331.5437259051873,
+      "adn": "100000111011000101110001",
+      "distancia": 8
+    },
+    {
+      "offset": "(15,14)",
+      "energia": 1532.6123597118917,
+      "adn": "110100111011000101110001",
+      "distancia": 8
+    },
+    {
+      "offset": "(0,15)",
+      "energia": 1500.7904374947354,
+      "adn": "010101110101011111010100",
+      "distancia": 9
+    }
+  ]
+}

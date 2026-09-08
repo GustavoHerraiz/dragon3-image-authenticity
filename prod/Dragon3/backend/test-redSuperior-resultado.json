@@ -1,0 +1,620 @@
+{
+  "timestamp": "2026-05-07T15:46:48.028Z",
+  "version": "3.0.0-KNN-EXPLAIN",
+  "tests": {
+    "cargaModelos": {
+      "exitoso": true,
+      "duracionMs": 0.0010880000000383916,
+      "smallNNsCargados": 10,
+      "redMayorCargada": true,
+      "ok": true
+    },
+    "normalizacion": {
+      "exitoso": true,
+      "funcionEncontrada": false,
+      "error": "normalizeFeatures no está exportada globalmente, pero se usa internamente"
+    },
+    "forwardPass": {
+      "exitoso": true,
+      "duracionMs": 0.6007060000000024,
+      "outputPreview": [
+        "0.5685",
+        "0.0016",
+        "0.5326"
+      ],
+      "dimensionOutput": 3,
+      "tieneNaN": false
+    },
+    "batchPrediccion": {
+      "exitoso": true,
+      "iterations": 1000,
+      "latencia": {
+        "p50": 0.1169039999999768,
+        "p95": 0.24854799999997113,
+        "p99": 3.2485090000000127,
+        "max": 9.384571999999991,
+        "avg": 0.20139954799999976
+      },
+      "throughput": "4965 pred/seg"
+    },
+    "precisionDataset": {
+      "exitoso": true,
+      "samples": 280,
+      "accuracy": "96.4%",
+      "confusionMatrix": {
+        "humano": {
+          "humano": 84,
+          "ia_generado": 0,
+          "editado": 10
+        },
+        "ia_generado": {
+          "humano": 0,
+          "ia_generado": 85,
+          "editado": 0
+        },
+        "editado": {
+          "humano": 0,
+          "ia_generado": 0,
+          "editado": 101
+        }
+      },
+      "errores": {
+        "humano": [
+          {
+            "id": "synthetic_humano_218_48b944b5",
+            "realLabel": "humano",
+            "predLabel": "editado",
+            "confianza": 0.399501125643851,
+            "smallNNScores": [
+              "0.0752",
+              "0.1609",
+              "0.0421",
+              "0.4534",
+              "0.0728",
+              "0.8277",
+              "0.1949",
+              "0.3140",
+              "0.0581",
+              "0.0004"
+            ],
+            "localAnalyzers": [
+              "0.9639",
+              "0.9434",
+              "1.0000",
+              "1.0000",
+              "0.8121",
+              "1.0000",
+              "0.8392",
+              "0.8818",
+              "0.9854",
+              "0.9111"
+            ],
+            "redMayorInput": [
+              "0.0752",
+              "0.1609",
+              "0.0421",
+              "0.4534",
+              "0.0728",
+              "0.8277",
+              "0.1949",
+              "0.3140",
+              "0.0581",
+              "0.0004",
+              "0.9639",
+              "0.9434",
+              "1.0000",
+              "1.0000",
+              "0.8121",
+              "1.0000",
+              "0.8392",
+              "0.8818",
+              "0.9854",
+              "0.9111"
+            ],
+            "redMayorOutputRaw": [
+              "0.6128",
+              "0.0010",
+              "0.6386"
+            ],
+            "softmaxOutput": [
+              "0.3893",
+              "0.2112",
+              "0.3995"
+            ],
+            "contextVector": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "synthetic_humano_102_4e5e81a5",
+            "realLabel": "humano",
+            "predLabel": "editado",
+            "confianza": 0.4253852242631133,
+            "smallNNScores": [
+              "0.2077",
+              "0.1203",
+              "0.2690",
+              "0.1707",
+              "0.0466",
+              "0.3256",
+              "0.0500",
+              "0.2115",
+              "0.5150",
+              "0.0004"
+            ],
+            "localAnalyzers": [
+              "0.8319",
+              "0.8755",
+              "1.0000",
+              "0.9537",
+              "1.0000",
+              "0.9536",
+              "0.9722",
+              "0.8469",
+              "0.9434",
+              "1.0000"
+            ],
+            "redMayorInput": [
+              "0.2077",
+              "0.1203",
+              "0.2690",
+              "0.1707",
+              "0.0466",
+              "0.3256",
+              "0.0500",
+              "0.2115",
+              "0.5150",
+              "0.0004",
+              "0.8319",
+              "0.8755",
+              "1.0000",
+              "0.9537",
+              "1.0000",
+              "0.9536",
+              "0.9722",
+              "0.8469",
+              "0.9434",
+              "1.0000"
+            ],
+            "redMayorOutputRaw": [
+              "0.5480",
+              "0.0013",
+              "0.7040"
+            ],
+            "softmaxOutput": [
+              "0.3639",
+              "0.2107",
+              "0.4254"
+            ],
+            "contextVector": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "synthetic_humano_228_9460bef8",
+            "realLabel": "humano",
+            "predLabel": "editado",
+            "confianza": 0.41918614613937355,
+            "smallNNScores": [
+              "0.0932",
+              "0.1092",
+              "0.1155",
+              "0.2619",
+              "0.5502",
+              "0.2366",
+              "0.2545",
+              "0.2799",
+              "0.1141",
+              "0.0004"
+            ],
+            "localAnalyzers": [
+              "0.8847",
+              "1.0000",
+              "1.0000",
+              "1.0000",
+              "0.7942",
+              "1.0000",
+              "0.7666",
+              "0.9516",
+              "0.9162",
+              "0.9450"
+            ],
+            "redMayorInput": [
+              "0.0932",
+              "0.1092",
+              "0.1155",
+              "0.2619",
+              "0.5502",
+              "0.2366",
+              "0.2545",
+              "0.2799",
+              "0.1141",
+              "0.0004",
+              "0.8847",
+              "1.0000",
+              "1.0000",
+              "1.0000",
+              "0.7942",
+              "1.0000",
+              "0.7666",
+              "0.9516",
+              "0.9162",
+              "0.9450"
+            ],
+            "redMayorOutputRaw": [
+              "0.5595",
+              "0.0013",
+              "0.6859"
+            ],
+            "softmaxOutput": [
+              "0.3694",
+              "0.2114",
+              "0.4192"
+            ],
+            "contextVector": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "synthetic_humano_278_9d21af0c",
+            "realLabel": "humano",
+            "predLabel": "editado",
+            "confianza": 0.4479236268869085,
+            "smallNNScores": [
+              "0.4303",
+              "0.0904",
+              "0.0987",
+              "0.0862",
+              "0.1302",
+              "0.0417",
+              "0.0561",
+              "0.3993",
+              "0.4728",
+              "0.0004"
+            ],
+            "localAnalyzers": [
+              "0.7934",
+              "0.8766",
+              "0.8592",
+              "0.8566",
+              "0.9472",
+              "1.0000",
+              "1.0000",
+              "0.9226",
+              "0.8791",
+              "0.9757"
+            ],
+            "redMayorInput": [
+              "0.4303",
+              "0.0904",
+              "0.0987",
+              "0.0862",
+              "0.1302",
+              "0.0417",
+              "0.0561",
+              "0.3993",
+              "0.4728",
+              "0.0004",
+              "0.7934",
+              "0.8766",
+              "0.8592",
+              "0.8566",
+              "0.9472",
+              "1.0000",
+              "1.0000",
+              "0.9226",
+              "0.8791",
+              "0.9757"
+            ],
+            "redMayorOutputRaw": [
+              "0.4829",
+              "0.0017",
+              "0.7551"
+            ],
+            "softmaxOutput": [
+              "0.3412",
+              "0.2109",
+              "0.4479"
+            ],
+            "contextVector": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "synthetic_humano_107_88dfb601",
+            "realLabel": "humano",
+            "predLabel": "editado",
+            "confianza": 0.4077939861113518,
+            "smallNNScores": [
+              "0.3721",
+              "0.5048",
+              "0.3120",
+              "0.1104",
+              "0.3383",
+              "0.3801",
+              "0.0637",
+              "0.0171",
+              "0.1139",
+              "0.0004"
+            ],
+            "localAnalyzers": [
+              "0.9340",
+              "0.8740",
+              "0.8403",
+              "0.9521",
+              "0.7260",
+              "0.9747",
+              "1.0000",
+              "0.9406",
+              "0.9333",
+              "0.9463"
+            ],
+            "redMayorInput": [
+              "0.3721",
+              "0.5048",
+              "0.3120",
+              "0.1104",
+              "0.3383",
+              "0.3801",
+              "0.0637",
+              "0.0171",
+              "0.1139",
+              "0.0004",
+              "0.9340",
+              "0.8740",
+              "0.8403",
+              "0.9521",
+              "0.7260",
+              "0.9747",
+              "1.0000",
+              "0.9406",
+              "0.9333",
+              "0.9463"
+            ],
+            "redMayorOutputRaw": [
+              "0.5880",
+              "0.0012",
+              "0.6571"
+            ],
+            "softmaxOutput": [
+              "0.3806",
+              "0.2116",
+              "0.4078"
+            ],
+            "contextVector": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "ia_generado": [],
+        "editado": []
+      }
+    },
+    "memoria": {
+      "exitoso": true,
+      "heapUsedMB": "17.60",
+      "rssMB": "80.35"
+    },
+    "validacionEntradas": {
+      "exitoso": true,
+      "casos": [
+        {
+          "nombre": "Features correctas (90)",
+          "ok": true,
+          "duracion": "0.21",
+          "message": "editado"
+        },
+        {
+          "nombre": "Features cortas (80)",
+          "ok": true
+        },
+        {
+          "nombre": "Features largas (100)",
+          "ok": true
+        },
+        {
+          "nombre": "Features con NaN",
+          "ok": true,
+          "duracion": "0.17",
+          "message": "editado"
+        },
+        {
+          "nombre": "Features vacías",
+          "ok": true
+        }
+      ]
+    },
+    "contexto": {
+      "exitoso": true,
+      "pruebas": [
+        {
+          "desc": "MIDJOURNEY",
+          "contexto": "Created with Midjourney v6",
+          "bits": {
+            "bitIA": 1,
+            "bitEdicion": 0,
+            "bitCamera": 0
+          },
+          "ok": true
+        },
+        {
+          "desc": "STABLE DIFFUSION",
+          "contexto": "Stable Diffusion XL",
+          "bits": {
+            "bitIA": 1,
+            "bitEdicion": 0,
+            "bitCamera": 0
+          },
+          "ok": true
+        },
+        {
+          "desc": "ADOBE FIREFLY",
+          "contexto": "Adobe Firefly Generative Fill",
+          "bits": {
+            "bitIA": 1,
+            "bitEdicion": 1,
+            "bitCamera": 0
+          },
+          "ok": true
+        },
+        {
+          "desc": "FOTOGRAFÍA REAL",
+          "contexto": "Nikon D850, f/2.8, ISO 100",
+          "bits": {
+            "bitIA": 0,
+            "bitEdicion": 0,
+            "bitCamera": 1
+          },
+          "ok": true
+        },
+        {
+          "desc": "EDICIÓN LEGÍTIMA",
+          "contexto": "Adobe Photoshop CC",
+          "bits": {
+            "bitIA": 0,
+            "bitEdicion": 1,
+            "bitCamera": 0
+          },
+          "ok": true
+        }
+      ]
+    },
+    "explicabilidad": {
+      "exitoso": true,
+      "metodo": "KNN ponderado por distancia",
+      "muestrasExplicadas": [
+        {
+          "id": "synthetic_editado_327_cfee022e",
+          "real": "editado",
+          "vecinos": [
+            {
+              "id": "synthetic_editado_327_cfee022e",
+              "categoria": "editado",
+              "distancia": "0.0000",
+              "peso": "1000000000.0000"
+            },
+            {
+              "id": "synthetic_editado_233_270422b6",
+              "categoria": "editado",
+              "distancia": "0.3804",
+              "peso": "2.6292"
+            },
+            {
+              "id": "synthetic_editado_149_5c504f92",
+              "categoria": "editado",
+              "distancia": "0.4734",
+              "peso": "2.1122"
+            },
+            {
+              "id": "synthetic_editado_66_bd112c50",
+              "categoria": "editado",
+              "distancia": "0.4954",
+              "peso": "2.0184"
+            },
+            {
+              "id": "synthetic_editado_10_6c2c166e",
+              "categoria": "editado",
+              "distancia": "0.5944",
+              "peso": "1.6825"
+            }
+          ],
+          "confianza": 1
+        },
+        {
+          "id": "synthetic_humano_337_6c583217",
+          "real": "humano",
+          "vecinos": [
+            {
+              "id": "synthetic_humano_337_6c583217",
+              "categoria": "humano",
+              "distancia": "0.0000",
+              "peso": "1000000000.0000"
+            },
+            {
+              "id": "synthetic_humano_43_c9ac7e2d",
+              "categoria": "humano",
+              "distancia": "0.6178",
+              "peso": "1.6186"
+            },
+            {
+              "id": "synthetic_humano_110_6a5de3e9",
+              "categoria": "humano",
+              "distancia": "0.6717",
+              "peso": "1.4888"
+            },
+            {
+              "id": "synthetic_humano_103_da456510",
+              "categoria": "humano",
+              "distancia": "0.6961",
+              "peso": "1.4366"
+            },
+            {
+              "id": "synthetic_humano_14_70398193",
+              "categoria": "humano",
+              "distancia": "0.7240",
+              "peso": "1.3813"
+            }
+          ],
+          "confianza": 1
+        },
+        {
+          "id": "synthetic_ia_generado_290_984c7b0c",
+          "real": "ia_generado",
+          "vecinos": [
+            {
+              "id": "synthetic_ia_generado_290_984c7b0c",
+              "categoria": "ia_generado",
+              "distancia": "0.0000",
+              "peso": "1000000000.0000"
+            },
+            {
+              "id": "synthetic_ia_generado_193_40137ab8",
+              "categoria": "ia_generado",
+              "distancia": "0.1545",
+              "peso": "6.4733"
+            },
+            {
+              "id": "synthetic_ia_generado_277_a85be992",
+              "categoria": "ia_generado",
+              "distancia": "0.1771",
+              "peso": "5.6458"
+            },
+            {
+              "id": "synthetic_ia_generado_310_169ff259",
+              "categoria": "ia_generado",
+              "distancia": "0.1809",
+              "peso": "5.5286"
+            },
+            {
+              "id": "synthetic_ia_generado_331_ad464d30",
+              "categoria": "ia_generado",
+              "distancia": "0.2018",
+              "peso": "4.9559"
+            }
+          ],
+          "confianza": 1
+        }
+      ]
+    }
+  }
+}

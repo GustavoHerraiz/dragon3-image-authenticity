@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "detectar-artefactos-ia",
+  "motivo": "Cuello de botella: p95=53ms, promedio=32ms (ratio 1.7)",
+  "evidencia": {
+    "p95": 53.38035877520007,
+    "promedio": 31.757687600049927,
+    "total": 22,
+    "ratio": 1.6808641563410351,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 0.8404320781705176,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "nombre": "evolucion-cargar-imagen-extraer-metadatos-exif",
+  "descripcion": "Plan generado automáticamente a partir de células: cargar-imagen, extraer-metadatos-exif",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": {
+        "payload": "$.contexto.archivo"
+      }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "./celulas/extraer-metadatos-exif.js",
+      "entrada": {
+        "payload": "$.cargar-imagen.resultado"
+      }
+    }
+  ],
+  "salidaFinal": "$.extraer-metadatos-exif.resultado",
+  "detenerseEnError": false,
+  "telemetria": {
+    "enabled": true
+  }
+}

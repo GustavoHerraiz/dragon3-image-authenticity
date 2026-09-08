@@ -1,0 +1,143 @@
+# ====================================================================
+# DRAGON3 - DOCKER TRAINING ENVIRONMENT (EPHEMERAL)
+# ====================================================================
+#
+# Archivo: Dockerfile.training
+# Proyecto: Dragon3 - Sistema Autentificación IA Enterprise
+# Versión: 1.0.0-FAANG-Docker
+# Fecha: 2025-04-15
+# Autor: Gustavo Herráiz (@GustavoHerraiz) - Lead Architect
+#
+# PROPÓSITO:
+# Entorno AISLADO para entrenar Red Superior con Brain.js + GPU.js
+# completo, incluyendo todas las dependencias de compilación nativa.
+#
+# USO:
+# docker build -f Dockerfile.training -t dragon3-training .
+# docker run --rm -v $(pwd)/servicios/redSuperior/models:/app/servicios/redSuperior/models dragon3-training
+#
+# IMPORTANTE:
+# - Este contenedor se usa SOLO para entrenar modelos
+# - Los modelos JSON se exportan al host vía volume
+# - El contenedor se destruye después (--rm)
+# - Servidor producción NO usa este contenedor
+#
+# ====================================================================
+
+# Base: Node.js 20 en Debian Bullseye (soporte completo build tools)
+FROM node:20-bullseye
+
+# Metadata
+LABEL maintainer="GustavoHerraiz"
+LABEL project="Dragon3"
+LABEL purpose="Training Environment (Ephemeral)"
+LABEL version="1.0.0-FAANG-Docker"
+
+# ============================================================================
+# INSTALAR DEPENDENCIAS DE COMPILACIÓN (SOLO EN CONTENEDOR)
+# ============================================================================
+
+RUN apt-get update && apt-get install -y \
+    # Compiladores C/C++
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    # Python para node-gyp
+    python3 \
+    python3-pip \
+    # Dependencias OpenGL para headless-gl
+    libxi-dev \
+    libglu1-mesa-dev \
+    libglew-dev \
+    mesa-common-dev \
+    libgl1-mesa-dev \
+    # Herramientas adicionales
+    pkg-config \
+    git \
+    # Limpiar cache apt
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    # Crear symlink python -> python3 (requerido por node-gyp)
+    && ln -sf /usr/bin/python3 /usr/bin/python
+
+# Verificar instalación Python
+RUN python --version && python3 --version
+
+# ============================================================================
+# CONFIGURAR DIRECTORIO DE TRABAJO
+# ============================================================================
+
+WORKDIR /app
+
+# ============================================================================
+# INSTALAR DEPENDENCIAS NODE.JS (INCLUYENDO BRAIN.JS COMPLETO)
+# ============================================================================
+
+# Copiar package.json y package-lock.json
+COPY package*.json ./
+
+# Instalar dependencias (TODAS, incluyendo gpu.js con compilación nativa)
+# Esto funciona dentro del contenedor porque tiene build-essential
+RUN npm install --verbose
+
+# Verificar instalación Brain.js y GPU.js
+RUN node -e "console.log('Brain.js:', require('brain.js') ? 'OK' : 'FAILED')" && \
+    node -e "console.log('GPU.js:', require('gpu.js') ? 'OK' : 'FAILED')"
+
+# ============================================================================
+# COPIAR CÓDIGO FUENTE
+# ============================================================================
+
+# Copiar utilidades (logger, redis, etc.)
+COPY utilidades ./utilidades
+
+# Copiar servicios/redSuperior
+COPY servicios/redSuperior ./servicios/redSuperior
+
+# Crear directorio models si no existe
+RUN mkdir -p ./servicios/redSuperior/models
+
+# ============================================================================
+# VARIABLES DE ENTORNO
+# ============================================================================
+
+ENV NODE_ENV=training
+ENV DRAGON_LOG_LEVEL=info
+ENV TZ=UTC
+
+# ============================================================================
+# HEALTH CHECK (VERIFICA QUE NODE.JS FUNCIONA)
+# ============================================================================
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "console.log('OK')" || exit 1
+
+# ============================================================================
+# COMANDO POR DEFECTO: ENTRENAR MODELOS
+# ============================================================================
+
+# Al ejecutar el contenedor, entrena automáticamente
+CMD ["node", "servicios/redSuperior/trainModel.js"]
+
+# ============================================================================
+# NOTAS DE USO:
+# ============================================================================
+#
+# BUILD:
+#   docker build -f Dockerfile.training -t dragon3-training .
+#
+# RUN (con volume para exportar modelos):
+#   docker run --rm \
+#     -v $(pwd)/servicios/redSuperior/models:/app/servicios/redSuperior/models \
+#     dragon3-training
+#
+# RUN (interactivo para debugging):
+#   docker run --rm -it \
+#     -v $(pwd)/servicios/redSuperior/models:/app/servicios/redSuperior/models \
+#     dragon3-training /bin/bash
+#
+# LIMPIEZA POST-ENTRENAMIENTO:
+#   docker rmi dragon3-training  # Eliminar imagen si no se necesita más
+#
+# ============================================================================

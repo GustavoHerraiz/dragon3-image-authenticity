@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>INFORME FORENSE FAANG ENTERPRISE - Dragon3 Forensic System</title>
+    <style>
+        :root {
+            --primary-blue: #173f5f;
+            --secondary-blue: #20639b;
+            --accent-green: #16dfac;
+            --warning-red: #fd6a6a;
+            --warning-yellow: #ffc107;
+            --critical-red: #d32f2f;
+            --light-bg: #f6f6f6;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border-light: #e5ecf6;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 32px;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .enterprise-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: white;
+            margin: -32px -32px 32px -32px;
+            padding: 40px 32px;
+            border-bottom: 4px solid var(--accent-green);
+        }
+
+        .section {
+            margin-bottom: 32px;
+            background: var(--card-bg);
+            box-shadow: 0 2px 12px rgba(23, 63, 95, 0.08);
+            padding: 28px 32px;
+            border-radius: 12px;
+            border-left: 5px solid var(--secondary-blue);
+        }
+
+        .section-critical { border-left-color: var(--critical-red); background: #fff5f5; }
+        .section-warning { border-left-color: var(--warning-yellow); background: #fffbf0; }
+        .section-success { border-left-color: var(--accent-green); background: #f0fff8; }
+
+        h1 { color: white; font-size: 2.4em; margin: 0 0 8px 0; font-weight: 700; }
+        h2 { color: var(--primary-blue); margin: 0 0 20px 0; font-size: 1.5em; font-weight: 600; }
+        h3 { color: var(--secondary-blue); margin: 20px 0 12px 0; font-weight: 600; }
+        h4 { color: var(--text-dark); margin: 16px 0 8px 0; font-weight: 500; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+        .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-human { background: #d4edda; color: #155724; }
+        .badge-ai { background: #f8d7da; color: #721c24; }
+        .badge-uncertain { background: #fff3cd; color: #856404; }
+        .badge-risk-low { background: #d4edda; color: #155724; }
+        .badge-risk-medium { background: #fff3cd; color: #856404; }
+        .badge-risk-high { background: #f8d7da; color: #721c24; }
+        .badge-risk-critical { background: #721c24; color: white; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+
+        th { background: var(--primary-blue); color: white; font-weight: 600; }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        .metric-value { font-size: 2em; font-weight: 700; margin: 8px 0; color: var(--secondary-blue); }
+        .metric-label { font-size: 0.9em; color: var(--text-light); text-transform: uppercase; }
+
+        .model-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            border-left: 4px solid var(--secondary-blue);
+        }
+
+        .progress-container {
+            background: #e5ecf6;
+            border-radius: 10px;
+            height: 12px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 12px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent-green) 0%, #10b981 100%);
+        }
+
+        .enterprise-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--primary-blue);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ENCABEZADO PRINCIPAL -->
+    <div class="enterprise-header">
+        <h1>🏛️ INFORME FORENSE DRAGON3 FAANG</h1>
+        <p style="font-size: 1.2em; opacity: 0.95; margin-bottom: 20px;">
+            Sistema de Autenticidad Digital con IA Explicable
+        </p>
+
+        <div class="grid-4">
+            <div>
+                <strong>ID Informe:</strong><br>
+                <code style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">{{id}}</code>
+            </div>
+            <div>
+                <strong>Correlation ID:</strong><br>
+                <code style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">{{correlationId}}</code>
+            </div>
+            <div>
+                <strong>Fecha Generación:</strong><br>
+                {{fechaGeneracion}}
+            </div>
+            <div>
+                <strong>Responsable:</strong><br>
+                {{responsable}}
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN EJECUTIVO -->
+    <div class="section section-success">
+        <h2>📊 Resumen Ejecutivo</h2>
+
+        <div class="grid-4">
+            <div class="metric-card">
+                <div class="metric-label">Decisión Final</div>
+                <div class="metric-value">
+                    <span class="badge badge-human">{{resultado.resumen.decision}}</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Confianza</div>
+                <div class="metric-value">{{resultado.resumen.confianza}}</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {{mult resultado.resumen.confianza 100}}%"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Score</div>
+                <div class="metric-value">{{resultado.resumen.score}}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Nivel de Riesgo</div>
+                <div class="metric-value">
+                    <span class="badge badge-risk-{{resultado.resumen.riesgo}}">{{resultado.resumen.riesgo}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 20px;">
+            <div>
+                <h4>Modelo Principal</h4>
+                <p><strong>{{resultado.resumen.modeloPrincipal}}</strong></p>
+                <h4>Explicación</h4>
+                <p>{{resultado.resumen.explicacion}}</p>
+            </div>
+            <div>
+                <h4>Categoría</h4>
+                <p>{{resultado.resumen.categoria}}</p>
+                <h4>Fecha de Análisis</h4>
+                <p><code>{{fechaAnalisis}}</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFORMACIÓN DE USUARIO Y ARCHIVO -->
+    <div class="section">
+        <h2>👤 Información de Usuario y Archivo</h2>
+
+        <div class="grid-3">
+            <div>
+                <h4>Usuario</h4>
+                <table>
+                    <tr><td><strong>ID Usuario:</strong></td><td>{{usuarioId}}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>{{responsable}}</td></tr>
+                    <tr><td><strong>Tipo Usuario:</strong></td><td>{{usuarioTipo}}</td></tr>
+                </table>
+            </div>
+            <div>
+                <h4>Archivo</h4>
+                <table>
+                    <tr><td><strong>Nombre:</strong></td><td>{{nombreOriginal}}</td></tr>
+                    <tr><td><strong>Tipo:</strong></td><td>{{tipo}}</td></tr>
+                    <tr><td><strong>Hash SHA-256:</strong></td><td><code style="font-size: 0.7em;">{{hashArchivo}}</code></td></tr>
+                </table>
+            </div>
+            <div>
+                <h4>Temporal</h4>
+                <table>
+                    <tr><td><strong>Subida:</strong></td><td>{{fechaSubida}}</td></tr>
+                    <tr><td><strong>Análisis:</strong></td><td>{{fechaAnalisis}}</td></tr>
+                    <tr><td><strong>Informe:</strong></td><td>{{fechaGeneracion}}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- METADATOS DE IMAGEN -->
+    <div class="section">
+        <h2>🖼️ Metadatos de Imagen</h2>
+
+        {{#with metadataImagen}}
+        <div class="grid-2">
+            <div>
+                <h4>Dimensiones</h4>
+                <table>
+                    <tr><td>Ancho:</td><td>{{dimensiones.ancho}} px</td></tr>
+                    <tr><td>Alto:</td><td>{{dimensiones.alto}} px</td></tr>
+                    <tr><td>Relación Aspecto:</td><td>{{dimensiones.relacionAspecto}}</td></tr>
+                </table>
+            </div>
+            <div>
+                <h4>Propiedades</h4>
+                <table>
+                    <tr><td>Formato:</td><td>{{propiedades.formato}}</td></tr>
+                    <tr><td>Espacio Color:</td><td>{{propiedades.espacioColor}}</td></tr>
+                    <tr><td>Profundidad Color:</td><td>{{propiedades.profundidadColor}} bits</td></tr>
+                </table>
+            </div>
+        </div>
+
+        {{#if metadatosExif}}
+        <h4>Metadatos EXIF</h4>
+        <div class="grid-2">
+            <div>
+                <table>
+                    <tr><td>Fabricante:</td><td>{{metadatosExif.fabricanteCamara}}</td></tr>
+                    <tr><td>Modelo:</td><td>{{metadatosExif.modeloCamara}}</td></tr>
+                    <tr><td>Fecha Captura:</td><td>{{metadatosExif.fechaCaptura}}</td></tr>
+                </table>
+            </div>
+            <div>
+                <table>
+                    <tr><td>ISO:</td><td>{{metadatosExif.configuracion.iso}}</td></tr>
+                    <tr><td>Apertura:</td><td>{{metadatosExif.configuracion.apertura}}</td></tr>
+                    <tr><td>Velocidad:</td><td>{{metadatosExif.configuracion.velocidadObturacion}}</td></tr>
+                </table>
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if analisisForensic}}
+        <h4>Análisis Forense</h4>
+        <table>
+            <tr>
+                <th>Parámetro</th>
+                <th>Valor</th>
+                <th>Interpretación</th>
+            </tr>
+            <tr>
+                <td>Errores Compresión</td>
+                <td>{{analisisForensic.erroresCompresion}}</td>
+                <td>
+                    {{#if analisisForensic.erroresCompresion}}
+                        {{#gt analisisForensic.erroresCompresion 5}}Posible recompresión{{else}}Normal{{/gt}}
+                    {{else}}No disponible{{/if}}
+                </td>
+            </tr>
+            <tr>
+                <td>Metadata Inconsistente</td>
+                <td>{{analisisForensic.metadataInconsistente}}</td>
+                <td>
+                    {{#if analisisForensic.metadataInconsistente}}
+                        ⚠️ POSIBLE MANIPULACIÓN
+                    {{else}}
+                        ✓ Consistente
+                    {{/if}}
+                </td>
+            </tr>
+            <tr>
+                <td>Calidad Perceptual</td>
+                <td>{{analisisForensic.calidadPerceptual}}%</td>
+                <td>
+                    {{#if analisisForensic.calidadPerceptual}}
+                        {{#lt analisisForensic.calidadPerceptual 60}}Baja calidad{{else}}Calidad aceptable{{/lt}}
+                    {{else}}No disponible{{/if}}
+                </td>
+            </tr>
+        </table>
+
+        {{#if analisisForensic.huellasEdicion}}
+        <h4>Huellas de Edición Detectadas</h4>
+        <ul>
+            {{#each analisisForensic.huellasEdicion}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+        {{/if}}
+        {{/with}}
+    </div>
+
+    <!-- RESULTADOS DE MODELOS -->
+    <div class="section">
+        <h2>🤖 Resultados por Modelo de IA</h2>
+
+        <div class="grid-auto">
+            {{#each resultado.detalles.modelos}}
+            <div class="model-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <strong>{{nombre}} v{{version}}</strong>
+                    <span class="badge badge-human">{{decision}}</span>
+                </div>
+
+                <table>
+                    <tr><td>Confianza:</td><td>{{confianza}}</td></tr>
+                    <tr><td>Score:</td><td>{{score}}</td></tr>
+                    <tr><td>Tiempo:</td><td>{{tiempoMs}} ms</td></tr>
+                </table>
+
+                {{#if explicacion}}
+                <div style="margin-top: 8px; font-size: 0.85em; font-style: italic;">
+                    "{{explicacion}}"
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+
+        {{#if resultado.detalles.ensemble}}
+        <h3>Ensemble Final</h3>
+        <table>
+            <tr>
+                <th>Método</th>
+                <th>Decisión</th>
+                <th>Confianza Global</th>
+                <th>Score Global</th>
+                <th>Explicación</th>
+            </tr>
+            <tr>
+                <td>{{resultado.detalles.ensemble.metodo}}</td>
+                <td>
+                    <span class="badge badge-human">{{resultado.detalles.ensemble.decision}}</span>
+                </td>
+                <td>{{resultado.detalles.ensemble.confianzaGlobal}}</td>
+                <td>{{resultado.detalles.ensemble.scoreGlobal}}</td>
+                <td>{{resultado.detalles.ensemble.explicacion}}</td>
+            </tr>
+        </table>
+        {{/if}}
+    </div>
+
+    <!-- ANÁLISIS FORENSE EXTENDIDO -->
+    <div class="section">
+        <h2>🔍 Análisis Forense Extendido</h2>
+
+        {{#if resultado.paraInforme.explicacionExtendida}}
+        <h4>Explicabilidad Técnica</h4>
+        <p>{{resultado.paraInforme.explicacionExtendida}}</p>
+        {{/if}}
+
+        {{#if resultado.paraInforme.riesgosDetectados}}
+        <h4>Riesgos Detectados</h4>
+        <ul>
+            {{#each resultado.paraInforme.riesgosDetectados}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+
+        {{#if resultado.paraInforme.recomendaciones}}
+        <h4>Recomendaciones</h4>
+        <ul>
+            {{#each resultado.paraInforme.recomendaciones}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+
+        {{#if resultado.paraInforme.conclusiones}}
+        <h4>Conclusiones Técnicas</h4>
+        <ul>
+            {{#each resultado.paraInforme.conclusiones}}
+            <li><strong>{{this.tipo}}:</strong> {{this.descripcion}} (Confianza: {{this.confianza}})</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+
+    <!-- FIRMA Y VALIDACIÓN -->
+    <div class="section">
+        <h2>🖋️ Validación y Firma</h2>
+
+        <div class="grid-2">
+            <div>
+                <p>Este informe forense ha sido generado automáticamente por el sistema Dragon3 FAANG Enterprise.</p>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <div style="border-top: 1px solid #333; width: 300px; margin: 40px auto 20px auto;"></div>
+                    <p><strong>Gustavo Herraiz</strong><br>
+                    Lead Architect - Blade Corporation</p>
+                    <p>Generado el: {{fechaGeneracion}}</p>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; display: inline-block;">
+                    <strong>VERIFICACIÓN DIGITAL</strong><br>
+                    <div style="width: 120px; height: 120px; background: #e5ecf6; margin: 12px auto; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px dashed #ccc;">
+                        QR CODE<br>
+                        <small style="font-size: 0.6em;">{{hashInforme}}</small>
+                    </div>
+                    <small>Escanear para validar</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="enterprise-footer">
+        <p><strong>Dragon3 Forensic Service FAANG Enterprise</strong> — Versión 1.0.0-FAANG</p>
+        <p>Fecha: {{fechaGeneracion}} | Correlation ID: {{correlationId}}</p>
+        <p>© 2025 Blade Corporation - Todos los derechos reservados</p>
+    </div>
+
+    <script>
+        // Helper functions para la plantilla
+        const helpers = {
+            mult: (a, b) => (a * b).toFixed(0),
+            gt: (a, b) => a > b,
+            lt: (a, b) => a < b
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+.env
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+coverage/
+.cache/
+
+# Logs y telemetría
+logs/
+telemetria/
+*.log
+*.log.*
+
+# Datos y backups
+dataset/
+datasets/
+backup_*/
+backup_datos/
+temp/
+tmp/
+salida/
+shared/backups/
+shared/images/
+*.sqlite
+*.db
+*.bak
+
+# Certificados y secretos
+auth/*.pem
+**/*.pem
+**/*.key
+**/*.crt
+
+# Backups generados de Dragon3
+**/models.backup.*/
+**/data/*.bak
+prod/Dragon3/backend/servicios/redSuperior/models.backup.*/
+prod/Dragon3/backend/servicios/redSuperior/data/*.bak
+
+# Modelos y binarios pesados
+*.model
+*.pt
+*.onnx
+*.pkl
+*.bin
+*.zip
+*.tar
+*.gz
+
+# Imágenes pesadas
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.tif
+*.tiff
+*.bmp
+
+# Datos de experimentación / arrays
+**/*.npy
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp
+*.orig
+
+# artefactos grandes / binarios
+prod/Dragon3/frontend/downloads/
+dev/celulas/laboratorio/venv_ml/
+**/*.so
+**/*.dmg
+**/*.AppImage
+**/*.exe
+
+# artefactos grandes / binarios
+prod/Dragon3/frontend/downloads/
+dev/celulas/laboratorio/venv_ml/
+**/*.so
+**/*.dmg
+**/*.AppImage
+**/*.exe
+# artefactos grandes / binarios
+prod/Dragon3/frontend/downloads/
+dev/celulas/laboratorio/venv_ml/
+**/*.so
+**/*.dmg
+**/*.AppImage
+**/*.exe

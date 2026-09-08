@@ -1,0 +1,17 @@
+○ redis-server.service - Advanced key-value store
+     Loaded: loaded (]8;;file://srv680070/usr/lib/systemd/system/redis-server.service/usr/lib/systemd/system/redis-server.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: inactive (dead) since Fri 2025-06-27 16:26:30 UTC; 25s ago
+   Duration: 14min 703ms
+       Docs: ]8;;http://redis.io/documentation,http://redis.io/documentation,]8;;
+             ]8;;man:redis-server(1)man:redis-server(1)]8;;
+    Process: 2959338 ExecStart=/usr/bin/redis-server /etc/redis/redis.conf --supervised systemd --daemonize no (code=exited, status=0/SUCCESS)
+   Main PID: 2959338 (code=exited, status=0/SUCCESS)
+     Status: "[0;1;36mSaving the final RDB snapshot[0m"
+        CPU: 1.415s
+
+Jun 27 16:12:29 srv680070 systemd[1]: Starting redis-server.service - Advanced key-value store...
+Jun 27 16:12:29 srv680070 systemd[1]: Started redis-server.service - Advanced key-value store.
+Jun 27 16:26:30 srv680070 systemd[1]: Stopping redis-server.service - Advanced key-value store...
+Jun 27 16:26:30 srv680070 systemd[1]: redis-server.service: Deactivated successfully.
+Jun 27 16:26:30 srv680070 systemd[1]: Stopped redis-server.service - Advanced key-value store.
+Jun 27 16:26:30 srv680070 systemd[1]: redis-server.service: Consumed 1.415s CPU time, 3.6M memory peak, 0B memory swap peak.

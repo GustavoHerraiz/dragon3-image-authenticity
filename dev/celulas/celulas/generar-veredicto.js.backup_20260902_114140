@@ -1,0 +1,359 @@
+/**
+ * generar-veredicto.js
+ * 
+ * CÉLULA COMPUESTA - GENERADOR DE VEREDICTO FINAL
+ * ================================================
+ * 
+ * VERSIÓN: 2.3.1
+ * ESTADO: PRODUCCIÓN ✅
+ * 
+ * PROPÓSITO:
+ * ----------
+ * Recibe los resultados de TODAS las células de análisis y genera un veredicto
+ * final mediante consenso ponderado. Incluye TODOS los resultados en la salida.
+ * 
+ * NUEVO v2.3.1 (2026-09-02):
+ * - ✅ CORREGIDO: Error "Cannot access 'confianzaGlobal' before initialization".
+ * - ✅ La prioridad ML se aplica DESPUÉS de calcular confianzaGlobal y esIAFinal.
+ * - ✅ En PNG/otros, el peso de la ML se establece a 0 (no vota en el consenso).
+ * - ✅ Detección de formato desde detectar-patrones-forenses (fallback a extraer-metadatos-exif).
+ * 
+ * v2.3.0 (2026-09-02):
+ * - ✅ La ML SOLO impone su veredicto en JPG.
+ * - ✅ En otros formatos, la ML no anula el consenso.
+ * 
+ * @module generar-veredicto
+ * @version 2.3.1
+ * @author Dragon3 / Agent Embassy
+ */
+
+// ============================================================
+//  CONSTANTES DEL SELLO DRAGON3
+// ============================================================
+
+const DRAGON3_SELLO = {
+  KEYWORDS: ['Dragon3', 'dragon3', 'DRAGON3', 'Protected by Dragon3', 'Dragon3 Verificado', 'Dragon3 V22', 'Mentalist Core'],
+  ID_PATTERN: /DRAGON3_ID:[A-Z0-9_]+/i,
+  BONUS_CONFIANZA: 0.25,
+  BONUS_PESO: 0.2,
+};
+
+// ============================================================
+//  FUNCIÓN PRINCIPAL
+// ============================================================
+
+export default async function generarVeredicto(entrada, contexto) {
+  // 1. EXTRAER DATOS DE ENTRADA
+  const payload = entrada.payload || {};
+  const correlationId = entrada.correlationId || contexto?.correlationId || 'desconocido';
+  const agenteId = entrada.agenteId || contexto?.agenteId || 'desconocido';
+  const planConfig = entrada.planConfig || contexto?.planConfig || {};
+
+  // 2. DETECTAR SELLO DRAGON3
+  let selloDragon3Detectado = false;
+  let dragon3Id = null;
+  let dragon3Evidencias = [];
+  let dragon3ConfianzaBonus = 0;
+  
+  const exifResultado = payload['extraer-metadatos-exif'];
+  if (exifResultado && typeof exifResultado === 'object') {
+    const metadatos = exifResultado.metadatosCompletos || exifResultado;
+    const campos = ['Software', 'Copyright', 'Source', 'Artist', 'description', 'rights', 'title', 'ImageDescription', 'Creator', 'creador', 'author'];
+    for (const campo of campos) {
+      const valor = metadatos[campo];
+      if (!valor) continue;
+      const valorStr = typeof valor === 'string' ? valor : (valor.value ? valor.value : JSON.stringify(valor));
+      for (const keyword of DRAGON3_SELLO.KEYWORDS) {
+        if (valorStr.includes(keyword)) {
+          selloDragon3Detectado = true;
+          dragon3Evidencias.push(`✅ Sello Dragon3 detectado en ${campo}: "${valorStr}"`);
+        }
+      }
+      const match = valorStr.match(DRAGON3_SELLO.ID_PATTERN);
+      if (match) {
+        dragon3Id = match[0];
+        dragon3Evidencias.push(`✅ ID Dragon3 encontrado: ${dragon3Id}`);
+        selloDragon3Detectado = true;
+      }
+    }
+  }
+  if (selloDragon3Detectado) {
+    dragon3ConfianzaBonus = DRAGON3_SELLO.BONUS_CONFIANZA;
+  }
+
+  // 3. RECOPILAR RESULTADOS DE TODAS LAS CÉLULAS
+  // Primero, detectar formato desde detectar-patrones-forenses o extraer-metadatos-exif
+  let esJPG = false;
+  let formatoImagen = 'desconocido';
+  
+  if (payload['detectar-patrones-forenses']?.forense?.raw_data?.formato) {
+    formatoImagen = payload['detectar-patrones-forenses'].forense.raw_data.formato.toLowerCase();
+  } else if (payload['extraer-metadatos-exif']?.forense?.raw_data?.formato) {
+    formatoImagen = payload['extraer-metadatos-exif'].forense.raw_data.formato.toLowerCase();
+  }
+  
+  if (formatoImagen === 'jpeg' || formatoImagen === 'jpg') {
+    esJPG = true;
+  }
+
+  const resultados = [];
+  for (const [celulaId, resultado] of Object.entries(payload)) {
+    if (!resultado || typeof resultado !== 'object') continue;
+    const esIA = resultado.esIA !== undefined ? resultado.esIA : null;
+    const confianza = typeof resultado.confianza === 'number' ? resultado.confianza : null;
+    const explicacion = resultado.explicacion || '';
+    const evidencias = Array.isArray(resultado.evidencias) ? resultado.evidencias : [];
+    let peso = typeof resultado.peso === 'number' ? resultado.peso : 1.0;
+    
+    // Si es ML y NO es JPG, su peso es 0 (no vota en el consenso)
+    if (celulaId === 'ml' && !esJPG) {
+      peso = 0;
+    }
+    
+    if (esIA === null || confianza === null) continue;
+    resultados.push({ celulaId, esIA, confianza, explicacion, evidencias, peso });
+  }
+
+  if (resultados.length === 0) {
+    return {
+      exito: true,
+      resultado: {
+        esIA: false,
+        confianza: 0,
+        explicacion: 'No se recibieron resultados de análisis suficientes.',
+        detalles: { error: 'Sin datos', correlationId, agenteId, planConfig, selloDragon3: { detectado: false }, todosLosResultados: payload },
+      },
+      metricas: { tiempoMs: 1 },
+    };
+  }
+
+  // 5. CALCULAR VOTOS Y CONFIANZA
+  let votosIA = 0, votosHumano = 0;
+  let sumaConfianzaIA = 0, sumaPesosIA = 0, sumaPesosHumano = 0;
+
+  for (const r of resultados) {
+    let confianzaAjustada = r.confianza;
+    let pesoAjustado = r.peso;
+    if (selloDragon3Detectado && !r.esIA) {
+      confianzaAjustada = Math.min(r.confianza + dragon3ConfianzaBonus, 1);
+      pesoAjustado = r.peso + DRAGON3_SELLO.BONUS_PESO;
+    }
+    if (r.esIA) {
+      votosIA++;
+      sumaConfianzaIA += confianzaAjustada * pesoAjustado;
+      sumaPesosIA += pesoAjustado;
+    } else {
+      votosHumano++;
+      sumaPesosHumano += pesoAjustado;
+    }
+  }
+
+  const confianzaIA = sumaPesosIA > 0 ? sumaConfianzaIA / sumaPesosIA : 0;
+
+  // 6. DECISIÓN POR MAYORÍA PONDERADA
+  let esIAFinal = false;
+  let decisionTexto = '';
+  if (sumaPesosIA > sumaPesosHumano) {
+    esIAFinal = true;
+    decisionTexto = 'IA (mayoría ponderada)';
+  } else if (sumaPesosHumano > sumaPesosIA) {
+    esIAFinal = false;
+    decisionTexto = 'Humano (mayoría ponderada)';
+  } else {
+    esIAFinal = confianzaIA > 0.5;
+    decisionTexto = esIAFinal ? 'IA (empate, confianza > 0.5)' : 'Humano (empate, confianza <= 0.5)';
+  }
+
+  // 7. CALCULAR CONFIANZA GLOBAL
+  let confianzaGlobal = esIAFinal ? confianzaIA : (1 - confianzaIA);
+  confianzaGlobal = Math.min(Math.max(confianzaGlobal, 0), 1);
+  if (!esIAFinal && selloDragon3Detectado) {
+    confianzaGlobal = Math.min(confianzaGlobal + dragon3ConfianzaBonus, 1);
+  }
+
+  // ============================================================
+  // 7.5. PRIORIDAD ABSOLUTA DE LA ML (SOLO EN JPG)
+  // ============================================================
+  // Esta sección se ejecuta DESPUÉS de que esIAFinal y confianzaGlobal estén definidas.
+  if (esJPG && payload.ml && typeof payload.ml.confianza === 'number' && payload.ml.confianza > 0.9) {
+    esIAFinal = payload.ml.esIA;
+    confianzaGlobal = payload.ml.confianza;
+    decisionTexto = 'ML (confianza > 90%)';
+    console.log(`🚀 ML impone veredicto (JPG): ${esIAFinal ? 'IA' : 'Humano'} con ${(confianzaGlobal * 100).toFixed(1)}%`);
+  } else if (!esJPG && payload.ml && typeof payload.ml.confianza === 'number' && payload.ml.confianza > 0.9) {
+    console.log(`⚠️ ML confía ${(payload.ml.confianza * 100).toFixed(1)}% pero NO IMPONE (formato: ${formatoImagen}) y su peso es 0.`);
+  }
+
+  // 8. GENERAR EXPLICACIÓN ESTRUCTURADA
+  let explicacionGlobal = '';
+  const partes = [];
+  
+  if (selloDragon3Detectado) {
+    const idTexto = dragon3Id ? ` (ID: ${dragon3Id})` : '';
+    partes.push(`🔐 **IMAGEN VERIFICADA POR DRAGON3**${idTexto}`);
+    partes.push('');
+    partes.push('✅ **AUTENTICIDAD CONFIRMADA:**');
+    const evidenciasUnicas = [...new Set(dragon3Evidencias)];
+    evidenciasUnicas.slice(0, 3).forEach(e => partes.push(`   ${e}`));
+    partes.push(`   ✅ Confianza aumentada +${(DRAGON3_SELLO.BONUS_CONFIANZA * 100).toFixed(0)}%`);
+    partes.push('');
+  }
+  
+  if (exifResultado && exifResultado.exif) {
+    const exif = exifResultado.exif;
+    const make = exif.Make || 'Desconocida';
+    const model = exif.Model || '';
+    const date = exif.DateTimeOriginal ? new Date(exif.DateTimeOriginal).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Desconocida';
+    const artist = exif.Artist || 'Desconocido';
+    partes.push('📸 **ORIGEN:**');
+    partes.push(`   - Cámara: ${make} ${model}`);
+    partes.push(`   - Fecha: ${date}`);
+    partes.push(`   - Autor: ${artist}`);
+    partes.push('');
+  }
+  
+  const decisionTextoFinal = esIAFinal ? 'IA' : 'HUMANO';
+  const emoji = esIAFinal ? '⚠️' : '✅';
+  partes.push(`${emoji} **VEREDICTO: ${decisionTextoFinal}** (${(confianzaGlobal * 100).toFixed(0)}% confianza)`);
+  
+  const evidenciasClave = resultados
+    .filter(r => r.confianza > 0.2)
+    .sort((a, b) => b.confianza - a.confianza)
+    .slice(0, 4)
+    .map(r => {
+      let texto = r.explicacion.replace(/^[🔴🟢⚪✅❌⚠️]\s*/, '').replace(/\*\*/g, '').trim();
+      if (texto.length > 100) texto = texto.substring(0, 100) + '...';
+      return texto;
+    })
+    .filter((v, i, a) => a.indexOf(v) === i);
+  
+  if (evidenciasClave.length > 0) {
+    partes.push('');
+    partes.push('📊 **EVIDENCIAS CLAVE:**');
+    evidenciasClave.forEach(e => partes.push(`   - ${e}`));
+  }
+  
+  explicacionGlobal = partes.join('\n');
+
+  // 9. CONSTRUIR DETALLES (incluye analizadores y payload completo)
+  const analizadores = {};
+  for (const [cellId, cellResult] of Object.entries(payload)) {
+    if (cellId === 'generar-veredicto') continue;
+    if (!cellResult || typeof cellResult !== 'object') continue;
+    const isIA = cellResult.esIA !== undefined ? cellResult.esIA : null;
+    const conf = typeof cellResult.confianza === 'number' ? cellResult.confianza : 0;
+    const peso = typeof cellResult.peso === 'number' ? cellResult.peso : 0.5;
+    const exitoso = cellResult.exito !== undefined ? cellResult.exito : true;
+    let tiempoMs = 0;
+    if (cellResult.metricas?.tiempoMs) tiempoMs = cellResult.metricas.tiempoMs;
+    else if (cellResult.tiempoMs) tiempoMs = cellResult.tiempoMs;
+    else if (cellResult.processingTime) tiempoMs = cellResult.processingTime;
+    else if (cellResult.metricas?.tiempoExtraccionMs) tiempoMs = cellResult.metricas.tiempoExtraccionMs;
+    let veredictoTexto = 'Indeterminado';
+    if (isIA === true) veredictoTexto = 'Artificial';
+    else if (isIA === false) veredictoTexto = 'Humano';
+    let explicacion = cellResult.explicacion || '';
+    if (cellId === 'ml' && !esJPG) {
+      explicacion = 'Modelo ML entrenado solo para JPG. En este formato (no JPG) su voto no cuenta en el consenso.';
+    }
+    analizadores[cellId] = {
+      meta: {
+        id: cellId,
+        nombre: cellId,
+        version: cellResult.version || '1.0.0',
+        ts_start: Date.now() - tiempoMs,
+        ts_end: Date.now(),
+        ms: tiempoMs
+      },
+      evaluacion: {
+        veredicto: veredictoTexto,
+        confianza: conf,
+        peso: peso
+      },
+      narrativa: {
+        titulo: '',
+        explicacion_humana: explicacion,
+        explicacion_tecnica: ''
+      },
+      forense: {
+        herramientas: [],
+        compresion: [],
+        raw_data: cellResult
+      },
+      exitoso: exitoso,
+      processingTime: tiempoMs,
+      version: cellResult.version || '1.0.0',
+      c2pa: null
+    };
+  }
+
+  const detalles = {
+    correlationId,
+    agenteId,
+    planConfig,
+    totalCelulas: resultados.length,
+    confianzaGlobal,
+    votosIA,
+    votosHumano,
+    confianzaIA,
+    decisionPor: decisionTexto,
+    selloDragon3: {
+      detectado: selloDragon3Detectado,
+      id: dragon3Id,
+      evidencias: dragon3Evidencias,
+      bonusConfianza: dragon3ConfianzaBonus,
+      confianzaAumentada: selloDragon3Detectado ? confianzaGlobal - (esIAFinal ? confianzaIA : (1 - confianzaIA)) : 0,
+    },
+    resultados: resultados.map(r => {
+      const resultadoCompleto = payload[r.celulaId] || {};
+      return { celula: r.celulaId, esIA: r.esIA, confianza: r.confianza, explicacion: r.explicacion, peso: r.peso, ...resultadoCompleto };
+    }),
+    analizadores: analizadores,
+    todosLosResultados: payload,
+  };
+
+  // 10. DEVOLVER RESULTADO
+  return {
+    exito: true,
+    resultado: {
+      esIA: esIAFinal,
+      confianza: confianzaGlobal,
+      explicacion: explicacionGlobal,
+      detalles,
+    },
+    metricas: {
+      tiempoMs: 2,
+      totalCelulasProcesadas: resultados.length,
+      selloDragon3Detectado: selloDragon3Detectado,
+    },
+  };
+}
+
+// ============================================================
+//  EXPORTACIÓN PARA PRUEBAS UNITARIAS
+// ============================================================
+
+export async function testGenerarVeredicto(mockResultados) {
+  return await generarVeredicto({ payload: mockResultados }, {});
+}
+
+// ============================================================
+//  HISTORIAL DE CAMBIOS
+// ============================================================
+
+/**
+ * v2.3.1 (2026-09-02)
+ * - ✅ CORREGIDO: Error "Cannot access 'confianzaGlobal' before initialization".
+ * - ✅ La prioridad ML se aplica DESPUÉS de calcular confianzaGlobal y esIAFinal.
+ * - ✅ En PNG/otros, el peso de la ML se establece a 0 (no vota en el consenso).
+ * - ✅ Detección de formato desde detectar-patrones-forenses (fallback a extraer-metadatos-exif).
+ * - ✅ Mejorado logging para depuración.
+ * 
+ * v2.3.0 (2026-09-02)
+ * - ✅ La ML SOLO impone su veredicto en JPG.
+ * - ✅ En otros formatos, la ML no anula el consenso.
+ * 
+ * v2.2.0 (2026-09-02)
+ * - ✅ Añadida clave `analizadores` en `detalles`.
+ * - ✅ Prioridad absoluta de la ML si confianza > 90%.
+ */

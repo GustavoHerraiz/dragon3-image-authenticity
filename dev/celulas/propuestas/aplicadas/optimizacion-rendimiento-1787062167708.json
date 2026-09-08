@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "detectar-sellos-autenticidad",
+  "motivo": "Cuello de botella: p95=49ms, promedio=24ms (ratio 2.0)",
+  "evidencia": {
+    "p95": 48.55217399654238,
+    "promedio": 24.207892985773537,
+    "total": 22,
+    "ratio": 2.0056340312259087,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 1,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

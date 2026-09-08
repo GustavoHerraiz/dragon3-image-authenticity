@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "nombre": "evolucion-cargar-imagen-detectar-doble-compresion-sharp-detectar-herramienta-ia-detectar-patrones-forenses-detectar-sellos-autenticidad-extraer-metadatos-exif-generar-veredicto",
+  "descripcion": "Plan generado automáticamente a partir de células: cargar-imagen, detectar-doble-compresion-sharp, detectar-herramienta-ia, detectar-patrones-forenses, detectar-sellos-autenticidad, extraer-metadatos-exif, generar-veredicto",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": {
+        "payload": "$.contexto.archivo"
+      }
+    },
+    {
+      "id": "detectar-doble-compresion-sharp",
+      "ruta": "./celulas/detectar-doble-compresion-sharp.js",
+      "entrada": {
+        "payload": "$.cargar-imagen.resultado"
+      }
+    },
+    {
+      "id": "detectar-herramienta-ia",
+      "ruta": "./celulas/detectar-herramienta-ia.js",
+      "entrada": {
+        "payload": "$.detectar-doble-compresion-sharp.resultado"
+      }
+    },
+    {
+      "id": "detectar-patrones-forenses",
+      "ruta": "./celulas/detectar-patrones-forenses.js",
+      "entrada": {
+        "payload": "$.detectar-herramienta-ia.resultado"
+      }
+    },
+    {
+      "id": "detectar-sellos-autenticidad",
+      "ruta": "./celulas/detectar-sellos-autenticidad.js",
+      "entrada": {
+        "payload": "$.detectar-patrones-forenses.resultado"
+      }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "./celulas/extraer-metadatos-exif.js",
+      "entrada": {
+        "payload": "$.detectar-sellos-autenticidad.resultado"
+      }
+    },
+    {
+      "id": "generar-veredicto",
+      "ruta": "./celulas/generar-veredicto.js",
+      "entrada": {
+        "payload": "$.extraer-metadatos-exif.resultado"
+      }
+    }
+  ],
+  "salidaFinal": "$.generar-veredicto.resultado",
+  "detenerseEnError": false,
+  "telemetria": {
+    "enabled": true
+  }
+}

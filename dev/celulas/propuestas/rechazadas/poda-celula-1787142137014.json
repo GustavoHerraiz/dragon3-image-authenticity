@@ -1,0 +1,12 @@
+{
+  "tipo": "poda-celula",
+  "celulaId": "detectar-patrones-forenses",
+  "motivo": "Precisión baja (45%) con 20 ejecuciones",
+  "evidencia": {
+    "celulaId": "detectar-patrones-forenses",
+    "precision": 0.45,
+    "total": 20,
+    "aciertos": 9
+  },
+  "confianza": 0.55
+}

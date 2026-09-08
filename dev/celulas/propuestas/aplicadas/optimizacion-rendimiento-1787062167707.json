@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "detectar-doble-compresion-sharp",
+  "motivo": "Cuello de botella: p95=167ms, promedio=49ms (ratio 3.4)",
+  "evidencia": {
+    "p95": 167.4893199999933,
+    "promedio": 49.16968345275936,
+    "total": 24,
+    "ratio": 3.4063534324135243,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 1,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

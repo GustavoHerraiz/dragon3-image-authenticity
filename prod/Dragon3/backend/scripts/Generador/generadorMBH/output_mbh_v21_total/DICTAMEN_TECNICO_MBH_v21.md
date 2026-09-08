@@ -1,0 +1,34 @@
+# 🛡️ DICTAMEN TÉCNICO DE CERTIFICACIÓN
+| Calidad | Energía (u) | ID | Cliente | Estado | Diagnóstico |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| PNG | 63.8567 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q100 | 40.1061 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q95 | 36.9253 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q90 | 30.0509 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q85 | 27.8862 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q80 | 25.7984 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q75 | 23.1995 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q70 | 20.5565 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q65 | 17.8865 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q60 | 16.2813 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q55 | 16.6172 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q50 | 16.4750 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q45 | 16.0950 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q40 | 11.3831 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q35 | 4.5313 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q30 | 2.5552 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q25 | 1.6775 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q20 | 1.1322 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q15 | 0.7111 | **00002F8** | SISTEMA DE PRUEBAS v | BLINDADO | - |
+| Q10 | 0.3813 | **B6CB2D2** | NO REGISTRADO | PROTEGIDO | - |
+| Q5 | 0.3625 | **A55F7B4** | NO REGISTRADO | PROTEGIDO | - |
+
+## 3. AUDITORÍA DE INTEGRIDAD FÍSICA Y GEOMETRÍA
+| PRUEBA | ENERGÍA | ID DETECTADO | 🚦 DICTAMEN PERICIAL |
+|---|---|---|---|
+| ⬛ Censura 'Ojos' | 20.8465 | **00002F8** | ✅ ÍNTEGRO [1.0 (Nativo)] |
+| 🧀 Censura 'Gruyère' | 20.3086 | **00002F8** | ✅ ÍNTEGRO [1.0 (Nativo)] |
+| 📉 Escala 50% (Target x2) | 0.9516 | **A490DCF** | 🛡️ BLOQUEADO [1.0 (Nativo)] |
+| 📱 Escala 25% (Target x4) | 1.7737 | **E254B76** | 🛡️ BLOQUEADO [1.0 (Nativo)] |
+| ⚠️ Escala 75% (Trap) | 0.8234 | **9A00888** | 🛡️ BLOQUEADO [1.0 (Nativo)] |
+| 📲 RRSS 1080px | 0.9259 | **F3C447A** | 🛡️ BLOQUEADO [1.0 (Nativo)] |

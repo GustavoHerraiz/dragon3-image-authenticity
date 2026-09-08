@@ -1,0 +1,180 @@
+# ====================================================================
+# DRAGON3 - DOCKER IGNORE (OPTIMIZED BUILD CONTEXT)
+# ====================================================================
+#
+# Archivo: .dockerignore
+# Proyecto: Dragon3 - Sistema Autentificación IA Enterprise
+# Versión: 2.0.0-FAANG-Docker
+# Fecha: 2025-11-07
+# Autor: Gustavo Herráiz (@GustavoHerraiz) - Lead Architect
+#
+# PROPÓSITO:
+# Optimizar build context de Docker excluyendo archivos innecesarios
+# para training. Build context pequeño = build más rápido.
+#
+# IMPORTANTE:
+# - NO ignorar package.json (necesario para npm install)
+# - NO ignorar servicios/ (código fuente necesario)
+# - NO ignorar utilidades/ (logger, redis, etc.)
+#
+# ====================================================================
+
+# ============================================================================
+# NODE.JS (INSTALADO EN CONTENEDOR)
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm/
+.yarn/
+
+# ============================================================================
+# MODELOS PRE-ENTRENADOS (EXPORTADOS DESDE CONTENEDOR VÍA VOLUME)
+# ============================================================================
+# Solo ignorar archivos JSON DENTRO de models/, no el directorio
+servicios/redSuperior/models/*.json
+servicios/redSuperior/models/*.backup
+
+# ============================================================================
+# LOGS Y MONITORING
+# ============================================================================
+logs/
+*.log
+log-*.txt
+node_trace.*.log
+clinic/
+.clinic/
+
+# ============================================================================
+# ENVIRONMENT VARIABLES (NO COPIAR SECRETS)
+# ============================================================================
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+.env.test
+
+# ============================================================================
+# GIT Y VERSION CONTROL
+# ============================================================================
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# ============================================================================
+# IDE Y EDITORES
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-*
+
+# ============================================================================
+# DOCKER (NO COPIAR RECURSIVAMENTE)
+# ============================================================================
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# ============================================================================
+# TESTS (NO NECESARIOS PARA TRAINING)
+# ============================================================================
+tests/
+test/
+__tests__/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
+
+# ============================================================================
+# UPLOADS Y DATA (DEMASIADO GRANDE)
+# ============================================================================
+uploads/
+data/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.pdf
+*.mp4
+*.avi
+*.mov
+
+# ============================================================================
+# BACKUPS Y TEMPORALES
+# ============================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.backup
+*.bak
+*.old
+*.orig
+*.rej
+
+# ============================================================================
+# BUILD ARTIFACTS
+# ============================================================================
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# ============================================================================
+# QUARANTINE (ARCHIVOS MALICIOSOS)
+# ============================================================================
+.quarantine-*/
+*.tgz
+
+# ============================================================================
+# DOCUMENTATION (OPCIONAL - COMENTAR SI SE NECESITA)
+# ============================================================================
+docs/
+*.md
+!README-TRAINING.md
+
+# ============================================================================
+# PM2 Y PROCESS MANAGERS
+# ============================================================================
+ecosystem.config.cjs
+ecosystem.config.js
+.pm2/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================================================
+# MISCELÁNEOS
+# ============================================================================
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.node_repl_history
+
+# ====================================================================
+# ARCHIVOS QUE **SÍ** SE DEBEN COPIAR:
+# ====================================================================
+# ✅ package.json (NECESARIO para npm install)
+# ✅ package-lock.json (NECESARIO para lock dependencies)
+# ✅ servicios/ (CÓDIGO FUENTE necesario)
+# ✅ utilidades/ (LOGGER, redis, helpers necesarios)
+# ✅ Dockerfile.training (aunque Docker lo ignora automáticamente)
+#
+# ====================================================================
+# FIN .dockerignore - Dragon3 Training Environment
+# ====================================================================
