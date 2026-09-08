@@ -73,6 +73,15 @@ prod/Dragon3/backend/servicios/redSuperior/data/*.bak
 
 # Artefactos grandes / binarios
 prod/Dragon3/frontend/downloads/
+prod/Dragon3/engine/node_modules/
+prod/Dragon3/engine/laboratorio/venv_ml/
+prod/Dragon3/engine/logs/
+prod/Dragon3/engine/dataset/
+prod/Dragon3/engine/telemetria/
+prod/Dragon3/engine/salida/
+prod/Dragon3/engine/temp/
+prod/Dragon3/data/dataset/
+/dev/celulas/dataset
 dev/celulas/laboratorio/venv_ml/
 **/*.so
 **/*.dmg

@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "nombre": "analizar-imagen-completa",
+  "descripcion": "Análisis completo con veredicto final automático. Incluye extracción de TODOS los metadatos (EXIF, IPTC, XMP, ICC), detección de herramientas IA, sellos de autenticidad (C2PA, Truepic, Serelay, Witness, CryptoSeal, MBH, etc.), patrones forenses, artefactos IA, textura/ruido, análisis de colores, sombreado, veredicto final y célula ML basada en XGBoost (91.7% de precisión).",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/cargar-imagen.js",
+      "entrada": { "payload": "$.contexto.archivo" }
+    },
+    {
+      "id": "ml",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/celula-ml.cjs",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/extraer-metadatos-exif.js",
+      "entrada": {
+        "payload": "$.cargar-imagen.resultado"
+      }
+    },
+    {
+      "id": "detectar-herramienta-ia",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-herramienta-ia.js",
+      "entrada": { "payload": "$.extraer-metadatos-exif.resultado" }
+    },
+    {
+      "id": "detectar-sellos-autenticidad",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-sellos-autenticidad.js",
+      "entrada": {
+        "payload": {
+          "buffer": "$.cargar-imagen.resultado.buffer",
+          "hash": "$.cargar-imagen.resultado.hash"
+        }
+      }
+    },
+    {
+      "id": "detectar-patrones-forenses",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-patrones-forenses.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-artefactos-ia",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-artefactos-ia.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-textura-ruido",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-textura-ruido.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-colores",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-colores.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-sombreado",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-sombreado.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-consistencia-multimodal",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/detectar-consistencia-multimodal.js",
+      "entrada": {
+        "payload": {
+          "ml": "$.ml.resultado",
+          "detectar-patrones-forenses": "$.detectar-patrones-forenses.resultado",
+          "detectar-artefactos-ia": "$.detectar-artefactos-ia.resultado",
+          "detectar-herramienta-ia": "$.detectar-herramienta-ia.resultado",
+          "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado",
+          "detectar-sellos-autenticidad": "$.detectar-sellos-autenticidad.resultado",
+          "detectar-colores": "$.detectar-colores.resultado",
+          "detectar-sombreado": "$.detectar-sombreado.resultado"
+        }
+      }
+    },
+    {
+      "id": "generar-veredicto",
+      "ruta": "/opt/dragon3/prod/Dragon3/engine/celulas/generar-veredicto.js",
+      "entrada": {
+        "payload": {
+          "detectar-herramienta-ia": "$.detectar-herramienta-ia.resultado",
+          "detectar-sellos-autenticidad": "$.detectar-sellos-autenticidad.resultado",
+          "detectar-patrones-forenses": "$.detectar-patrones-forenses.resultado",
+          "detectar-artefactos-ia": "$.detectar-artefactos-ia.resultado",
+          "detectar-textura-ruido": "$.detectar-textura-ruido.resultado",
+          "detectar-colores": "$.detectar-colores.resultado",
+          "detectar-sombreado": "$.detectar-sombreado.resultado",
+          "detectar-consistencia-multimodal": "$.detectar-consistencia-multimodal.resultado",
+          "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado",
+          "ml": "$.ml.resultado"
+        }
+      }
+    }
+  ],
+  "salidaFinal": "$.generar-veredicto.resultado",
+  "detenerseEnError": false
+}

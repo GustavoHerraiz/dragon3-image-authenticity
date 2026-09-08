@@ -1,8 +1,8 @@
 /**
  * watcher-dataset.js
- * 
+ *
  * Watcher de carpetas calientes para procesamiento automático de imágenes.
- * 
+ *
  * FLUJO:
  * 1. Escanea carpetas /dataset/hot/humanas/ y /dataset/hot/ia/
  * 2. Procesa cada imagen con el Orquestador (plan analizar-imagen-completa)
@@ -10,7 +10,7 @@
  * 4. Si el guardado automático falla, crea el documento manualmente con TODOS los datos de las células
  * 5. Mueve la imagen a /dataset/procesadas/ correspondiente
  * 6. Ejecuta en segundo plano (loop infinito)
- * 
+ *
  * MEJORAS v1.3.1:
  * - CORREGIDO: Extracción de datos de células desde telemetria.datosCompletos
  * - Guardado correcto de confianza, esIA, peso y tiempo
@@ -20,16 +20,16 @@
  * - Recomendaciones basadas en el progreso
  * - Logs más detallados del proceso
  * - Límite de tamaño de imagen (50MB)
- * 
+ *
  * USO:
  * - Poner imágenes en hot/humanas/ o hot/ia/
  * - El sistema las procesa automáticamente
  * - Se mueven a procesadas/ tras finalizar
- * 
+ *
  * PARA PRODUCCIÓN:
  * - Ejecutar con PM2: pm2 start ecosystem.config.cjs
  * - Ver logs: pm2 logs dataset-watcher
- * 
+ *
  * @module watcher-dataset
  * @version 1.3.1
  */
@@ -47,7 +47,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Cargar .env
-dotenv.config({ path: path.resolve(__dirname, '../../prod/Dragon3/backend/.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../backend/.env') });
 
 // Rutas de las carpetas
 const BASE_DIR = path.resolve(
@@ -142,13 +142,13 @@ function actualizarContadores() {
  */
 function generarRecomendaciones() {
   actualizarContadores();
-  
+
   const total = totalIA + totalHumanas;
   const procesadas = procesadasIA + procesadasHumanas;
   const porcentaje = total > 0 ? (procesadas / total * 100) : 0;
-  
+
   let recomendaciones = [];
-  
+
   if (porcentaje < 10) {
     recomendaciones.push(`📊 Progreso: ${porcentaje.toFixed(1)}% (${procesadas}/${total} imágenes). Continúa procesando.`);
   } else if (porcentaje < 50) {
@@ -158,12 +158,12 @@ function generarRecomendaciones() {
   } else {
     recomendaciones.push(`✅ Progreso: ${porcentaje.toFixed(1)}% (${procesadas}/${total} imágenes). ¡Dataset casi completo!`);
   }
-  
+
   if (totalIA > 0 && totalHumanas > 0) {
     const ratioIA = procesadasIA / totalIA;
     const ratioHumanas = procesadasHumanas / totalHumanas;
     const diferencia = Math.abs(ratioIA - ratioHumanas);
-    
+
     if (diferencia > 0.2) {
       if (ratioIA < ratioHumanas) {
         recomendaciones.push(`⚠️ Las imágenes IA van más lentas (${(ratioIA*100).toFixed(0)}% vs ${(ratioHumanas*100).toFixed(0)}%). Ajustando prioridad...`);
@@ -174,7 +174,7 @@ function generarRecomendaciones() {
       recomendaciones.push(`⚖️ Balance IA/Humanas: ${(ratioIA*100).toFixed(0)}% / ${(ratioHumanas*100).toFixed(0)}% - Excelente.`);
     }
   }
-  
+
   if (procesadas > 0 && total > 0 && procesadas < total) {
     const tiempoPorImagen = 1.5;
     const restantes = total - procesadas;
@@ -185,16 +185,16 @@ function generarRecomendaciones() {
       recomendaciones.push(`⏱️ Tiempo estimado restante: ~${tiempoRestante.toFixed(0)} minutos`);
     }
   }
-  
+
   return recomendaciones;
 }
 
 async function procesarImagen(rutaArchivo, esHumano) {
   const nombre = path.basename(rutaArchivo);
   const inicio = performance.now();
-  
+
   log(`📸 Procesando: ${nombre} (${esHumano ? 'HUMANO' : 'IA'})`);
-  
+
   try {
     // Verificar tamaño de la imagen
     if (esImagenDemasiadoGrande(rutaArchivo)) {
@@ -204,11 +204,11 @@ async function procesarImagen(rutaArchivo, esHumano) {
       log(`⚠️ ${nombre} → Movido a procesadas (demasiado grande)`, 'WARN');
       return false;
     }
-    
+
     // 1. Leer archivo
     const buffer = fs.readFileSync(rutaArchivo);
     log(`📊 Tamaño de imagen: ${(buffer.length / 1024 / 1024).toFixed(2)}MB`);
-    
+
     // 2. Preparar entrada para el Orquestador
     const base64 = buffer.toString('base64');
     const entrada = {
@@ -219,28 +219,28 @@ async function procesarImagen(rutaArchivo, esHumano) {
         origen: 'dataset-watcher'
       }
     };
-    
+
     // 3. Ejecutar plan
     const Orquestador = (await import('../orquestador.js')).default;
     const orquestador = new Orquestador(plan);
     const resultado = await orquestador.ejecutar(entrada);
-    
+
     log(`📊 Plan ejecutado. CorrelationId: ${resultado.correlationId}`);
-    
+
     // 4. CREAR DOCUMENTO MANUALMENTE (SIEMPRE)
     if (resultado.correlationId) {
       const db = mongoose.connection.db;
       const collection = db.collection('ejecuciones');
-      
+
       try {
         const telemetria = resultado.telemetria || [];
         const extension = path.extname(nombre).replace('.', '') || 'jpeg';
-        
+
         // Extraer TODOS los datos de telemetria.datosCompletos
 const datosCelulas = {};
 for (const t of telemetria) {
   const datos = t.datosCompletos || {};
-  
+
   datosCelulas[t.celulaId] = {
     // --- CAMPOS BÁSICOS ---
     esIA: datos.esIA ?? false,
@@ -248,7 +248,7 @@ for (const t of telemetria) {
     peso: datos.peso ?? 1,
     tiempoMs: t.tiempoMs || 0,
     exito: t.exito !== false,
-    
+
     // --- TODAS LAS MÉTRICAS INTERNAS ---
     // Textura/Ruido
     varianzaLocalPromedio: datos.varianzaLocalPromedio ?? null,
@@ -256,13 +256,13 @@ for (const t of telemetria) {
     gradientePromedio: datos.gradientePromedio ?? null,
     varianzaRuido: datos.varianzaRuido ?? null,
     autocorrelacionNormalizada: datos.autocorrelacionNormalizada ?? null,
-    
+
     // Colores
     saturacionAprox: datos.saturacionAprox ?? null,
     temperatura: datos.temperatura ?? null,
     dominancia: datos.dominancia ?? null,
     variacionCromatica: datos.variacionCromatica ?? null,
-    
+
     // Sombreado
     variacionBrillo: datos.variacionBrillo ?? null,
     contraste: datos.contraste ?? null,
@@ -271,23 +271,23 @@ for (const t of telemetria) {
     iluminacionUniforme: datos.iluminacionUniforme ?? null,
     contrasteAnormal: datos.contrasteAnormal ?? null,
     sombrasInconsistentes: datos.sombrasInconsistentes ?? null,
-    
+
     // Bordes
     nitidez: datos.nitidez ?? null,
     desviacion: datos.desviacion ?? null,
-    
+
     // Decisión
     decision: datos.decision ?? null,
     puntuacionIA: datos.puntuacionIA ?? null,
     puntuacionHumano: datos.puntuacionHumano ?? null,
-    
+
     // TODO lo demás
     ...datos
   };
 }
-        
+
         const veredicto = resultado.resultado || {};
-        
+
         const nuevoDoc = {
           correlationId: resultado.correlationId,
           timestamp: new Date(),
@@ -314,12 +314,12 @@ for (const t of telemetria) {
             origen: 'dataset'
           }
         };
-        
+
         await collection.insertOne(nuevoDoc);
-        
+
         const numCelulas = Object.keys(datosCelulas).length;
         log(`✅ ${nombre} → Documento guardado con ${numCelulas} células (correccionHumana: ${esHumano})`, 'INFO');
-        
+
       } catch (err) {
         log(`❌ Error guardando documento: ${err.message}`, 'ERROR');
         if (err.stack) {
@@ -329,11 +329,11 @@ for (const t of telemetria) {
     } else {
       log(`⚠️ ${nombre} → No se recibió correlationId del orquestador`, 'WARN');
     }
-    
+
     // 5. Mover archivo a procesadas
     const destino = esHumano ? PROC_HUMANAS : PROC_IA;
     const destinoPath = path.join(destino, nombre);
-    
+
     if (fs.existsSync(rutaArchivo)) {
       fs.renameSync(rutaArchivo, destinoPath);
       const tiempo = (performance.now() - inicio).toFixed(2);
@@ -341,15 +341,15 @@ for (const t of telemetria) {
     } else {
       log(`⚠️ ${nombre} → El archivo ya no existe (posiblemente ya movido)`, 'WARN');
     }
-    
+
     return true;
-    
+
   } catch (error) {
     log(`❌ Error procesando ${nombre}: ${error.message}`, 'ERROR');
     if (error.stack) {
       log(`📚 Stack: ${error.stack}`, 'DEBUG');
     }
-    
+
     try {
       if (fs.existsSync(rutaArchivo)) {
         const destino = esHumano ? PROC_HUMANAS : PROC_IA;
@@ -371,33 +371,33 @@ async function escanearYProcesar() {
     log('⏳ Procesamiento anterior en curso, omitiendo escaneo...', 'DEBUG');
     return;
   }
-  
+
   procesando = true;
-  
+
   try {
     const humanas = fs.readdirSync(HOT_HUMANAS).filter(esImagen);
     const ias = fs.readdirSync(HOT_IA).filter(esImagen);
-    
+
     const iaProcesar = ias.slice(0, MAX_POR_TIPO);
     const humanasProcesar = humanas.slice(0, MAX_POR_TIPO);
-    
+
     if (iaProcesar.length > 0 || humanasProcesar.length > 0) {
       log(`📂 Procesando ${iaProcesar.length} IA y ${humanasProcesar.length} humanas (ciclo alternado)`);
-      
+
       for (const file of iaProcesar) {
         const ruta = path.join(HOT_IA, file);
         if (fs.existsSync(ruta)) {
           await procesarImagen(ruta, false);
         }
       }
-      
+
       for (const file of humanasProcesar) {
         const ruta = path.join(HOT_HUMANAS, file);
         if (fs.existsSync(ruta)) {
           await procesarImagen(ruta, true);
         }
       }
-      
+
       const cicloNum = Math.floor((procesadasIA + procesadasHumanas) / (MAX_POR_TIPO * 2));
       if (cicloNum % 5 === 0) {
         const recomendaciones = generarRecomendaciones();
@@ -407,7 +407,7 @@ async function escanearYProcesar() {
         }
       }
     }
-    
+
   } catch (error) {
     log(`❌ Error en escaneo: ${error.message}`, 'ERROR');
     if (error.stack) {
@@ -444,21 +444,21 @@ async function main() {
   log(`⏱️ Intervalo de escaneo: ${INTERVALO_MS}ms`);
   log(`📦 Máx por tipo: ${MAX_POR_TIPO}`);
   log(`📦 Límite de tamaño: ${MAX_TAMAÑO_IMAGEN_MB}MB`);
-  
+
   actualizarContadores();
   log(`📊 Total IA: ${totalIA}, Total Humanas: ${totalHumanas}`);
-  
+
   const conectado = await conectarMongoDB();
   if (!conectado) {
     log('⚠️ Continuando sin MongoDB', 'WARN');
   }
-  
+
   await escanearYProcesar();
-  
+
   setInterval(async () => {
     await escanearYProcesar();
   }, INTERVALO_MS);
-  
+
   log('👀 Watcher activo. Esperando imágenes en carpetas calientes...');
 }
 
