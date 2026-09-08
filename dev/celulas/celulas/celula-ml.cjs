@@ -11,6 +11,10 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+const cacheML = new Map();
+const CACHE_MAX_ENTRIES = 100;
 
 module.exports = async function celulaML(entrada, contexto) {
   let buffer;
@@ -48,6 +52,13 @@ module.exports = async function celulaML(entrada, contexto) {
 
     if (!buffer || buffer.length === 0) {
       throw new Error('El buffer está vacío o no se pudo obtener.');
+    }
+
+    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+    if (cacheML.has(hash)) {
+      const cacheado = JSON.parse(JSON.stringify(cacheML.get(hash)));
+      cacheado.metricas = { ...cacheado.metricas, tiempoMs: 0, cache: true };
+      return cacheado;
     }
 
     // 2. LECTURA DE CONFIGURACIÓN (opcional)
@@ -114,7 +125,7 @@ module.exports = async function celulaML(entrada, contexto) {
       ? 'El modelo ML detecta patrones compatibles con IA.'
       : 'El modelo ML no detecta patrones suficientes para clasificar la imagen como generada por IA.';
 
-    return {
+    const salida = {
       exito: true,
       resultado: {
         esIA,
@@ -132,6 +143,12 @@ module.exports = async function celulaML(entrada, contexto) {
         prediccionMs: resultado.tiempoPrediccionMs
       }
     };
+
+    if (cacheML.size >= CACHE_MAX_ENTRIES) {
+      cacheML.delete(cacheML.keys().next().value);
+    }
+    cacheML.set(hash, JSON.parse(JSON.stringify(salida)));
+    return salida;
 
   } catch (error) {
     const tiempoMs = Date.now() - startTime;

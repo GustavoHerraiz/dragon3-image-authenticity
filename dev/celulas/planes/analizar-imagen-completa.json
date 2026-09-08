@@ -30,10 +30,6 @@
       "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-sellos-autenticidad.js",
       "entrada": {
         "payload": {
-          "exif": "$.extraer-metadatos-exif.resultado.exif",
-          "hasExif": "$.extraer-metadatos-exif.resultado.hasExif",
-          "raw": "$.extraer-metadatos-exif.resultado.metadatosCompletos",
-          "metadatosCompletos": "$.extraer-metadatos-exif.resultado.metadatosCompletos",
           "buffer": "$.cargar-imagen.resultado.buffer",
           "hash": "$.cargar-imagen.resultado.hash"
         }
