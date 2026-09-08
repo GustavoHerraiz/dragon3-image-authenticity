@@ -125,6 +125,7 @@ class Orquestador {
       c.id !== 'cargar-imagen' && 
       c.id !== 'extraer-metadatos-exif' &&
       c.id !== 'detectar-herramienta-ia' &&
+      c.id !== 'detectar-consistencia-multimodal' &&
       c.id !== 'generar-veredicto'
     );
     
@@ -132,6 +133,7 @@ class Orquestador {
     const celulasDependientes = celulas.filter(c => 
       c.id === 'extraer-metadatos-exif' ||
       c.id === 'detectar-herramienta-ia' ||
+      c.id === 'detectar-consistencia-multimodal' ||
       c.id === 'generar-veredicto'
     );
 

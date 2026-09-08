@@ -61,6 +61,22 @@
       "entrada": { "payload": "$.cargar-imagen.resultado" }
     },
     {
+      "id": "detectar-consistencia-multimodal",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-consistencia-multimodal.js",
+      "entrada": {
+        "payload": {
+          "ml": "$.ml.resultado",
+          "detectar-patrones-forenses": "$.detectar-patrones-forenses.resultado",
+          "detectar-artefactos-ia": "$.detectar-artefactos-ia.resultado",
+          "detectar-herramienta-ia": "$.detectar-herramienta-ia.resultado",
+          "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado",
+          "detectar-sellos-autenticidad": "$.detectar-sellos-autenticidad.resultado",
+          "detectar-colores": "$.detectar-colores.resultado",
+          "detectar-sombreado": "$.detectar-sombreado.resultado"
+        }
+      }
+    },
+    {
       "id": "generar-veredicto",
       "ruta": "/opt/dragon3/dev/celulas/celulas/generar-veredicto.js",
       "entrada": {
@@ -72,6 +88,7 @@
           "detectar-textura-ruido": "$.detectar-textura-ruido.resultado",
           "detectar-colores": "$.detectar-colores.resultado",
           "detectar-sombreado": "$.detectar-sombreado.resultado",
+          "detectar-consistencia-multimodal": "$.detectar-consistencia-multimodal.resultado",
           "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado",
           "ml": "$.ml.resultado"
         }

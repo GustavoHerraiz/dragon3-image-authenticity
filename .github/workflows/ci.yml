@@ -34,6 +34,7 @@ jobs:
           node --check orquestador.js
           node --check celulas/cargar-imagen.js
           node --check celulas/detectar-herramienta-ia.js
+          node --check celulas/detectar-consistencia-multimodal.js
 
       - name: Validate JSON contracts
         run: |
