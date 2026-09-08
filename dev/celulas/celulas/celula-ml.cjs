@@ -15,6 +15,67 @@ const crypto = require('crypto');
 
 const cacheML = new Map();
 const CACHE_MAX_ENTRIES = 100;
+let procesoPython = null;
+let bufferSalida = '';
+let colaPredicciones = Promise.resolve();
+
+function obtenerWorker(pythonBin, pythonScript) {
+  if (procesoPython) return procesoPython;
+
+  procesoPython = spawn(pythonBin, [pythonScript], { stdio: ['pipe', 'pipe', 'pipe'] });
+  procesoPython.on('error', error => {
+    procesoPython = null;
+    console.error(`❌ Worker ML detenido: ${error.message}`);
+  });
+  procesoPython.on('close', () => {
+    procesoPython = null;
+  });
+  return procesoPython;
+}
+
+function predecirConWorker(pythonBin, pythonScript, imagenBase64) {
+  colaPredicciones = colaPredicciones.then(() => new Promise((resolve, reject) => {
+    const worker = obtenerWorker(pythonBin, pythonScript);
+    let respuesta = null;
+    const timeout = setTimeout(() => reject(new Error('Timeout al ejecutar el worker Python')), 15000);
+    const recibir = datos => {
+      bufferSalida += datos.toString();
+      const lineas = bufferSalida.split('\n');
+      bufferSalida = lineas.pop();
+      for (const linea of lineas) {
+        if (!linea.trim()) continue;
+        try {
+          respuesta = JSON.parse(linea);
+        } catch (error) {
+          clearTimeout(timeout);
+          reject(new Error(`Error parseando JSON del worker: ${error.message}`));
+          return;
+        }
+        clearTimeout(timeout);
+        worker.stdout.off('data', recibir);
+        resolve(respuesta);
+        return;
+      }
+    };
+    worker.stdout.on('data', recibir);
+    worker.stdin.write(`${imagenBase64}\n`);
+  })).catch(error => {
+    procesoPython?.kill();
+    procesoPython = null;
+    throw error;
+  });
+  return colaPredicciones;
+}
+
+function cerrarWorkerML() {
+  if (procesoPython) {
+    procesoPython.kill();
+    procesoPython = null;
+  }
+}
+
+process.once('SIGTERM', cerrarWorkerML);
+process.once('SIGINT', cerrarWorkerML);
 
 module.exports = async function celulaML(entrada, contexto) {
   let buffer;
@@ -75,42 +136,8 @@ module.exports = async function celulaML(entrada, contexto) {
     const pythonBin = process.env.PYTHON_BIN || path.join(__dirname, '..', 'laboratorio', 'venv_ml', 'bin', 'python');
     const pythonScript = process.env.ML_PREDICTOR_SCRIPT || path.join(__dirname, 'predictor_xgboost.py');
 
-    const resultado = await new Promise((resolve, reject) => {
-      const python = spawn(pythonBin, [pythonScript]);
-      let out = '', err = '';
-
-      python.stdin.write(buffer.toString('base64'));
-      python.stdin.end();
-
-      python.stdout.on('data', d => out += d.toString());
-      python.stderr.on('data', d => err += d.toString());
-
-      const timeout = setTimeout(() => {
-        python.kill();
-        reject(new Error('Timeout al ejecutar el script Python'));
-      }, 15000);
-
-      python.on('close', (code) => {
-        clearTimeout(timeout);
-        if (code !== 0 || err) {
-          return reject(new Error(err || `Código de salida: ${code}`));
-        }
-        try {
-          const data = JSON.parse(out.trim());
-          if (!data.exito) {
-            return reject(new Error(data.error || 'Error en el script Python'));
-          }
-          resolve(data);
-        } catch (e) {
-          reject(new Error(`Error parseando JSON: ${e.message}`));
-        }
-      });
-
-      python.on('error', (err) => {
-        clearTimeout(timeout);
-        reject(new Error(`Error al ejecutar Python: ${err.message}`));
-      });
-    });
+    const resultado = await predecirConWorker(pythonBin, pythonScript, buffer.toString('base64'));
+    if (!resultado.exito) throw new Error(resultado.error || 'Error en el worker Python');
 
     // 4. CONSTRUCCIÓN DEL RESULTADO
     const tiempoMs = Date.now() - startTime;
