@@ -133,8 +133,20 @@ module.exports = async function celulaML(entrada, contexto) {
     // no se usa, pero se lee por cumplir la guía
 
     // 3. LLAMADA AL SCRIPT PYTHON
-    const pythonBin = process.env.PYTHON_BIN || path.join(__dirname, '..', 'laboratorio', 'venv_ml', 'bin', 'python');
-    const pythonScript = process.env.ML_PREDICTOR_SCRIPT || path.join(__dirname, 'predictor_xgboost.py');
+    const pythonBinDefault = path.join(__dirname, '..', 'laboratorio', 'venv_ml', 'bin', 'python');
+    const pythonScriptDefault = path.join(__dirname, 'predictor_xgboost.py');
+    const pythonBinConfigured = process.env.PYTHON_BIN
+      ? path.resolve(process.env.PYTHON_BIN)
+      : null;
+    const pythonScriptConfigured = process.env.ML_PREDICTOR_SCRIPT
+      ? path.resolve(process.env.ML_PREDICTOR_SCRIPT)
+      : null;
+    const pythonBin = pythonBinConfigured && fs.existsSync(pythonBinConfigured)
+      ? pythonBinConfigured
+      : pythonBinDefault;
+    const pythonScript = pythonScriptConfigured && fs.existsSync(pythonScriptConfigured)
+      ? pythonScriptConfigured
+      : pythonScriptDefault;
 
     const resultado = await predecirConWorker(pythonBin, pythonScript, buffer.toString('base64'));
     if (!resultado.exito) throw new Error(resultado.error || 'Error en el worker Python');
