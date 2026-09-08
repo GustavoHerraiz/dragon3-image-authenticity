@@ -1,0 +1,22 @@
+[
+  {
+    "id": "celula-ml",
+    "ruta": "./celulas/celula-ml.cjs",
+    "descripcion": "Clasificación IA/humano usando XGBoost optimizado (91.7% de precisión)",
+    "entradaEsperada": {
+      "payload": "object (buffer o base64 de la imagen)"
+    },
+    "salidaOfrecida": {
+      "esIA": "boolean",
+      "confianza": "number (0-1)",
+      "explicacion": "string",
+      "evidencias": "string[]",
+      "peso": "number (0.5)",
+      "modelo": "string",
+      "versionModelo": "string"
+    },
+    "version": "1.0.0",
+    "publica": true,
+    "peso": 0.5
+  }
+]

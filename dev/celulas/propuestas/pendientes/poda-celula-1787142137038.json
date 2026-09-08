@@ -1,0 +1,12 @@
+{
+  "tipo": "poda-celula",
+  "celulaId": "extraer-metadatos-exif",
+  "motivo": "Precisión baja (35%) con 20 ejecuciones",
+  "evidencia": {
+    "celulaId": "extraer-metadatos-exif",
+    "precision": 0.35,
+    "total": 20,
+    "aciertos": 7
+  },
+  "confianza": 0.65
+}

@@ -1,0 +1,12 @@
+{
+  "tipo": "poda-celula",
+  "celulaId": "detectar-sellos-autenticidad",
+  "motivo": "Precisión baja (40%) con 20 ejecuciones",
+  "evidencia": {
+    "celulaId": "detectar-sellos-autenticidad",
+    "precision": 0.4,
+    "total": 20,
+    "aciertos": 8
+  },
+  "confianza": 0.6
+}

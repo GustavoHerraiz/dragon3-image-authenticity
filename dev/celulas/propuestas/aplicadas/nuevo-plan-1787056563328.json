@@ -1,0 +1,33 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen",
+    "detectar-artefactos-ia",
+    "detectar-doble-compresion-sharp",
+    "detectar-herramienta-ia",
+    "detectar-patrones-forenses",
+    "detectar-sellos-autenticidad",
+    "extraer-metadatos-exif",
+    "generar-veredicto"
+  ],
+  "nombreBase": "evolucion-cargar-imagen-detectar-artefactos-ia-detectar-doble-compresion-sharp-detectar-herramienta-ia-detectar-patrones-forenses-detectar-sellos-autenticidad-extraer-metadatos-exif-generar-veredicto",
+  "motivo": "Combinación exitosa: freq 15, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen",
+      "detectar-artefactos-ia",
+      "detectar-doble-compresion-sharp",
+      "detectar-herramienta-ia",
+      "detectar-patrones-forenses",
+      "detectar-sellos-autenticidad",
+      "extraer-metadatos-exif",
+      "generar-veredicto"
+    ],
+    "frecuencia": 15,
+    "ratioExito": 1,
+    "tiempoPromedio": 986.2818264666674,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

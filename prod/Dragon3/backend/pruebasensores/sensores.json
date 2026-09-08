@@ -1,0 +1,74 @@
+{
+  "APL_X_MAIN": {
+    "id": "APL_X_MAIN",
+    "physical": {
+      "manufacturer": "Sony",
+      "model": "Exmor RS (IMX333-variant)",
+      "pixel_pitch_um": 1.22,
+      "sensor_res": [4032, 3024],
+      "bit_depth_native": 10
+    },
+    "optics": {
+      "focal_length_mm": 4.0,
+      "aperture_f": 1.8,
+      "k_coeffs": [-0.0214, 0.0048, 0.0001],
+      "ca_profile": "low_blue_shift",
+      "vignetting_factor": 0.142
+    },
+    "signal": {
+      "bayer_pattern": "RGGB",
+      "dynamic_range_db": 11.2,
+      "prnu_ref": [0.0125, 0.0148, 0.0112],
+      "iso_lut": {
+        "25": 0.00048,
+        "100": 0.0019,
+        "400": 0.0076,
+        "800": 0.0152,
+        "1600": 0.0315
+      },
+      "thermal_noise_floor": 0.0038
+    },
+    "logic": {
+      "isp_processor": "Apple_A11_Bionic",
+      "scene_type_support": true,
+      "default_format": "HEIC",
+      "demosaic_style": "bilinear_hybrid"
+    }
+  },
+  "APL_16_MAIN": {
+    "id": "APL_16_MAIN",
+    "physical": {
+      "manufacturer": "Sony",
+      "model": "Exmor RS (Stacked CMOS)",
+      "pixel_pitch_um": 2.0,
+      "sensor_res": [8000, 6000],
+      "bit_depth_native": 12
+    },
+    "optics": {
+      "focal_length_mm": 5.96,
+      "aperture_f": 1.6,
+      "k_coeffs": [-0.0185, 0.0032, 0.0],
+      "ca_profile": "ultra_low_shift",
+      "vignetting_factor": 0.105
+    },
+    "signal": {
+      "bayer_pattern": "Quad_Bayer_RGGB",
+      "dynamic_range_db": 14.5,
+      "prnu_ref": [0.009, 0.011, 0.008],
+      "iso_lut": {
+        "50": 0.00025,
+        "100": 0.0009,
+        "400": 0.0035,
+        "800": 0.007,
+        "1600": 0.014
+      },
+      "thermal_noise_floor": 0.0022
+    },
+    "logic": {
+      "isp_processor": "Apple_A18",
+      "scene_type_support": true,
+      "default_format": "HEIC/DNG",
+      "demosaic_style": "deep_fusion_v4"
+    }
+  }
+}

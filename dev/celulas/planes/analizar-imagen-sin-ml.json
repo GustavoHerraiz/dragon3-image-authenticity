@@ -1,0 +1,81 @@
+{
+  "version": "1.0",
+  "nombre": "analizar-imagen-sin-ml",
+  "descripcion": "Plan optimizado para imágenes PNG y otros formatos sin ML. No incluye la célula ML (XGBoost) porque solo está entrenada para JPG. Incluye extracción de metadatos (EXIF, IPTC, XMP, ICC), detección de herramientas IA, sellos de autenticidad (C2PA, Truepic, Serelay, Witness, CryptoSeal, MBH, etc.), patrones forenses, artefactos IA, textura/ruido, análisis de colores, sombreado y veredicto final. Los pesos de las células están ajustados para mejorar la detección de IA en PNG: - detectar-colores: peso reducido (0.2) para evitar que anule el consenso. - detectar-artefactos-ia: peso aumentado (0.9) - detectar-patrones-forenses: peso aumentado (0.8) - detectar-textura-ruido: vota IA si puntuacionIA > 0.6 (ajuste en la célula).",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/cargar-imagen.js",
+      "entrada": { "payload": "$.contexto.archivo" }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/extraer-metadatos-exif.js",
+      "entrada": {
+        "payload": "$.cargar-imagen.resultado"
+      }
+    },
+    {
+      "id": "detectar-herramienta-ia",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-herramienta-ia.js",
+      "entrada": { "payload": "$.extraer-metadatos-exif.resultado" }
+    },
+    {
+      "id": "detectar-sellos-autenticidad",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-sellos-autenticidad.js",
+      "entrada": {
+        "payload": {
+          "exif": "$.extraer-metadatos-exif.resultado.exif",
+          "hasExif": "$.extraer-metadatos-exif.resultado.hasExif",
+          "raw": "$.extraer-metadatos-exif.resultado.metadatosCompletos",
+          "metadatosCompletos": "$.extraer-metadatos-exif.resultado.metadatosCompletos",
+          "buffer": "$.cargar-imagen.resultado.buffer",
+          "hash": "$.cargar-imagen.resultado.hash"
+        }
+      }
+    },
+    {
+      "id": "detectar-patrones-forenses",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-patrones-forenses.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-artefactos-ia",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-artefactos-ia.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-textura-ruido",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-textura-ruido.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-colores",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-colores.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-sombreado",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/detectar-sombreado.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "generar-veredicto",
+      "ruta": "/opt/dragon3/dev/celulas/celulas/generar-veredicto.js",
+      "entrada": {
+        "payload": {
+          "detectar-herramienta-ia": "$.detectar-herramienta-ia.resultado",
+          "detectar-sellos-autenticidad": "$.detectar-sellos-autenticidad.resultado",
+          "detectar-patrones-forenses": "$.detectar-patrones-forenses.resultado",
+          "detectar-artefactos-ia": "$.detectar-artefactos-ia.resultado",
+          "detectar-textura-ruido": "$.detectar-textura-ruido.resultado",
+          "detectar-colores": "$.detectar-colores.resultado",
+          "detectar-sombreado": "$.detectar-sombreado.resultado",
+          "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado"
+        }
+      }
+    }
+  ],
+  "salidaFinal": "$.generar-veredicto.resultado",
+  "detenerseEnError": false
+}

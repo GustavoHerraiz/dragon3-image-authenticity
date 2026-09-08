@@ -1,0 +1,15 @@
+{
+  "tipo": "ajuste-peso",
+  "celulaId": "detectar-patrones-forenses",
+  "pesoActual": 1,
+  "pesoPropuesto": 0.9,
+  "accion": "reducir",
+  "motivo": "Precisión baja (45%) o contribución baja (45%)",
+  "evidencia": {
+    "precision": 0.45,
+    "contribucion": 0.45,
+    "total": 20,
+    "tiempoPromedio": 41.04540891870395
+  },
+  "confianza": 0.9
+}

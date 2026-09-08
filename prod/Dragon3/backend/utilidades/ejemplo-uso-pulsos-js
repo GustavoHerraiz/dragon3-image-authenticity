@@ -1,0 +1,102 @@
+/**
+ * ====================================================================
+ * EJEMPLO DE USO - SISTEMA DE PULSOS DRAGON3
+ * ====================================================================
+ *
+ * Este archivo muestra ejemplos de cómo utilizar el sistema de pulsos
+ * en diferentes componentes del proyecto Dragon3.
+ * ====================================================================
+ */
+
+import crearPulsos, { comprobarServicios, limpiarInactivos } from './utilidades/pulsos.js';
+import dragon from './logger.js';
+
+// ===== Ejemplo para API server.js =====
+async function inicializarAPIServer() {
+  // Crear sistema de pulsos para API
+  const pulsos = crearPulsos({
+    serviceId: `api-${process.env.NODE_APP_INSTANCE || '1'}`,
+    serviceType: 'api-server',
+    interval: 10000,  // Pulso cada 10 segundos
+    metadata: {
+      endpoints: ['/api/analyze', '/api/status', '/api/verify'],
+      version: '3.2.1'
+    }
+  });
+  
+  // Iniciar pulsos
+  await pulsos.iniciar();
+  
+  // Al finalizar el servidor
+  process.on('SIGTERM', async () => {
+    await pulsos.detener();
+    // Resto de la lógica de apagado...
+  });
+}
+
+// ===== Ejemplo para analizadorImagen.js =====
+async function inicializarAnalizador() {
+  const pulsos = crearPulsos({
+    serviceId: `analizador-${process.env.WORKER_ID || '1'}`,
+    serviceType: 'image-analyzer',
+    interval: 15000,  // 15 segundos
+    metadata: {
+      modelos: ['deepfake-v2', 'authentication-v3'],
+      capacidad: process.env.WORKER_CAPACITY || 10
+    }
+  });
+  
+  await pulsos.iniciar();
+  
+  // Resto de la lógica...
+}
+
+// ===== Ejemplo para monitor del sistema =====
+async function inicializarMonitor() {
+  // El monitor también emite sus propios pulsos
+  const pulsos = crearPulsos({
+    serviceId: 'system-monitor',
+    serviceType: 'monitor',
+    interval: 20000
+  });
+  
+  await pulsos.iniciar();
+  
+  // Comprobar servicios periódicamente
+  setInterval(async () => {
+    try {
+      const estado = await comprobarServicios();
+      
+      dragon.respira(
+        `Estado del sistema: ${estado.activos} servicios activos, ${estado.inactivos} inactivos`, 
+        'MONITOR', 
+        'STATUS'
+      );
+      
+      // Detectar servicios caídos
+      const caidos = estado.servicios.filter(s => 
+        !s.activo && s.ultimoPulso && (Date.now() - s.ultimoPulso > 60000)
+      );
+      
+      if (caidos.length > 0) {
+        dragon.sePreocupa(
+          `Detectados ${caidos.length} servicios caídos`, 
+          'MONITOR', 
+          'DOWN_SERVICES',
+          { servicios: caidos.map(s => s.id) }
+        );
+        
+        // Aquí podríamos implementar notificaciones
+        // notificarServiciosCaidos(caidos);
+      }
+      
+      // Limpiar servicios muy antiguos (1 hora)
+      await limpiarInactivos(3600000);
+      
+    } catch (err) {
+      dragon.sePreocupa(`Error monitorizando servicios: ${err.message}`, 'MONITOR', 'ERROR');
+    }
+  }, 30000);
+}
+
+export { inicializarAPIServer, inicializarAnalizador, inicializarMonitor };

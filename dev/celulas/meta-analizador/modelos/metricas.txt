@@ -1,0 +1,25 @@
+==================================================
+📊 MÉTRICAS DEL MODELO ML
+==================================================
+
+Accuracy:  0.6376
+Precision: 0.5900
+Recall:    0.6644
+F1-Score:  0.6250
+AUC-ROC:   0.6905
+
+Matriz de Confusión:
+  VP: 6,761 | FN: 3,415
+  FP: 4,698 | VN: 7,513
+
+TOP 10 Características más importantes:
+  tamañoBytes: 0.1562
+  cargar_imagen_tiempoMs: 0.0669
+  detectar_textura_ruido_confianza: 0.0593
+  detectar_sellos_autenticidad_tiempoMs: 0.0562
+  detectar_colores_confianza: 0.0557
+  generar_veredicto_tiempoMs: 0.0540
+  detectar_herramienta_ia_tiempoMs: 0.0528
+  extraer_metadatos_exif_tiempoMs: 0.0495
+  detectar_patrones_forenses_tiempoMs: 0.0477
+  tiempoTotalMs: 0.0468

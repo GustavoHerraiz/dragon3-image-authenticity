@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "detectar-herramienta-ia",
+  "motivo": "Cuello de botella: p95=53ms, promedio=27ms (ratio 1.9)",
+  "evidencia": {
+    "p95": 52.505855996126556,
+    "promedio": 27.415702950654858,
+    "total": 22,
+    "ratio": 1.915174529379426,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 0.957587264689713,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

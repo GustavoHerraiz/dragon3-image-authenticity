@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon3 - Analizador de Archivos Forenses</title>
+  <link rel="stylesheet" href="/styles/global.css" />
+  <link rel="stylesheet" href="/styles/index.css" />
+  <link rel="stylesheet" href="/styles/dragon.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: var(--color-gray-100, #24292f);
+      font-family: var(--font-roboto, 'Roboto'), var(--font-inter, 'Inter'), sans-serif;
+    }
+    body, .wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-gray-100, #24292f);
+    }
+    .center-container {
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      min-height: 0;
+    }
+    .header-flex {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5em;
+      margin-bottom: 2em;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 600px;
+    }
+    .logo-blade-corp {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.6em;
+      min-width: 0;
+    }
+    .logo-blade-corp-child {
+      width: 38px;
+      height: auto;
+      max-width: 10vw;
+      flex-shrink: 0;
+    }
+    .blade-corporation {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.15rem;
+      letter-spacing: 0.01em;
+      min-width: 0;
+      word-break: break-word;
+    }
+    .button-menu {
+      background: var(--color-primary, #16dfac);
+      color: var(--color-gray-100, #24292f);
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.6em 2.1em;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      outline: none;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+    .button-menu:hover {
+      background: #12c69b;
+      color: #fff;
+    }
+
+    .card.analyzer-card {
+      animation: slide-in-top 0.9s cubic-bezier(.59,.05,.12,1) 1;
+      max-width: 420px;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 30px;
+      background-color: var(--color-gray-dark, #1a1d22);
+      box-shadow: 0px 5px 20px rgba(0,0,0,0.18);
+      padding: 24px 24px 32px 24px;
+      gap: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin: 0 auto;
+      min-width: 0;
+    }
+    .analyzer-card h2 {
+      font-size: 20px;
+      color: var(--color-primary, #16dfac);
+      text-align: center;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      letter-spacing: .03em;
+      word-break: break-word;
+    }
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 8px;
+      min-width: 0;
+    }
+    .input-label {
+      font-size: 14px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 2px;
+      word-break: break-word;
+    }
+    .input-file {
+      border: 1px solid rgba(217, 217, 217, 0.6);
+      border-radius: 8px;
+      background: #1a1d22;
+      color: #fff;
+      font-size: 16px;
+      font-family: var(--font-roboto, 'Roboto');
+      padding: 8px 16px;
+      width: 100%;
+      transition: border .2s;
+      min-width: 0;
+    }
+    .input-file:focus {
+      border-color: var(--color-primary, #16dfac);
+      background: #24292f;
+      color: #fff;
+    }
+    #analyzeBtn {
+      background: var(--color-primary, #16dfac);
+      color: var(--color-gray-100, #24292f);
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 8px 24px;
+      margin-bottom: 4px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      outline: none;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    #analyzeBtn:hover { background: #12c69b; color: #fff; }
+    .error-analisis {
+      display: none;
+      color: #ff4e4e;
+      background: rgba(255,77,77,0.11);
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      margin-top: 7px;
+      text-align: center;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      max-width: 100%;
+    }
+    #loadingSpinner {
+      margin-left: 1em;
+      color: #e4e6ea;
+      font-size: 16px;
+      font-weight: 400;
+      background: none;
+      word-break: break-word;
+      max-width: 100%;
+    }
+    .dragon-2-icon.loading {
+      display: none;
+      margin-top: 1em;
+      max-width: 62px;
+      width: 100%;
+      height: auto;
+      filter: grayscale(0.7) brightness(1.2);
+    }
+    .footer {
+      background: var(--color-gray-100, #24292f);
+      color: #fff;
+      border-top: 1px solid #23242a;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 16px 0;
+      flex-shrink: 0;
+    }
+    .title7 .blade-corp {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      justify-content: center;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .blade-corporation1 {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      word-break: break-word;
+    }
+    .button-list {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .button-list a img {
+      width: 2em;
+      height: 2em;
+      margin: 0 0.3em;
+      filter: grayscale(0.2) brightness(1.2) drop-shadow(0 1px 4px #0002);
+      transition: filter .2s;
+      max-width: 2em;
+    }
+    .button-list a:hover img { filter: brightness(2.2) saturate(1.2);}
+    /* TABLET */
+    @media (max-width: 900px) {
+      .card.analyzer-card { max-width: 97vw; padding: 20px 10px 27px 10px; }
+      .center-container { max-width: 100vw; }
+      .header-flex { max-width: 99vw; }
+      .footer { padding: 12px 0; }
+      .button-list { gap: 10px; }
+    }
+    /* MOBILE */
+    @media (max-width: 600px) {
+      .center-container { padding: 0 2vw; }
+      .header-flex {
+        flex-direction: column;
+        gap: 0.7em;
+        max-width: 100vw;
+        margin-bottom: 1.3em;
+      }
+      .logo-blade-corp {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3em;
+        width: 100%;
+      }
+      .blade-corporation { font-size: 1rem; }
+      .button-menu { width: 100%; }
+      .card.analyzer-card { max-width: 99vw; border-radius: 12px; padding: 13px 4vw 20px 4vw; margin: 0; }
+      .analyzer-card h2 { font-size: 16px; }
+      .input-label, .input-file, #analyzeBtn, .error-analisis, #loadingSpinner, .button-link, .button-menu { font-size: 14px; }
+      .form-container { gap: 8px; }
+      .footer { padding: 8px 0; }
+      .button-list { gap: 8px; }
+      .button-list a img { width: 1.4em; height: 1.4em; }
+      .blade-corporation1 { font-size: 12px; height: 30px; }
+      .title7 .blade-corp { gap: 0.4em; }
+    }
+    @media (max-width: 400px) {
+      .card.analyzer-card { padding: 7px 1vw 14px 1vw; }
+      .analyzer-card h2 { font-size: 13px; }
+      .input-label, .input-file, #analyzeBtn, .error-analisis, #loadingSpinner, .button-link, .button-menu { font-size: 12px; }
+      .footer { padding: 4px 0; }
+      .button-list { gap: 5px; }
+      .button-list a img { width: 1.1em; height: 1.1em; }
+    }
+    /* --- FOOTER EXTENDIDO NUEVO --- */
+    .footer-ext {
+      background: var(--color-gray-100, #24292f);
+      color: #fff;
+      border-top: 1px solid #23242a;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 28px 0 18px 0;
+      gap: 2em;
+      font-size: 1em;
+      flex-shrink: 0;
+    }
+    .footer-ext .blade-corp {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .footer-ext .blade-corp-child {
+      width: 32px;
+      height: auto;
+      max-width: 8vw;
+    }
+    .footer-ext .blade-corporation1 {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      word-break: break-word;
+    }
+    .footer-ext .footer-links {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 3em;
+      flex-wrap: wrap;
+      margin-top: 0.4em;
+      margin-bottom: 0.1em;
+      width: 100%;
+    }
+    .footer-ext .text-link-list {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 0 2em;
+      gap: 0.2em;
+    }
+    .footer-ext .title8, .footer-ext .title9 {
+      font-weight: 700;
+      font-size: 1.02em;
+      margin-bottom: 0.1em;
+      color: #16dfac;
+    }
+    .footer-ext .empresa {
+      font-weight: 600;
+      font-size: 1em;
+    }
+    .footer-ext .text-link-list-item,
+    .footer-ext .text-link-list-item1,
+    .footer-ext .text-link-list-item4 {
+      font-size: 0.98em;
+      color: #e4e6ea;
+      margin-bottom: 0.1em;
+      text-align: left;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .footer-ext .text-link-list-item:hover,
+    .footer-ext .text-link-list-item1:hover,
+    .footer-ext .text-link-list-item4:hover {
+      color: #16dfac;
+    }
+    .footer-ext .sello-mbh-made,
+    .footer-ext .ndice-de-autenticidad1 {
+      font-size: inherit;
+    }
+    .footer-ext .button-list {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 1.1em;
+      margin-top: 1.4em;
+      flex-wrap: wrap;
+    }
+    .footer-ext .button-list button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    .footer-ext .icon22,
+    .footer-ext .icon24 {
+      width: 2em;
+      height: 2em;
+      filter: grayscale(0.2) brightness(1.2) drop-shadow(0 1px 4px #0002);
+      transition: filter .2s;
+      max-width: 2em;
+    }
+    .footer-ext .button-list button:hover .icon22,
+    .footer-ext .button-list button:hover .icon24 {
+      filter: brightness(2.2) saturate(1.2);
+    }
+    @media (max-width: 900px) {
+      .footer-ext { padding: 18px 0 10px 0; gap: 1.1em;}
+      .footer-ext .footer-links { gap: 1.2em; }
+      .footer-ext .text-link-list { margin: 0 0.7em;}
+    }
+    @media (max-width: 600px) {
+      .footer-ext { padding: 10px 0 6px 0; gap: 0.6em;}
+      .footer-ext .blade-corp-child { width: 23px; }
+      .footer-ext .blade-corporation1 { font-size: 0.93em; height: 27px;}
+      .footer-ext .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3em;
+      }
+      .footer-ext .text-link-list { margin: 0 0.2em; font-size: 0.95em;}
+      .footer-ext .button-list { gap: 0.5em; margin-top: 0.7em;}
+      .footer-ext .icon22, .footer-ext .icon24 { width: 1.3em; height: 1.3em;}
+    }
+    @media (max-width: 400px) {
+      .footer-ext { padding: 7px 0 4px 0;}
+      .footer-ext .blade-corporation1 { font-size: 0.86em; height: 23px;}
+      .footer-ext .icon22, .footer-ext .icon24 { width: 1em; height: 1em;}
+      .footer-ext .text-link-list { font-size: 0.89em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="center-container">
+      <div class="header-flex">
+        <div class="logo-blade-corp">
+          <img class="logo-blade-corp-child" alt="Logo" src="/public/group-1@2x.png" />
+          <div class="blade-corporation">Blade Corporation</div>
+        </div>
+        <button class="button-menu" type="button" onclick="window.location.href='index.html'">Volver al inicio</button>
+      </div>
+      <section class="card analyzer-card animate">
+        <h2>Analizador de Archivos</h2>
+        <form id="uploadForm" class="form-container" aria-label="Formulario de análisis" enctype="multipart/form-data" autocomplete="off">
+          <div class="input-field">
+            <label for="archivo" class="input-label">Selecciona archivo:</label>
+            <input type="file" name="archivo" id="archivo" class="input-file" required aria-required="true" accept="image/*,application/pdf" />
+          </div>
+          <button id="analyzeBtn" type="submit">Analizar</button>
+          <span id="loadingSpinner" class="spinner" style="display:none;">Analizando...</span>
+        </form>
+        <div id="errorMsg" class="error-analisis" role="alert" aria-live="assertive"></div>
+        <img class="dragon-2-icon loading" alt="Cargando" src="/public/dragon-2.svg" />
+      </section>
+    </div>
+    <footer class="footer">
+      <div class="title7">
+        <div class="blade-corp">
+          <img class="blade-corp-child" alt="" src="/public/group-11.svg" style="width:28px;height:auto;max-width:8vw;" />
+          <div class="blade-corporation1">Blade Corporation</div>
+        </div>
+      </div>
+      <div class="button-list">
+        <a href="#" aria-label="X / Twitter"><img src="/public/x-logo.svg" alt="X" /></a>
+        <a href="#" aria-label="Instagram"><img src="/public/icon1.svg" alt="Instagram" /></a>
+        <a href="#" aria-label="Otro"><img src="/public/icon2.svg" alt="Otro" /></a>
+        <a href="#" aria-label="Otro"><img src="/public/icon3.svg" alt="Otro" /></a>
+      </div>
+    </footer>
+    <!-- FOOTER EXTENDIDO -->
+    <div class="footer-ext">
+      <div class="blade-corp">
+        <img class="blade-corp-child" alt="" src="./public/group-11.svg" />
+        <div class="blade-corporation1">Blade Corporation</div>
+      </div>
+      <div class="footer-links">
+        <div class="text-link-list">
+          <div class="title8">
+            <div class="text-strong">
+              <div class="empresa">Servicios</div>
+            </div>
+          </div>
+          <div class="text-link-list-item">
+            <div class="sello-mbh-made">Sello MBH (Made By Humans)</div>
+          </div>
+          <div class="text-link-list-item1">
+            <div class="ndice-de-autenticidad1">Índice de Autenticidad Empresarial (IAE)</div>
+          </div>
+          <div class="text-link-list-item1">
+            <div class="ndice-de-autenticidad1">Servicios personificados para buenas prácticas</div>
+          </div>
+        </div>
+        <div class="text-link-list">
+          <div class="title9">
+            <div class="text-strong">
+              <div class="empresa">Empresa</div>
+            </div>
+          </div>
+          <div class="text-link-list-item">
+            <div class="sello-mbh-made">Quiénes somos</div>
+          </div>
+          <div class="text-link-list-item4">
+            <div class="ndice-de-autenticidad1">Contacto</div>
+          </div>
+        </div>
+      </div>
+      <div class="button-list">
+        <button class="x-logo-icon">
+          <img class="icon22" alt="" src="./public/x-logo.svg" />
+        </button>
+        <button class="logo-instagram-icon">
+          <img class="icon22" alt="" src="./public/icon1.svg" />
+        </button>
+        <button class="logo-instagram-icon">
+          <img class="icon24" alt="" src="./public/icon2.svg" />
+        </button>
+        <button class="logo-instagram-icon">
+          <img class="icon22" alt="" src="./public/icon3.svg" />
+        </button>
+      </div>
+    </div>
+  </div>
+  <script src="/scripts/analizador.js?v=999"></script>
+</body>
+</html>

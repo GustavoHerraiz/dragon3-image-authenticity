@@ -1,0 +1,19 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen"
+  ],
+  "nombreBase": "evolucion-cargar-imagen",
+  "motivo": "Combinación exitosa: freq 3, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen"
+    ],
+    "frecuencia": 3,
+    "ratioExito": 1,
+    "tiempoPromedio": 0.7684133333332284,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

@@ -1,0 +1,6 @@
+{
+  "pkg": {
+    "assets": ["interface.html"],
+    "targets": ["node16-linux-x64"]
+  }
+}

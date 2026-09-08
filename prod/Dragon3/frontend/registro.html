@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+    <title>Dragon3 - Registro</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/index.css" />
+    <link rel="stylesheet" href="/styles/dragon.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap"/>
+    <style>
+      .center-panel {
+        min-height: calc(100vh - 250px - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+      }
+      .card.register-card {
+        animation: slide-in-top 0.9s cubic-bezier(.59,.05,.12,1) 1;
+        max-width: 360px;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: var(--border-radius-md);
+        background-color: var(--color-gray-100);
+        box-shadow: 0px 5px 20px rgba(0,0,0,0.18);
+        padding: var(--space-lg) var(--space-lg) var(--space-xl) var(--space-lg);
+        gap: var(--gap-base);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0 auto;
+      }
+      .register-card h2 {
+        font-size: var(--font-size-xl);
+        color: var(--color-primary);
+        text-align: center;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        letter-spacing: .03em;
+      }
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-xs);
+      }
+      .input-field {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: var(--space-sm);
+      }
+      .input-field label {
+        font-size: var(--font-size-sm);
+        color: var(--color-white);
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .input {
+        border: 1px solid var(--color-gray-light);
+        border-radius: var(--border-radius-md);
+        background: var(--color-gray-dark);
+        color: var(--color-primary);
+        font-size: var(--font-size-base);
+        font-family: var(--font-roboto);
+        padding: var(--space-sm) var(--space-md);
+        width: 100%;
+        transition: border .2s;
+      }
+      .input:focus {
+        border-color: var(--color-primary);
+        background: var(--color-background);
+        color: var(--color-white);
+      }
+      .botom2, .botom {
+        margin-top: var(--space-xs);
+        min-height: 40px;
+        font-size: var(--font-size-base);
+      }
+      .botom2 {
+        background: var(--color-aquamarine-100);
+        color: var(--color-gray-100);
+        border: none;
+        font-weight: 600;
+      }
+      .botom {
+        background: var(--color-gray-100);
+        color: var(--color-aquamarine-100);
+        border: 1.5px solid var(--color-aquamarine-100);
+        font-weight: 500;
+      }
+      .botom2:hover {
+        background: #12c69b;
+      }
+      .botom:hover {
+        background: var(--color-aquamarine-100);
+        color: var(--color-gray-100);
+      }
+      .error {
+        display: none;
+        color: #ff4e4e;
+        background: rgba(255,77,77,0.11);
+        font-size: var(--font-size-sm);
+        padding: 6px 10px;
+        border-radius: var(--border-radius-sm);
+        margin-top: 7px;
+        text-align: center;
+      }
+      @media (max-width: 420px) {
+        .card.register-card {
+          max-width: 99vw;
+          padding: var(--space-xs);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wwwbladecorporationnet-6" data-animate-on-scroll>
+      <header class="head-blade">
+        <div class="logo-blade-corp">
+          <img class="logo-blade-corp-child" src="/public/group-1@2x.png" alt="Blade Corporation" />
+          <div class="blade-corporation">Blade Corporation</div>
+        </div>
+        <div class="menu">
+          <div class="verificador-mbh" id="verificadorMBHText">Dragón</div>
+          <div class="verificador-mbh" id="serviciosText">Servicios</div>
+          <div class="verificador-mbh" id="planesText">Planes</div>
+          <div class="verificador-mbh" id="fAQsText">FAQs</div>
+        </div>
+        <div class="contacto">
+          <a href="login.html">
+            <button class="botom">
+              <div class="accede-a-dragn">Accede a Dragón</div>
+              <img class="icon" alt="" src="/public/.svg" />
+            </button>
+          </a>
+          <img class="dragon-2-icon" alt="" src="/public/dragon-2.svg" />
+          <button class="botom1" id="botom1">
+            <div class="contacto1">Contacto</div>
+            <img class="icon1" alt="" src="/public/1.svg" />
+          </button>
+        </div>
+      </header>
+      <main>
+        <div class="center-panel">
+          <section class="card register-card animate">
+            <h2>Registro en Dragon3</h2>
+            <form id="registerForm" class="form-container" autocomplete="on">
+              <div class="input-field">
+                <label for="usuario">Usuario:</label>
+                <input type="text" id="usuario" name="usuario" class="input" required maxlength="32" autocomplete="username" />
+              </div>
+              <div class="input-field">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" class="input" required maxlength="128" autocomplete="email" />
+              </div>
+              <div class="input-field">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" class="input" required minlength="8" autocomplete="new-password" />
+              </div>
+              <div class="input-field">
+                <label for="password2">Repetir contraseña:</label>
+                <input type="password" id="password2" name="password2" class="input" required minlength="8" autocomplete="new-password" />
+              </div>
+              <button type="submit" class="botom2">Registrarse</button>
+              <a href="login.html" style="width:100%;">
+  <button type="button" class="botom" style="width:100%;" id="btnGoLogin">Login</button>
+</a>
+            </form>
+            <div id="registerError" class="error"></div>
+          </section>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="title7">
+          <div class="blade-corp">
+            <img class="blade-corp-child" src="/public/group-11.svg" alt="Blade Corporation" />
+            <div class="blade-corporation1">Blade Corporation</div>
+          </div>
+        </div>
+        <div class="footer-links">
+          <a href="mailto:soporte@bladecorporation.net">Soporte</a>
+          <a href="index.html">Inicio</a>
+        </div>
+        <p>© 2025 Dragon3 AI Auth System | FAANG Enterprise</p>
+      </footer>
+    </div>
+    <script src="scripts/registro.js"></script>
+  </body>
+</html>

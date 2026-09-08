@@ -1,0 +1,205 @@
+{
+  "version": "1.0.0-FAANG-Training",
+  "timestamp": "2026-05-06T16:49:34.253Z",
+  "dataset": {
+    "total": 1050,
+    "distribution": {
+      "humano": 350,
+      "ia_generado": 350,
+      "editado": 350
+    },
+    "splits": {
+      "total": 1050,
+      "train": 735,
+      "validation": 157,
+      "test": 158,
+      "trainRatio": 0.7,
+      "valRatio": 0.15,
+      "testRatio": 0.15000000000000005
+    }
+  },
+  "training": {
+    "smallNNs": {
+      "config": {
+        "iterations": 2000,
+        "errorThresh": 0.005,
+        "log": true,
+        "logPeriod": 100,
+        "learningRate": 0.01,
+        "momentum": 0.1
+      },
+      "results": [
+        {
+          "name": "exif_camera",
+          "iterations": 131,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "0s"
+        },
+        {
+          "name": "exif_editing",
+          "iterations": 124,
+          "error": 0.005,
+          "testAccuracy": "100%",
+          "duration": "0s"
+        },
+        {
+          "name": "texture",
+          "iterations": 126,
+          "error": 0.005,
+          "testAccuracy": "100%",
+          "duration": "0s"
+        },
+        {
+          "name": "gan_artifacts",
+          "iterations": 146,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "0s"
+        },
+        {
+          "name": "diffusion_artifacts",
+          "iterations": 154,
+          "error": 0.005,
+          "testAccuracy": "100%",
+          "duration": "1s"
+        },
+        {
+          "name": "sharpness",
+          "iterations": 146,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "1s"
+        },
+        {
+          "name": "compression",
+          "iterations": 137,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "0s"
+        },
+        {
+          "name": "c2pa",
+          "iterations": 158,
+          "error": 0.005,
+          "testAccuracy": "100%",
+          "duration": "1s"
+        },
+        {
+          "name": "resolution",
+          "iterations": 146,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "1s"
+        },
+        {
+          "name": "metadata",
+          "iterations": 166,
+          "error": 0.0049,
+          "testAccuracy": "100%",
+          "duration": "1s"
+        }
+      ]
+    },
+    "redMayor": {
+      "config": {
+        "iterations": 3000,
+        "errorThresh": 0.003,
+        "log": true,
+        "logPeriod": 100,
+        "learningRate": 0.005,
+        "momentum": 0.1
+      },
+      "iterations": 157,
+      "error": 0.003,
+      "testAccuracy": "100%",
+      "confusionMatrix": {
+        "humano": {
+          "humano": 51,
+          "ia_generado": 0,
+          "editado": 0
+        },
+        "ia_generado": {
+          "humano": 0,
+          "ia_generado": 50,
+          "editado": 0
+        },
+        "editado": {
+          "humano": 0,
+          "ia_generado": 0,
+          "editado": 57
+        }
+      },
+      "duration": "6s"
+    }
+  },
+  "results": {
+    "smallNNs": {
+      "count": 10,
+      "avgAccuracy": "100%",
+      "individual": [
+        {
+          "name": "exif_camera",
+          "accuracy": "100%"
+        },
+        {
+          "name": "exif_editing",
+          "accuracy": "100%"
+        },
+        {
+          "name": "texture",
+          "accuracy": "100%"
+        },
+        {
+          "name": "gan_artifacts",
+          "accuracy": "100%"
+        },
+        {
+          "name": "diffusion_artifacts",
+          "accuracy": "100%"
+        },
+        {
+          "name": "sharpness",
+          "accuracy": "100%"
+        },
+        {
+          "name": "compression",
+          "accuracy": "100%"
+        },
+        {
+          "name": "c2pa",
+          "accuracy": "100%"
+        },
+        {
+          "name": "resolution",
+          "accuracy": "100%"
+        },
+        {
+          "name": "metadata",
+          "accuracy": "100%"
+        }
+      ]
+    },
+    "redMayor": {
+      "accuracy": "100%",
+      "confusionMatrix": {
+        "humano": {
+          "humano": 51,
+          "ia_generado": 0,
+          "editado": 0
+        },
+        "ia_generado": {
+          "humano": 0,
+          "ia_generado": 50,
+          "editado": 0
+        },
+        "editado": {
+          "humano": 0,
+          "ia_generado": 0,
+          "editado": 57
+        }
+      }
+    }
+  },
+  "totalDuration": "11s"
+}

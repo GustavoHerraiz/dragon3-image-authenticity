@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "nombre": "evolucion-cargar-imagen-detectar-doble-compresion-sharp-extraer-metadatos-exif",
+  "descripcion": "Plan generado automáticamente a partir de células: cargar-imagen, detectar-doble-compresion-sharp, extraer-metadatos-exif",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": {
+        "payload": "$.contexto.archivo"
+      }
+    },
+    {
+      "id": "detectar-doble-compresion-sharp",
+      "ruta": "./celulas/detectar-doble-compresion-sharp.js",
+      "entrada": {
+        "payload": "$.cargar-imagen.resultado"
+      }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "./celulas/extraer-metadatos-exif.js",
+      "entrada": {
+        "payload": "$.detectar-doble-compresion-sharp.resultado"
+      }
+    }
+  ],
+  "salidaFinal": "$.extraer-metadatos-exif.resultado",
+  "detenerseEnError": false,
+  "telemetria": {
+    "enabled": true
+  }
+}

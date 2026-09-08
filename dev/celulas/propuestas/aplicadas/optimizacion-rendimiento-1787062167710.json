@@ -1,0 +1,15 @@
+{
+  "tipo": "optimizacion-rendimiento",
+  "celulaId": "generar-veredicto",
+  "motivo": "Cuello de botella: p95=47ms, promedio=27ms (ratio 1.8)",
+  "evidencia": {
+    "p95": 46.95249696878567,
+    "promedio": 26.803206836950622,
+    "total": 22,
+    "ratio": 1.75174923114265,
+    "frecuenciaEnTop3": 0,
+    "mejoraEstimada": 0.25
+  },
+  "confianza": 0.875874615571325,
+  "sugerencia": "Considerar reducir tamaño de imagen o aumentar concurrencia"
+}

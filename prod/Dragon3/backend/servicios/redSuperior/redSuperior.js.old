@@ -1,0 +1,819 @@
+/**
+ * ====================================================================
+ * DRAGON3 - RED SUPERIOR FAANG ENTERPRISE (FORENSIC TRACEABILITY)
+ * ====================================================================
+ *
+ * Versión: 4.2.1-FAANG-Forensic-Compat
+ * Nota: Fix inicialización de métricas en constructor para evitar
+ * "Cannot read properties of undefined (reading 'totalPredictions')"
+ * cuando se invoca predecir() prematuramente.
+ * ====================================================================
+ */
+
+import crypto from 'crypto';
+import { performance } from 'perf_hooks';
+
+import RedisClient from '../../utilidades/redis/core/RedisClient.js';
+import { SERVICE_PRIORITIES } from '../../utilidades/redis/core/constants.js';
+import dragon from '../../utilidades/logger.js';
+import RedSuperiorSmallNN from './redSuperiorSmallNN.js';
+import LRUCache from 'lru-cache';
+
+const NOMBRE_MODULO = 'redSuperior';
+const VERSION_MODULO = '4.2.1-FAANG-Forensic-Compat';
+
+const CACHE_CONFIG = {
+  l1: { max: 500, ttl: 60000, updateAgeOnGet: true, updateAgeOnHas: true },
+  l2: { ttl: 300000, prefix: 'rs:cache:', enabled: true }
+};
+const FORENSIC_CONFIG = {
+  tracking: { keyPrefix: 'dragon3:track:', sessionPrefix: 'dragon3:session:', ttl: 7200 },
+  streams: { audit: 'dragon3:stream:audit:trail', performance: 'dragon3:stream:perf:metrics', security: 'dragon3:stream:security:events' },
+  precision: { timestampFormat: 'microseconds', enableStackTraces: true }
+};
+const CATEGORIAS = { HUMANO: 'humano', IA_GENERADO: 'ia_generado', EDITADO: 'editado' };
+const METRICS_CONFIG = { latencyHistorySize: 1000, healthCheckInterval: 30000, performanceAlertThreshold: 15 };
+
+class RedSuperiorError extends Error { constructor(message, code, severity = 'medium', metadata = {}) { super(message); this.name='RedSuperiorError'; this.code=code; this.severity=severity; this.timestamp=Date.now(); this.timestampPrecise=performance.now(); this.metadata=metadata; if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);} }
+class InitializationError extends RedSuperiorError { constructor(message, component, metadata = {}) { super(message, 'INITIALIZATION_ERROR', 'critical', { component, ...metadata }); this.name='InitializationError'; } }
+class PredictionError extends RedSuperiorError { constructor(message, duration, metadata = {}) { super(message, 'PREDICTION_ERROR', 'high', { duration, ...metadata }); this.name='PredictionError'; } }
+class CacheError extends RedSuperiorError { constructor(message, cacheLayer, metadata = {}) { super(message, 'CACHE_ERROR', 'low', { cacheLayer, ...metadata }); this.name='CacheError'; } }
+class ForensicError extends RedSuperiorError { constructor(message, operation, metadata = {}) { super(message, 'FORENSIC_ERROR', 'high', { operation, ...metadata }); this.name='ForensicError'; } }
+
+function _safeKey(str, maxLen = 128) { try { return String(str || '').replace(/[^a-zA-Z0-9:_-]/g, '-').slice(0, maxLen); } catch { return 'unknown'; } }
+function _isValidFeaturesArray(features) { if (!Array.isArray(features) || features.length === 0) return false; for (const v of features) if (typeof v !== 'number' || !isFinite(v)) return false; return true; }
+
+export class RedSuperior {
+  constructor(config = {}) {
+    this.version = VERSION_MODULO;
+    this.initialized = false;
+    this.startTime = Date.now();
+    this.startTimePrecise = performance.now();
+    this.config = config;
+
+    this.healthStatus = { redis: 'initializing', smallNN: 'initializing', cache: 'initializing', forensics: 'initializing', overall: 'initializing' };
+
+    // FIX: inicializar métricas desde el constructor
+    this._initializeMetrics();
+
+    dragon.respira('Constructor Red Superior FAANG invocado (inicialización diferida)', NOMBRE_MODULO, 'CONSTRUCTOR_INVOKED', {
+      version: VERSION_MODULO,
+      forensicMode: 'enabled',
+      config: { cacheL1Enabled: true, cacheL2Enabled: config.cacheL2Enabled !== false, redisEnabled: config.redisEnabled !== false, forensicTracking: true, auditTrail: true }
+    });
+  }
+
+  async init() {
+    if (this.initialized) {
+      dragon.respira('Red Superior ya inicializada', NOMBRE_MODULO, 'INIT_ALREADY', { version: this.version });
+      return;
+    }
+
+    dragon.respira('Inicializando Red Superior FAANG con trazabilidad forense', NOMBRE_MODULO, 'INIT_START', {
+      version: VERSION_MODULO, forensicMode: 'enabled'
+    });
+
+    try {
+      this._initializeRedisClient(this.config);
+      this._initializeCache(this.config);
+      await this._initializeSmallNN(this.config);
+      // _initializeMetrics ya se llamó en el constructor; mantener idempotencia
+      if (!this.metrics) this._initializeMetrics();
+      this._initializeForensics();
+      this._startHealthMonitoring();
+
+      this.initialized = true;
+      this.healthStatus.overall = 'healthy';
+      this.healthStatus.forensics = 'active';
+
+      dragon.zen('Red Superior FAANG inicializada exitosamente con trazabilidad forense', NOMBRE_MODULO, 'INIT_SUCCESS', {
+        version: VERSION_MODULO,
+        redis: this.healthStatus.redis,
+        smallNN: this.healthStatus.smallNN,
+        cache: this.healthStatus.cache,
+        forensics: this.healthStatus.forensics,
+        initDuration: Date.now() - this.startTime,
+        initDurationPrecise: (performance.now() - this.startTimePrecise).toFixed(3),
+        hasAnalizarImagen: typeof this.analizarImagen === 'function'
+      });
+
+      this._auditEvent('SYSTEM_INITIALIZED', { version: VERSION_MODULO, timestamp: Date.now(), healthStatus: this.healthStatus }).catch(() => {});
+    } catch (error) {
+      this.healthStatus.overall = 'failed';
+      this.healthStatus.forensics = 'failed';
+      dragon.agoniza('Error crítico inicializando Red Superior', error, NOMBRE_MODULO, 'INIT_ERROR', {
+        version: VERSION_MODULO, error: error.message, stack: error.stack, healthStatus: this.healthStatus
+      });
+      throw new InitializationError('Failed to initialize Red Superior', 'RedSuperior', { originalError: error.message, healthStatus: this.healthStatus, stack: error.stack });
+    }
+  }
+
+  async analizarImagen(params) {
+    if (!this.initialized) throw new Error('Red Superior no inicializada. Llama a init() primero.');
+    const { rutaArchivo, archivoId, correlationId, nombreOriginal, usuarioId, clientId } = params;
+
+    dragon.respira('Análisis de imagen iniciado', NOMBRE_MODULO, 'ANALYZE_START', {
+      archivoId, correlationId, nombreOriginal, usuarioId, clientId
+    });
+
+    try {
+      const resultado = await this.smallNN.analizarImagen({ rutaArchivo, archivoId, correlationId });
+
+      dragon.zen('Análisis de imagen completado', NOMBRE_MODULO, 'ANALYZE_SUCCESS', {
+        archivoId, correlationId, resultado
+      });
+
+      return {
+        esAutentico: resultado.esAutentico,
+        confianza: resultado.confianza,
+        detalles: resultado.detalles,
+        processingTime: resultado.processingTime,
+        version: this.version,
+        archivoId,
+        correlationId,
+        nombreOriginal,
+        usuarioId,
+        clientId,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      dragon.agoniza('Error en análisis de imagen', error, NOMBRE_MODULO, 'ANALYZE_ERROR', {
+        archivoId, correlationId, rutaArchivo, nombreOriginal, usuarioId, clientId
+      });
+      throw new PredictionError('Error análisis imagen: ' + error.message, 'RedSuperior', {
+        archivoId, correlationId, rutaArchivo, nombreOriginal, usuarioId, clientId
+      });
+    }
+  }
+
+  async predecir(features, opciones = {}) {
+    const startTime = performance.now();
+    const startTimestamp = Date.now();
+    const correlationId = opciones.correlationId || `pred_${startTimestamp}`;
+    const archivoId = opciones.archivoId || null;
+    const enableCache = opciones.cache !== false;
+
+    // FIX: asegurar estructura métricas
+    if (!this.metrics) this._initializeMetrics();
+    this.metrics.totalPredictions++;
+
+    if (!_isValidFeaturesArray(features)) {
+      const err = new PredictionError('features_invalid', 0, { correlationId, archivoId });
+      dragon.sePreocupa('Features inválidos, devolviendo fallback', NOMBRE_MODULO, 'FEATURES_INVALID', {
+        correlationId, archivoId, type: typeof features, length: Array.isArray(features) ? features.length : 'n/a'
+      });
+      return this._getFallbackResult(correlationId, archivoId, 0, 0, err);
+    }
+
+    await this._updateSession(correlationId, archivoId, {
+      operation: 'predict', stage: 'started', featuresLength: features.length, cacheEnabled: enableCache
+    }).catch(() => {});
+    if (archivoId) {
+      await this._updateTracking(archivoId, 'prediction_started', {
+        correlationId, timestamp: startTimestamp, timestampPrecise: startTime.toFixed(3)
+      }).catch(() => {});
+    }
+
+    try {
+      if (!this.initialized) {
+        await this._recordSecurityEvent('PREDICTION_UNINITIALIZED', 'high', { correlationId, archivoId }).catch(() => {});
+        throw new PredictionError('Red Superior no inicializada', 0, { correlationId, archivoId, initialized: this.initialized });
+      }
+
+      const cacheKey = this._generateCacheKey(features);
+
+      if (enableCache) {
+        const l1Result = this._checkCacheL1(cacheKey, correlationId);
+        if (l1Result) {
+          const duration = performance.now() - startTime;
+          const durationTimestamp = Date.now() - startTimestamp;
+
+          await this._updateSession(correlationId, archivoId, { stage: 'completed', cacheHit: 'L1', duration: duration.toFixed(3) }).catch(() => {});
+          if (archivoId) {
+            await this._updateTracking(archivoId, 'prediction_completed', {
+              correlationId, cacheHit: 'L1', duration: duration.toFixed(3),
+              categoria: l1Result.categoria, confianza: l1Result.confianza
+            }).catch(() => {});
+          }
+          await this._recordPerformanceMetric('prediction_latency_l1', duration, { correlationId, archivoId, cacheHit: 'L1' }).catch(() => {});
+          this._recordLatency(duration);
+
+          return this._enrichResult(l1Result, {
+            correlationId, archivoId, cacheHit: 'L1', duration: duration.toFixed(3), durationMs: durationTimestamp,
+            forensics: { tracked: !!archivoId, audited: this.forensics.enabled, sessionId: correlationId }
+          });
+        }
+      }
+
+      if (enableCache && this.cacheL2Enabled) {
+        const l2Result = await this._checkCacheL2(cacheKey, correlationId);
+        if (l2Result) {
+          try { this.cacheL1.set(cacheKey, l2Result); } catch {}
+          const duration = performance.now() - startTime;
+          const durationTimestamp = Date.now() - startTimestamp;
+
+          await this._updateSession(correlationId, archivoId, { stage: 'completed', cacheHit: 'L2', duration: duration.toFixed(3) }).catch(() => {});
+          if (archivoId) {
+            await this._updateTracking(archivoId, 'prediction_completed', {
+              correlationId, cacheHit: 'L2', duration: duration.toFixed(3),
+              categoria: l2Result.categoria, confianza: l2Result.confianza
+            }).catch(() => {});
+          }
+          await this._recordPerformanceMetric('prediction_latency_l2', duration, { correlationId, archivoId, cacheHit: 'L2' }).catch(() => {});
+          this._recordLatency(duration);
+
+          return this._enrichResult(l2Result, {
+            correlationId, archivoId, cacheHit: 'L2', duration: duration.toFixed(3), durationMs: durationTimestamp,
+            forensics: { tracked: !!archivoId, audited: this.forensics.enabled, sessionId: correlationId }
+          });
+        }
+      }
+
+      await this._auditEvent('PREDICTION_CACHE_MISS', { correlationId, archivoId, cacheKey: cacheKey.substring(0, 16) }).catch(() => {});
+      this.metrics.cacheHits.miss++;
+      await this._updateSession(correlationId, archivoId, { stage: 'inference_started', cacheHit: 'MISS' }).catch(() => {});
+      if (archivoId) {
+        await this._updateTracking(archivoId, 'inference_started', { correlationId, cacheKey: cacheKey.substring(0, 16) }).catch(() => {});
+      }
+
+      const infStart = performance.now();
+      let resultado;
+      if (typeof this.smallNN.predecir === 'function') {
+        resultado = await this.smallNN.predecir(features, opciones);
+      } else if (typeof this.smallNN.predecirBatch === 'function') {
+        const r = await this.smallNN.predecirBatch([features], 1, opciones);
+        resultado = Array.isArray(r?.resultados) ? r.resultados[0] : r[0];
+      } else {
+        throw new PredictionError('SmallNN no expone predecir()', 0, {});
+      }
+      const inferenceDuration = performance.now() - infStart;
+      this._recordInferenceLatency(inferenceDuration);
+      await this._recordPerformanceMetric('inference_duration', inferenceDuration, {
+        correlationId, archivoId, categoria: resultado.categoria, confianza: resultado.confianza
+      }).catch(() => {});
+
+      if (enableCache) {
+        await this._saveToCache(cacheKey, resultado, correlationId, archivoId);
+      }
+
+      const duration = performance.now() - startTime;
+      const durationTimestamp = Date.now() - startTimestamp;
+      this._recordLatency(duration);
+
+      await this._updateSession(correlationId, archivoId, {
+        stage: 'completed',
+        cacheHit: 'MISS',
+        duration: duration.toFixed(3),
+        inferenceDuration: inferenceDuration.toFixed(3),
+        categoria: resultado.categoria,
+        confianza: resultado.confianza
+      }).catch(() => {});
+      if (archivoId) {
+        await this._updateTracking(archivoId, 'prediction_completed', {
+          correlationId, cacheHit: 'MISS', duration: duration.toFixed(3),
+          inferenceDuration: inferenceDuration.toFixed(3),
+          categoria: resultado.categoria, confianza: resultado.confianza
+        }).catch(() => {});
+      }
+      await this._auditEvent('PREDICTION_COMPLETED', {
+        correlationId, archivoId, categoria: resultado.categoria,
+        confianza: resultado.confianza, duration: duration.toFixed(3), cacheHit: 'MISS'
+      }).catch(() => {});
+
+      dragon.sonrie('Predicción completada exitosamente con trazabilidad forense', NOMBRE_MODULO, 'PREDICTION_SUCCESS', {
+        correlationId, archivoId, categoria: resultado.categoria,
+        confianza: (resultado.confianza * 100).toFixed(1) + '%',
+        duration: Math.round(duration * 100) / 100,
+        inferenceDuration: Math.round(inferenceDuration * 100) / 100,
+        cacheHit: 'MISS', forensics: 'complete'
+      });
+
+      return this._enrichResult(resultado, {
+        correlationId,
+        archivoId,
+        cacheHit: 'MISS',
+        duration: duration.toFixed(3),
+        durationMs: durationTimestamp,
+        inferenceDuration: inferenceDuration.toFixed(3),
+        forensics: {
+          tracked: !!archivoId,
+          audited: this.forensics.enabled,
+          sessionId: correlationId,
+          auditEvents: this.metrics.forensics.auditEvents,
+          trackingEvents: this.metrics.forensics.trackingEvents
+        }
+      });
+    } catch (error) {
+      if (!this.metrics) this._initializeMetrics();
+      this.metrics.totalErrors++;
+      const duration = performance.now() - startTime;
+      const durationTimestamp = Date.now() - startTimestamp;
+
+      await this._updateSession(correlationId, archivoId, { stage: 'error', error: error.message, duration: duration.toFixed(3) }).catch(() => {});
+      if (archivoId) {
+        await this._updateTracking(archivoId, 'prediction_error', {
+          correlationId, error: error.message, stack: error.stack, duration: duration.toFixed(3)
+        }).catch(() => {});
+      }
+      await this._auditEvent('PREDICTION_ERROR', {
+        correlationId, archivoId, error: error.message, errorCode: error.code || 'UNKNOWN', duration: duration.toFixed(3)
+      }).catch(() => {});
+      await this._recordSecurityEvent('PREDICTION_FAILURE', 'medium', { correlationId, archivoId, error: error.message }).catch(() => {});
+      dragon.agoniza('Error en predicción con trazabilidad forense', error, NOMBRE_MODULO, 'PREDICTION_ERROR', {
+        correlationId, archivoId, duration: Math.round(duration * 100) / 100, error: error.message, stack: error.stack
+      });
+
+      return this._getFallbackResult(correlationId, archivoId, duration, durationTimestamp, error);
+    }
+  }
+
+  async predecirBatch(featuresBatch, batchSize = 10, opciones = {}) {
+    const startTime = performance.now();
+    const startTimestamp = Date.now();
+    const correlationId = opciones.correlationId || `batch_${startTimestamp}`;
+
+    dragon.respira('Iniciando batch prediction con trazabilidad forense', NOMBRE_MODULO, 'BATCH_PREDICTION_START', {
+      correlationId, totalSamples: featuresBatch.length, batchSize, forensics: this.forensics?.enabled
+    });
+
+    await this._updateSession(correlationId, null, {
+      operation: 'batch_predict', stage: 'started', totalSamples: featuresBatch.length, batchSize
+    }).catch(() => {});
+    await this._auditEvent('BATCH_PREDICTION_STARTED', { correlationId, totalSamples: featuresBatch.length, batchSize }).catch(() => {});
+
+    try {
+      let resultados = [];
+
+      if (this.smallNN?.predecirBatch && typeof this.smallNN.predecirBatch === 'function') {
+        const r = await this.smallNN.predecirBatch(featuresBatch, batchSize, opciones);
+        resultados = r?.resultados || r || [];
+      } else {
+        for (let i = 0; i < featuresBatch.length; i += batchSize) {
+          const batch = featuresBatch.slice(i, i + batchSize);
+          const batchResults = await Promise.all(
+            batch.map((features, index) => this.predecir(features, { ...opciones, correlationId: `${correlationId}_${i + index}` }))
+          );
+          resultados.push(...batchResults);
+        }
+      }
+
+      const duration = performance.now() - startTime;
+      const durationTimestamp = Date.now() - startTimestamp;
+
+      await this._updateSession(correlationId, null, {
+        stage: 'completed', duration: duration.toFixed(3), totalSamples: featuresBatch.length, successfulSamples: resultados.length
+      }).catch(() => {});
+      await this._auditEvent('BATCH_PREDICTION_COMPLETED', {
+        correlationId, totalSamples: featuresBatch.length, successfulSamples: resultados.length, duration: duration.toFixed(3)
+      }).catch(() => {});
+      await this._recordPerformanceMetric('batch_prediction_duration', duration, {
+        correlationId, totalSamples: featuresBatch.length, batchSize
+      }).catch(() => {});
+
+      dragon.sonrie('Batch prediction completado con trazabilidad forense', NOMBRE_MODULO, 'BATCH_PREDICTION_SUCCESS', {
+        correlationId, totalSamples: featuresBatch.length, duration: Math.round(duration * 100) / 100, forensics: 'complete'
+      });
+
+      return {
+        resultados,
+        metadata: {
+          correlationId, totalSamples: featuresBatch.length, batchSize,
+          duration: duration.toFixed(3), durationMs: durationTimestamp,
+          version: VERSION_MODULO, timestamp: Date.now(),
+          forensics: { tracked: true, audited: this.forensics?.enabled, sessionId: correlationId, auditEvents: this.metrics.forensics.auditEvents }
+        }
+      };
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      await this._updateSession(correlationId, null, { stage: 'error', error: error.message, duration: duration.toFixed(3) }).catch(() => {});
+      await this._auditEvent('BATCH_PREDICTION_ERROR', { correlationId, error: error.message, totalSamples: featuresBatch.length }).catch(() => {});
+      dragon.agoniza('Error en batch prediction', error, NOMBRE_MODULO, 'BATCH_PREDICTION_ERROR', {
+        correlationId, error: error.message, stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  _recordLatency(duration) { this.metrics.latencies.push(duration); if (this.metrics.latencies.length > METRICS_CONFIG.latencyHistorySize) this.metrics.latencies.shift(); }
+  _recordInferenceLatency(duration) { this.metrics.inferenceLatencies.push(duration); if (this.metrics.inferenceLatencies.length > METRICS_CONFIG.latencyHistorySize) this.metrics.inferenceLatencies.shift(); }
+
+  getMetrics() {
+    const latencies = [...this.metrics.latencies].sort((a, b) => a - b);
+    const infLat = [...this.metrics.inferenceLatencies].sort((a, b) => a - b);
+    const p = (arr, q) => arr[Math.floor(arr.length * q)] || 0;
+    const avg = (arr) => (arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0);
+    const cacheHitRate = this._calculateCacheHitRate();
+
+    return {
+      version: VERSION_MODULO,
+      totalPredictions: this.metrics.totalPredictions,
+      totalErrors: this.metrics.totalErrors,
+      errorRate: this.metrics.totalPredictions > 0 ? this.metrics.totalErrors / this.metrics.totalPredictions : 0,
+      latency: { p50: Math.round(p(latencies, 0.5) * 100) / 100, p95: Math.round(p(latencies, 0.95) * 100) / 100, p99: Math.round(p(latencies, 0.99) * 100) / 100, avg: Math.round(avg(latencies) * 100) / 100 },
+      inferenceLatency: { p50: Math.round(p(infLat, 0.5) * 100) / 100, p95: Math.round(p(infLat, 0.95) * 100) / 100, p99: Math.round(p(infLat, 0.99) * 100) / 100, avg: Math.round(avg(infLat) * 100) / 100 },
+      cache: { hitRate: Math.round(cacheHitRate * 100), l1Hits: this.metrics.cacheHits.l1, l2Hits: this.metrics.cacheHits.l2, misses: this.metrics.cacheHits.miss, l2Errors: this.metrics.cacheErrors.l2, l1Size: this.cacheL1?.size || 0 },
+      forensics: { enabled: this.forensics?.enabled, auditEvents: this.metrics.forensics.auditEvents, trackingEvents: this.metrics.forensics.trackingEvents, securityEvents: this.metrics.forensics.securityEvents, performanceEvents: this.metrics.forensics.performanceEvents },
+      smallNN: this.smallNN?.getMetrics ? this.smallNN.getMetrics() : null
+    };
+  }
+
+  health() {
+    const metrics = this.getMetrics();
+    let status = 'healthy';
+    const issues = [];
+    if (!this.initialized) { status = 'not_initialized'; issues.push('not_initialized'); }
+    if (metrics.errorRate > 0.05) { status = 'degraded'; issues.push('high_error_rate'); }
+    if (metrics.latency.p95 > METRICS_CONFIG.performanceAlertThreshold) { status = 'degraded'; issues.push('high_latency'); }
+    if (this.healthStatus.redis === 'failed' && this.cacheL2Enabled) { status = 'degraded'; issues.push('redis_unavailable'); }
+    if (!this.forensics?.enabled) issues.push('forensics_disabled');
+
+    return {
+      status, issues, healthStatus: this.healthStatus, metrics,
+      forensics: { enabled: this.forensics?.enabled, trackingActive: this.healthStatus.forensics === 'active', auditTrailActive: this.forensics?.enabled, lastHealthCheck: this.metrics.lastHealthCheck },
+      timestamp: Date.now(),
+      timestampPrecise: performance.now().toFixed(3),
+      version: VERSION_MODULO,
+      uptime: Date.now() - this.startTime,
+      uptimePrecise: (performance.now() - this.startTimePrecise).toFixed(3)
+    };
+  }
+
+  async shutdown() {
+    const shutdownStart = performance.now();
+    dragon.respira('Iniciando shutdown de Red Superior con audit trail', NOMBRE_MODULO, 'SHUTDOWN_START', { version: VERSION_MODULO, forensics: this.forensics?.enabled });
+
+    await this._auditEvent('SYSTEM_SHUTDOWN_STARTED', { timestamp: Date.now(), totalPredictions: this.metrics.totalPredictions, forensics: this.metrics.forensics }).catch(() => {});
+
+    try {
+      if (this.healthCheckInterval) clearInterval(this.healthCheckInterval);
+      if (this.redis) { try { await this.redis.quit(); } catch (error) { dragon.sePreocupa('Error cerrando conexión Redis', NOMBRE_MODULO, 'REDIS_CLOSE_ERROR', { error: error.message }); } }
+      this.cacheL1?.clear?.();
+      this.initialized = false;
+      this.healthStatus.overall = 'shutdown';
+      this.healthStatus.forensics = 'shutdown';
+
+      const shutdownDuration = performance.now() - shutdownStart;
+
+      await this._auditEvent('SYSTEM_SHUTDOWN_COMPLETED', { timestamp: Date.now(), duration: shutdownDuration.toFixed(3), metrics: this.getMetrics() }).catch(() => {});
+      dragon.sonrie('Shutdown completado exitosamente con audit trail', NOMBRE_MODULO, 'SHUTDOWN_SUCCESS', { version: VERSION_MODULO, totalPredictions: this.metrics.totalPredictions, shutdownDuration: Math.round(shutdownDuration * 100) / 100, forensics: this.metrics.forensics });
+    } catch (error) {
+      dragon.agoniza('Error durante shutdown', error, NOMBRE_MODULO, 'SHUTDOWN_ERROR', { error: error.message, stack: error.stack });
+    }
+  }
+
+  _initializeRedisClient(config) {
+    try {
+      if (config.redisEnabled === false) {
+        dragon.sePreocupa('Redis deshabilitado por configuración - modo local sin trazabilidad forense', NOMBRE_MODULO, 'REDIS_DISABLED', { mode: 'local_only', forensics: 'disabled' });
+        this.redis = null; this.healthStatus.redis = 'disabled'; this.healthStatus.forensics = 'degraded'; return;
+      }
+      this.redis = new RedisClient({ clientId: 'red-superior', serviceName: 'red-superior', priority: SERVICE_PRIORITIES.HIGH, useFallbackCache: true, fallbackOnlyForCache: false });
+      this.healthStatus.redis = 'healthy';
+      dragon.respira('Cliente Redis inicializado para Red Superior con trazabilidad forense', NOMBRE_MODULO, 'REDIS_INIT_SUCCESS', { clientId: 'red-superior', priority: SERVICE_PRIORITIES.HIGH, autoRegistered: true, forensicsEnabled: true });
+    } catch (error) {
+      this.healthStatus.redis = 'failed'; this.healthStatus.forensics = 'degraded';
+      dragon.agoniza('Error inicializando cliente Redis - trazabilidad forense degradada', error, NOMBRE_MODULO, 'REDIS_INIT_ERROR', { error: error.message, fallback: 'local_cache_only', forensics: 'degraded' });
+      this.redis = null; this.healthStatus.redis = 'degraded'; this.healthStatus.forensics = 'degraded';
+    }
+  }
+
+  _initializeCache(config) {
+    try {
+      this.cacheL1 = new LRUCache({ ...CACHE_CONFIG.l1 });
+      this.cacheL2Enabled = config.cacheL2Enabled !== false && this.redis !== null;
+      this.cacheL2TTL = config.cacheL2TTL || CACHE_CONFIG.l2.ttl;
+      this.cacheL2Prefix = CACHE_CONFIG.l2.prefix;
+
+      this.healthStatus.cache = 'healthy';
+      dragon.respira('Cache híbrido inicializado con trazabilidad forense', NOMBRE_MODULO, 'CACHE_INIT_SUCCESS', {
+        l1: { maxEntries: CACHE_CONFIG.l1.max, ttl: CACHE_CONFIG.l1.ttl },
+        l2: { enabled: this.cacheL2Enabled, ttl: this.cacheL2TTL, prefix: this.cacheL2Prefix },
+        forensics: 'enabled'
+      });
+    } catch (error) {
+      this.healthStatus.cache = 'failed';
+      dragon.agoniza('Error inicializando cache híbrido', error, NOMBRE_MODULO, 'CACHE_INIT_ERROR', { error: error.message, stack: error.stack });
+      throw new InitializationError('Failed to initialize Cache', 'Cache', { originalError: error.message, stack: error.stack });
+    }
+  }
+
+  async _initializeSmallNN() {
+    try {
+      this.smallNN = new RedSuperiorSmallNN();
+      this.redSuperiorSmallNN = this.smallNN;
+      if (typeof this.smallNN.init === 'function') await this.smallNN.init();
+      if (!this.smallNN || (typeof this.smallNN.predecir !== 'function' && typeof this.smallNN.predecirBatch !== 'function')) {
+        throw new Error('SmallNN no tiene método predecir()/predecirBatch()');
+      }
+      this.healthStatus.smallNN = 'healthy';
+      dragon.respira('RedSuperiorSmallNN inicializado', NOMBRE_MODULO, 'SMALL_NN_INIT_SUCCESS', { version: this.smallNN.version || 'unknown', initialized: this.smallNN.initialized });
+    } catch (error) {
+      this.healthStatus.smallNN = 'failed';
+      dragon.agoniza('Error inicializando RedSuperiorSmallNN', error, NOMBRE_MODULO, 'SMALL_NN_INIT_ERROR', { error: error.message, stack: error.stack });
+      throw new InitializationError('Failed to initialize SmallNN', 'RedSuperiorSmallNN', { originalError: error.message, stack: error.stack });
+    }
+  }
+
+  _initializeMetrics() {
+    this.metrics = {
+      totalPredictions: 0,
+      totalErrors: 0,
+      cacheHits: { l1: 0, l2: 0, miss: 0 },
+      cacheErrors: { l2: 0, l1: 0 },
+      latencies: [],
+      inferenceLatencies: [],
+      forensics: { auditEvents: 0, trackingEvents: 0, securityEvents: 0, performanceEvents: 0 },
+      lastHealthCheck: null
+    };
+    dragon.zen('Sistema de métricas inicializado con trazabilidad forense', NOMBRE_MODULO, 'METRICS_INIT_SUCCESS', { historySize: METRICS_CONFIG.latencyHistorySize, forensicTracking: true });
+  }
+
+  _initializeForensics() {
+    this.forensics = {
+      enabled: this.redis !== null,
+      trackingPrefix: FORENSIC_CONFIG.tracking.keyPrefix,
+      sessionPrefix: FORENSIC_CONFIG.tracking.sessionPrefix,
+      auditStream: FORENSIC_CONFIG.streams.audit,
+      performanceStream: FORENSIC_CONFIG.streams.performance,
+      securityStream: FORENSIC_CONFIG.streams.security,
+      precision: FORENSIC_CONFIG.precision,
+      ttl: FORENSIC_CONFIG.tracking.ttl
+    };
+
+    if (!this.forensics.enabled) {
+      dragon.sePreocupa('Trazabilidad forense degradada - Redis no disponible', NOMBRE_MODULO, 'FORENSICS_DEGRADED', { mode: 'local_only', tracking: 'limited', auditTrail: 'disabled' });
+    } else {
+      dragon.sonrie('Trazabilidad forense activada completamente', NOMBRE_MODULO, 'FORENSICS_INIT_SUCCESS', {
+        tracking: 'enabled', auditTrail: 'immutable', precision: FORENSIC_CONFIG.precision.timestampFormat,
+        streams: { audit: this.forensics.auditStream, performance: this.forensics.performanceStream, security: this.forensics.securityStream }
+      });
+    }
+  }
+
+  _startHealthMonitoring() {
+    this.healthCheckInterval = setInterval(() => {
+      try { this._performHealthCheck(); }
+      catch (error) {
+        dragon.sePreocupa('Error en health check periódico', NOMBRE_MODULO, 'HEALTH_CHECK_ERROR', { error: error.message, stack: error.stack });
+      }
+    }, METRICS_CONFIG.healthCheckInterval);
+
+    dragon.zen('Health monitoring iniciado', NOMBRE_MODULO, 'HEALTH_MONITORING_START', { interval: METRICS_CONFIG.healthCheckInterval });
+  }
+
+  _performHealthCheck() {
+    const summary = this.getMetrics();
+    this.metrics.lastHealthCheck = Date.now();
+
+    if (summary.latency.p95 > METRICS_CONFIG.performanceAlertThreshold) {
+      dragon.sePreocupa('Degradación de performance detectada', NOMBRE_MODULO, 'PERFORMANCE_DEGRADATION', { p95: summary.latency.p95, threshold: METRICS_CONFIG.performanceAlertThreshold, severity: 'medium' });
+      this._auditEvent('PERFORMANCE_DEGRADATION', { p95: summary.latency.p95, threshold: METRICS_CONFIG.performanceAlertThreshold }).catch(() => {});
+    }
+
+    const cacheHitRate = this._calculateCacheHitRate();
+    if (cacheHitRate < 0.5) {
+      dragon.sePreocupa('Cache hit rate bajo', NOMBRE_MODULO, 'LOW_CACHE_HIT_RATE', { hitRate: Math.round(cacheHitRate * 100), threshold: 50, severity: 'low' });
+    }
+
+    dragon.zen('Health check completado', NOMBRE_MODULO, 'HEALTH_CHECK_COMPLETED', {
+      status: this.healthStatus.overall,
+      cacheHitRate: Math.round(cacheHitRate * 100),
+      p95Latency: summary.latency.p95,
+      forensics: this.healthStatus.forensics
+    });
+  }
+
+  _calculateCacheHitRate() { const { l1, l2, miss } = this.metrics.cacheHits; const total = l1 + l2 + miss; return total > 0 ? (l1 + l2) / total : 0; }
+
+  async _auditEvent(eventType, metadata = {}) {
+    if (!this.forensics?.enabled || !this.redis) return;
+    try {
+      await this.redis.xadd(this.forensics.auditStream, '*',
+        'eventType', eventType,
+        'timestamp', Date.now().toString(),
+        'timestampPrecise', performance.now().toFixed(3),
+        'module', NOMBRE_MODULO,
+        'version', VERSION_MODULO,
+        'metadata', JSON.stringify(metadata)
+      );
+      this.metrics.forensics.auditEvents++;
+    } catch (error) {
+      dragon.sePreocupa('Error registrando audit event', NOMBRE_MODULO, 'AUDIT_EVENT_ERROR', { eventType, error: error.message });
+    }
+  }
+
+  async _updateTracking(archivoId, stage, data = {}) {
+    if (!this.forensics?.enabled || !this.redis || !archivoId) return;
+    try {
+      const trackingKey = `${this.forensics.trackingPrefix}${_safeKey(archivoId)}`;
+      const payload = {
+        [`stage_${stage}`]: Date.now().toString(),
+        [`stage_${stage}_precise`]: performance.now().toFixed(3),
+        [`data_${stage}`]: JSON.stringify({ ...data, version: VERSION_MODULO, module: NOMBRE_MODULO }),
+        ultima_actualizacion: Date.now().toString(),
+        version: VERSION_MODULO
+      };
+      await this._hsetAll(trackingKey, payload);
+      await this.redis.expire?.(trackingKey, this.forensics.ttl);
+      this.metrics.forensics.trackingEvents++;
+    } catch (error) {
+      dragon.sePreocupa('Error actualizando tracking', NOMBRE_MODULO, 'TRACKING_UPDATE_ERROR', { archivoId, stage, error: error.message });
+    }
+  }
+
+  async _updateSession(correlationId, archivoId, data = {}) {
+    if (!this.forensics?.enabled || !this.redis || !correlationId) return;
+    try {
+      const sessionKey = `${this.forensics.sessionPrefix}${_safeKey(correlationId)}`;
+      const base = {
+        correlationId,
+        archivoId: archivoId || 'unknown',
+        timestamp: Date.now().toString(),
+        timestampPrecise: performance.now().toFixed(3),
+        module: NOMBRE_MODULO,
+        version: VERSION_MODULO
+      };
+      const extra = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)]));
+      await this._hsetAll(sessionKey, { ...base, ...extra });
+      await this.redis.expire?.(sessionKey, 3600);
+    } catch (error) {
+      dragon.sePreocupa('Error actualizando session', NOMBRE_MODULO, 'SESSION_UPDATE_ERROR', { correlationId, error: error.message });
+    }
+  }
+
+  async _recordPerformanceMetric(metric, value, metadata = {}) {
+    if (!this.forensics?.enabled || !this.redis) return;
+    try {
+      await this.redis.xadd(this.forensics.performanceStream, '*',
+        'metric', metric,
+        'value', value.toString(),
+        'timestamp', Date.now().toString(),
+        'timestampPrecise', performance.now().toFixed(3),
+        'module', NOMBRE_MODULO,
+        'version', VERSION_MODULO,
+        'metadata', JSON.stringify(metadata)
+      );
+      this.metrics.forensics.performanceEvents++;
+    } catch (error) {
+      dragon.sePreocupa('Error registrando performance metric', NOMBRE_MODULO, 'PERFORMANCE_METRIC_ERROR', { metric, error: error.message });
+    }
+  }
+
+  async _recordSecurityEvent(eventType, severity, metadata = {}) {
+    if (!this.forensics?.enabled || !this.redis) return;
+    try {
+      await this.redis.xadd(this.forensics.securityStream, '*',
+        'eventType', eventType,
+        'severity', severity,
+        'timestamp', Date.now().toString(),
+        'timestampPrecise', performance.now().toFixed(3),
+        'module', NOMBRE_MODULO,
+        'version', VERSION_MODULO,
+        'metadata', JSON.stringify(metadata)
+      );
+      this.metrics.forensics.securityEvents++;
+      dragon.sePreocupa('Evento de seguridad registrado', NOMBRE_MODULO, 'SECURITY_EVENT_RECORDED', { eventType, severity, metadata });
+    } catch (error) {
+      dragon.agoniza('Error registrando security event', error, NOMBRE_MODULO, 'SECURITY_EVENT_ERROR', { eventType, error: error.message });
+    }
+  }
+
+  _generateCacheKey(features) {
+    const normalized = JSON.stringify(features, Object.keys(features).sort());
+    return crypto.createHash('md5').update(normalized).digest('hex');
+  }
+
+  _checkCacheL1(cacheKey, correlationId) {
+    try {
+      const cached = this.cacheL1.get(cacheKey);
+      if (cached) {
+        this.metrics.cacheHits.l1++;
+        dragon.zen('Cache L1 hit', NOMBRE_MODULO, 'CACHE_L1_HIT', { correlationId, cacheKey: cacheKey.substring(0, 16) });
+        return cached;
+      }
+      return null;
+    } catch (error) {
+      this.metrics.cacheErrors.l1++;
+      dragon.sePreocupa('Error verificando cache L1', NOMBRE_MODULO, 'CACHE_L1_ERROR', { correlationId, error: error.message });
+      return null;
+    }
+  }
+
+  async _checkCacheL2(cacheKey, correlationId) {
+    if (!this.redis) return null;
+    try {
+      const redisKey = `${this.cacheL2Prefix}${cacheKey}`;
+      let cached = null;
+      try { cached = await this.redis.get(redisKey, { useFallback: true }); } catch { cached = await this.redis.get(redisKey); }
+      if (cached) {
+        this.metrics.cacheHits.l2++;
+        const parsed = typeof cached === 'string' ? JSON.parse(cached) : cached;
+        dragon.zen('Cache L2 hit - calentando L1', NOMBRE_MODULO, 'CACHE_L2_HIT', { correlationId, cacheKey: cacheKey.substring(0, 16) });
+        return parsed;
+      }
+      return null;
+    } catch (error) {
+      this.metrics.cacheErrors.l2++;
+      dragon.sePreocupa('Error verificando cache L2', NOMBRE_MODULO, 'CACHE_L2_ERROR', { correlationId, error: error.message });
+      return null;
+    }
+  }
+
+  async _saveToCache(cacheKey, resultado, correlationId, archivoId) {
+    try { this.cacheL1.set(cacheKey, resultado); }
+    catch (error) {
+      this.metrics.cacheErrors.l1++;
+      dragon.sePreocupa('Error guardando en cache L1 (non-critical)', NOMBRE_MODULO, 'CACHE_L1_SAVE_ERROR', {
+        correlationId, archivoId, error: error.message, cacheKey: cacheKey.substring(0, 16), impact: 'L1 degraded'
+      });
+    }
+
+    if (!this.cacheL2Enabled || !this.redis) return;
+
+    const redisKey = `${this.cacheL2Prefix}${cacheKey}`;
+    const payload = JSON.stringify(resultado);
+    try {
+      if (this.redis.set) {
+        await this.redis.set(redisKey, payload, { ttl: this.cacheL2TTL });
+      } else if (this.redis.setex) {
+        await this.redis.setex(redisKey, Math.ceil(this.cacheL2TTL / 1000), payload);
+      } else if (this.redis.psetex) {
+        await this.redis.psetex(redisKey, this.cacheL2TTL, payload);
+      } else {
+        await this.redis.set(redisKey, payload);
+        await this.redis.pexpire?.(redisKey, this.cacheL2TTL);
+      }
+
+      dragon.zen('Resultado guardado en cache L1+L2 con trazabilidad', NOMBRE_MODULO, 'CACHE_SAVE_SUCCESS', {
+        correlationId, archivoId, cacheKey: cacheKey.substring(0, 16), l2TTL: this.cacheL2TTL,
+        categoria: resultado.categoria, confianza: resultado.confianza
+      });
+    } catch (error) {
+      this.metrics.cacheErrors.l2++;
+      dragon.sePreocupa('Error guardando en cache L2 (non-critical)', NOMBRE_MODULO, 'CACHE_L2_SAVE_ERROR', {
+        correlationId, archivoId, error: error.message, cacheKey: cacheKey.substring(0, 16), fallback: 'L1_only'
+      });
+    }
+
+    try {
+      await this._auditEvent('CACHE_SAVED', {
+        correlationId, archivoId, cacheKey: cacheKey.substring(0, 16),
+        categoria: resultado.categoria, confianza: resultado.confianza, l1: true, l2: this.cacheL2Enabled && !!this.redis
+      });
+    } catch (auditError) {
+      dragon.sePreocupa('Error en audit event CACHE_SAVED (non-critical)', NOMBRE_MODULO, 'AUDIT_EVENT_ERROR', {
+        correlationId, archivoId, event: 'CACHE_SAVED', error: auditError.message
+      });
+    }
+  }
+
+  async _hsetAll(key, fieldsObj) {
+    try { if (typeof this.redis.hset === 'function') { await this.redis.hset(key, fieldsObj); return; } }
+    catch {}
+    try { if (typeof this.redis.hmset === 'function') { await this.redis.hmset(key, fieldsObj); return; } }
+    catch (e2) { throw e2; }
+    const pairs = [];
+    for (const [k, v] of Object.entries(fieldsObj)) { pairs.push(k, String(v)); }
+    if (typeof this.redis.hset === 'function') await this.redis.hset(key, ...pairs);
+    else throw new Error('No hset/hmset available in Redis client');
+  }
+
+  _enrichResult(resultado, metadata) {
+    return {
+      ...resultado,
+      metadata: {
+        ...resultado.metadata,
+        ...metadata,
+        version: VERSION_MODULO,
+        timestamp: Date.now(),
+        timestampPrecise: performance.now().toFixed(3)
+      }
+    };
+  }
+
+  _getFallbackResult(correlationId, archivoId, duration, durationMs, error) {
+    return {
+      categoria: CATEGORIAS.HUMANO,
+      confianza: 0.33,
+      scores: { humano: 0.33, ia_generado: 0.33, editado: 0.34 },
+      metadata: {
+        correlationId,
+        archivoId,
+        version: VERSION_MODULO,
+        degraded: true,
+        error: error?.message || 'unknown_error',
+        errorCode: error?.code || 'UNKNOWN',
+        duration: duration?.toFixed ? duration.toFixed(3) : String(duration || 0),
+        durationMs,
+        timestamp: Date.now(),
+        timestampPrecise: performance.now().toFixed(3),
+        forensics: { tracked: !!archivoId, audited: this.forensics?.enabled, sessionId: correlationId, fallback: true }
+      }
+    };
+  }
+}
+
+export default RedSuperior;
+export const redSuperior = new RedSuperior();
+export { CATEGORIAS, CACHE_CONFIG, FORENSIC_CONFIG };
+export { RedSuperiorError, InitializationError, PredictionError, CacheError, ForensicError };

@@ -1,0 +1,21 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen",
+    "detectar-doble-compresion-sharp"
+  ],
+  "nombreBase": "evolucion-cargar-imagen-detectar-doble-compresion-sharp",
+  "motivo": "Combinación exitosa: freq 3, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen",
+      "detectar-doble-compresion-sharp"
+    ],
+    "frecuencia": 3,
+    "ratioExito": 1,
+    "tiempoPromedio": 3.1250866666669026,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

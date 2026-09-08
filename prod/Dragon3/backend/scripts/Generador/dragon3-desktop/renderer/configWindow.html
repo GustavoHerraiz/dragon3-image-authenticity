@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Configuración inicial - Dragon3</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      padding: 30px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #12122a;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+      border: 1px solid #2a2a4a;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #ffd93d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h1 span {
+      font-size: 28px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #2a2a4a;
+      padding-bottom: 15px;
+    }
+    .campo {
+      margin-bottom: 18px;
+    }
+    .campo label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #ccc;
+    }
+    .campo .desc {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .campo input, .campo select {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0a0a1a;
+      border: 1px solid #333;
+      color: #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border 0.2s;
+    }
+    .campo input:focus, .campo select:focus {
+      outline: none;
+      border-color: #ffd93d;
+    }
+    .campo .input-group {
+      display: flex;
+      gap: 10px;
+    }
+    .campo .input-group input {
+      flex: 1;
+    }
+    .campo .input-group button {
+      padding: 10px 16px;
+      background: #2a2a4a;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .campo .input-group button:hover {
+      background: #3a3a5a;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #ffd93d;
+    }
+    .checkbox-group label {
+      font-size: 13px;
+      color: #ccc;
+    }
+    .btn-guardar {
+      width: 100%;
+      padding: 14px;
+      background: #ffd93d;
+      color: #0a0a1a;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+    .btn-guardar:hover {
+      background: #f0c82a;
+    }
+    .btn-guardar:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .error-msg {
+      color: #ff6b6b;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .success-msg {
+      color: #51cf66;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .logo-placeholder {
+      font-size: 40px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .obligatorio {
+      color: #ff6b6b;
+      margin-left: 4px;
+    }
+    .opcional {
+      color: #888;
+      font-weight: 400;
+      font-size: 11px;
+      margin-left: 6px;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #2a2a4a;
+      margin: 20px 0;
+    }
+    .seccion-titulo {
+      font-weight: 700;
+      color: #ffd93d;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span>🐉</span> Dragon3</h1>
+    <div class="subtitle">Configuración inicial para comenzar a sellar tus imágenes</div>
+
+    <!-- Ruta de proyectos (OBLIGATORIO) -->
+    <div class="campo">
+      <label>📁 Carpeta de proyectos <span class="obligatorio">*</span></label>
+      <div class="desc">Carpeta donde se guardarán los proyectos y las imágenes selladas.</div>
+      <div class="input-group">
+        <input type="text" id="ruta-proyectos" placeholder="Selecciona una carpeta..." readonly>
+        <button id="btn-seleccionar-carpeta">Examinar</button>
+      </div>
+      <div id="error-ruta" class="error-msg">⚠️ Selecciona una carpeta válida para continuar.</div>
+    </div>
+
+    <!-- Nombre del fotógrafo (RECOMENDADO) -->
+    <div class="campo">
+      <label>👤 Nombre del fotógrafo o estudio</label>
+      <div class="desc">Aparecerá en los informes PDF que generes.</div>
+      <input type="text" id="nombre-autor" placeholder="Ej. Gustavo Herraiz Fotografía">
+    </div>
+
+    <!-- Email (RECOMENDADO) -->
+    <div class="campo">
+      <label>✉️ Email de contacto</label>
+      <div class="desc">Aparecerá en los informes PDF.</div>
+      <input type="email" id="email-autor" placeholder="Ej. gustavo@ejemplo.com">
+    </div>
+
+    <hr>
+
+    <!-- Preferencias de sellado (OPCIONALES) -->
+    <div class="seccion-titulo">⚙️ Preferencias de sellado (opcional)</div>
+
+    <div class="campo">
+      <label>Derechos por defecto <span class="opcional">(opcional)</span></label>
+      <div class="desc">Se aplicarán automáticamente al sellar imágenes. Puedes cambiarlo después.</div>
+      <select id="derechos-defecto">
+        <option value="Cesión de derechos al cliente, reservándose el de autoría">Cesión de derechos al cliente, reservándose el de autoría</option>
+        <option value="Todos los derechos reservados">Todos los derechos reservados</option>
+        <option value="Uso editorial">Uso editorial</option>
+        <option value="Creative Commons">Creative Commons</option>
+      </select>
+    </div>
+
+    <div class="campo">
+      <div class="checkbox-group">
+        <input type="checkbox" id="compartir-blade-defecto">
+        <label for="compartir-blade-defecto">🔗 Compartir metadatos con Blade Verification Network (por defecto)</label>
+      </div>
+      <div class="desc" style="margin-top:4px;">Puedes cambiar esta opción en cualquier momento desde las preferencias.</div>
+    </div>
+
+    <hr>
+
+    <!-- Prefijo personalizado (AVANZADO) -->
+    <div class="campo">
+      <label>🔑 Prefijo para IDs de sellos <span class="opcional">(opcional)</span></label>
+      <div class="desc">Si lo dejas vacío, se generará automáticamente un prefijo único.</div>
+      <input type="text" id="prefijo-usuario" placeholder="Ej. GF3" maxlength="4" style="text-transform:uppercase;">
+    </div>
+
+    <!-- Botón guardar -->
+    <button id="btn-guardar" class="btn-guardar" disabled>Guardar y continuar</button>
+    <div id="mensaje" style="margin-top:12px;"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const path = require('path');
+
+    // Elementos
+    const rutaInput = document.getElementById('ruta-proyectos');
+    const btnCarpeta = document.getElementById('btn-seleccionar-carpeta');
+    const nombreAutor = document.getElementById('nombre-autor');
+    const emailAutor = document.getElementById('email-autor');
+    const derechosDefecto = document.getElementById('derechos-defecto');
+    const compartirBlade = document.getElementById('compartir-blade-defecto');
+    const prefijoUsuario = document.getElementById('prefijo-usuario');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const mensaje = document.getElementById('mensaje');
+    const errorRuta = document.getElementById('error-ruta');
+
+    let rutaSeleccionada = '';
+
+    // Seleccionar carpeta
+    btnCarpeta.addEventListener('click', async () => {
+      const result = await ipcRenderer.invoke('seleccionar-carpeta');
+      if (result) {
+        rutaSeleccionada = result;
+        rutaInput.value = result;
+        validarFormulario();
+        errorRuta.style.display = 'none';
+      }
+    });
+
+    // Validar formulario (solo ruta es obligatoria)
+    function validarFormulario() {
+      const rutaOk = rutaSeleccionada && rutaSeleccionada.trim() !== '';
+      btnGuardar.disabled = !rutaOk;
+      if (!rutaOk) {
+        errorRuta.style.display = 'block';
+      } else {
+        errorRuta.style.display = 'none';
+      }
+    }
+
+    // Escuchar cambios en los campos (solo para actualizar el botón)
+    rutaInput.addEventListener('change', validarFormulario);
+    // También al escribir en otros campos no afecta, pero por si acaso
+    nombreAutor.addEventListener('input', () => {});
+    emailAutor.addEventListener('input', () => {});
+    derechosDefecto.addEventListener('change', () => {});
+    compartirBlade.addEventListener('change', () => {});
+    prefijoUsuario.addEventListener('input', () => {});
+
+    // Guardar configuración
+    btnGuardar.addEventListener('click', async () => {
+      if (!rutaSeleccionada) {
+        errorRuta.style.display = 'block';
+        return;
+      }
+
+      btnGuardar.disabled = true;
+      btnGuardar.textContent = '⏳ Guardando...';
+
+      const data = {
+        ruta_proyectos: rutaSeleccionada,
+        nombre_autor: nombreAutor.value.trim() || null,
+        email_usuario: emailAutor.value.trim() || null,
+        derechos_por_defecto: derechosDefecto.value,
+        compartir_blade_por_defecto: compartirBlade.checked ? 1 : 0,
+        prefijo_usuario: prefijoUsuario.value.trim().toUpperCase() || null,
+        // Los demás campos avanzados se dejan vacíos en la primera configuración
+        web_autor: null,
+        telefono_autor: null,
+        direccion_autor: null,
+        descripcion_autor: null,
+        redes_sociales: null,
+        logo_path: null,
+        coleccion_por_defecto: null
+      };
+
+      try {
+        const result = await ipcRenderer.invoke('guardar-configuracion-inicial', data);
+        if (result.ok) {
+          mensaje.innerHTML = '<span style="color:#51cf66;">✅ Configuración guardada. Abriendo Dragon3...</span>';
+          // La ventana se cerrará automáticamente desde main.js
+        } else {
+          throw new Error(result.error || 'Error desconocido');
+        }
+      } catch (err) {
+        mensaje.innerHTML = `<span style="color:#ff6b6b;">❌ Error: ${err.message}</span>`;
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = 'Guardar y continuar';
+      }
+    });
+
+    // Validar al cargar
+    validarFormulario();
+  </script>
+</body>
+</html>

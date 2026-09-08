@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "nombre": "analizar-imagen-completa",
+  "descripcion": "Análisis completo con veredicto final automático",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": { "payload": "$.contexto.archivo" }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "./celulas/extraer-metadatos-exif.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-herramienta-ia",
+      "ruta": "./celulas/detectar-herramienta-ia.js",
+      "entrada": { "payload": "$.extraer-metadatos-exif.resultado" }
+    },
+    {
+      "id": "detectar-sellos-autenticidad",
+      "ruta": "./celulas/detectar-sellos-autenticidad.js",
+      "entrada": { "payload": "$.extraer-metadatos-exif.resultado" }
+    },
+    {
+      "id": "detectar-patrones-forenses",
+      "ruta": "./celulas/detectar-patrones-forenses.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-doble-compresion-sharp",
+      "ruta": "./celulas/detectar-doble-compresion-sharp.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "detectar-artefactos-ia",
+      "ruta": "./celulas/detectar-artefactos-ia.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "generar-veredicto",
+      "ruta": "./celulas/generar-veredicto.js",
+      "entrada": {
+        "payload": {
+          "detectar-herramienta-ia": "$.detectar-herramienta-ia.resultado",
+          "detectar-sellos-autenticidad": "$.detectar-sellos-autenticidad.resultado",
+          "detectar-patrones-forenses": "$.detectar-patrones-forenses.resultado",
+          "detectar-doble-compresion-sharp": "$.detectar-doble-compresion-sharp.resultado",
+          "detectar-artefactos-ia": "$.detectar-artefactos-ia.resultado"
+        }
+      }
+    }
+  ],
+  "salidaFinal": "$.generar-veredicto.resultado",
+  "detenerseEnError": false
+}

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>DRAGON3 | SALA DE CONTROL PERICIAL</title>
+    <style>
+        :root {
+            --hacker-green: #00ff41;
+            --dark-bg: #0d0208;
+            --panel-bg: #000000;
+            --alert-red: #ff003c;
+            --glow: 0 0 10px rgba(0, 255, 65, 0.2);
+            --glow-red: 0 0 10px rgba(255, 0, 60, 0.4);
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--hacker-green);
+            font-family: 'Courier New', monospace;
+            margin: 0; padding: 20px;
+            text-shadow: 0 0 2px rgba(0, 255, 65, 0.5);
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center; font-size: 1.2rem; letter-spacing: 5px;
+            border: 1px solid var(--hacker-green); padding: 10px;
+            box-shadow: var(--glow); margin-bottom: 40px;
+        }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--panel-bg); border: 1px solid var(--hacker-green);
+            border-radius: 2px; position: relative; padding: 15px;
+            box-shadow: var(--glow);
+            min-height: 400px;
+        }
+
+        .panel-header {
+            font-size: 0.70rem; color: #000; background: var(--hacker-green);
+            padding: 2px 10px; position: absolute; top: -12px; left: 10px;
+            font-weight: bold;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border: 1px solid #111;
+        }
+
+        #video-live {
+            width: 100%; 
+            display: block;
+            background: #050505;
+            filter: brightness(1.1) contrast(1.1);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .rec-dot {
+            color: var(--alert-red);
+            animation: blink 1s infinite;
+            font-weight: bold;
+        }
+
+        /* --- INDICADOR DE RADAR --- */
+        .radar-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #111;
+            padding-bottom: 10px;
+        }
+
+        #radar-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--hacker-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--hacker-green);
+            transition: all 0.2s ease;
+        }
+
+        .shield-zone {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; text-align: center;
+        }
+
+        .mbh-active { font-size: 1.5rem; margin-bottom: 20px; animation: blink 1.5s infinite; }
+
+        .hash-display {
+            background: #050505; border: 1px dashed var(--hacker-green);
+            padding: 20px; font-size: 0.8rem; word-break: break-all;
+            color: #fff; box-shadow: inset 0 0 10px rgba(0,255,0,0.1);
+            width: 85%; min-height: 40px;
+        }
+
+        #meta-display {
+            width: 85%; margin-top: 15px; padding: 10px;
+            border-top: 1px solid #222; font-size: 0.7rem;
+            text-align: left; line-height: 1.4; color: #888;
+        }
+
+        .log-matrix {
+            font-size: 10px; color: var(--hacker-green); height: 280px;
+            overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px;
+        }
+
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #002200; padding-bottom: 4px; }
+        .ok-text { color: #fff; background: #004400; padding: 0 4px; font-weight: bold; }
+        .error-text { color: #fff; background: var(--alert-red); padding: 0 4px; font-weight: bold; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 9999; background-size: 100% 4px, 3px 100%; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>DRAGON3 :: BLINDAJE DE IMAGEN PERICIAL :: ESTACIÓN DE CONTROL</h1>
+
+    <div class="dashboard">
+        <div class="panel">
+            <div class="panel-header">NODO_CAPTURA: CÁMARA_01</div>
+            <div class="video-container">
+                <img id="video-live" src="">
+                <div class="video-overlay">
+                    <div class="rec-dot">● LIVE_FEED</div>
+                    <div style="color:rgba(0,255,65,0.6)">MTR-01_DRAGON3</div>
+                </div>
+            </div>
+            <p style="font-size: 10px; color: #666; font-weight: bold; margin-top: 10px;">
+                FLUJO_DATOS_BRUTOS: <span id="flow-status" style="color: var(--hacker-green);">CONECTANDO...</span>
+            </p>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">NODO_CERTIFICADOR: GENERADOR_MBH_V4</div>
+            <div class="shield-zone">
+                <div class="mbh-active">🛡️ SELLADO ACTIVO</div>
+                <div class="hash-display" id="current-hash">ESPERANDO_DATOS...</div>
+                <div id="meta-display">CARGANDO_METADATOS_ORIGEN...</div>
+                <p style="font-size: 10px; margin-top: 15px; color: #888;">
+                    INYECCIÓN_METADATOS: <span style="color: var(--hacker-green);">HABILITADA</span><br><br>
+                    ESTADO_SISTEMA: <span style="color: var(--hacker-green);">OPERATIVO</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">NODO_AUDITORÍA: SALA_CONTROL</div>
+            <div class="radar-status-bar">
+                <div id="radar-dot"></div>
+                <span style="font-size: 10px; letter-spacing: 2px;">SYNC_INTEGRITY_NODE</span>
+            </div>
+            <div class="log-matrix" id="console-log">
+                <div class="log-entry">> INICIALIZANDO PROTOCOLO...</div>
+            </div>
+            <p style="font-size: 10px; margin-top: 10px; color: #888;">
+                CHEQUEO_DE_INTEGRIDAD: <span class="ok-text" id="integrity-status">CHECKING</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let videoInicializado = false;
+
+        // --- NUEVA FUNCIÓN DE AUTORRECUPERACIÓN ---
+        function cargarStreaming() {
+            const videoFeed = document.getElementById('video-live');
+            const flowStatus = document.getElementById('flow-status');
+
+            // Añadimos timestamp para evitar que el navegador use una imagen cacheada rota
+            videoFeed.src = window.location.origin + "/video-stream?t=" + new Date().getTime();
+
+            videoFeed.onload = () => {
+                flowStatus.innerText = "ACTIVO";
+                flowStatus.style.color = "var(--hacker-green)";
+            };
+
+            videoFeed.onerror = () => {
+                flowStatus.innerText = "REINTENTANDO CONEXIÓN...";
+                flowStatus.style.color = "orange";
+                // Reintento automático en 5 segundos
+                setTimeout(cargarStreaming, 5000);
+            };
+        }
+
+        async function loopPericial() {
+    const consoleLog = document.getElementById('console-log');
+    const statusBadge = document.getElementById('integrity-status');
+    const hashDisplay = document.getElementById('current-hash');
+    const metaDisplay = document.getElementById('meta-display');
+    const radarDot = document.getElementById('radar-dot');
+    const flowStatus = document.getElementById('flow-status'); // Necesitamos este para saber el estado del texto
+
+    // 1. INICIAR VÍDEO CON AUTORRECUPERACIÓN
+    if (!videoInicializado) {
+        cargarStreaming();
+        videoInicializado = true;
+    }
+
+    try {
+        const response = await fetch(window.location.origin + '/validar-latido');
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+
+        if(data.hash) {
+            // 🔥 TRUCO MAESTRO: Si los datos han vuelto pero el vídeo estaba caído, lo reiniciamos
+            if (flowStatus.innerText !== "ACTIVO") {
+                console.log("Re-enganchando flujo de vídeo...");
+                cargarStreaming();
+                flowStatus.innerText = "ACTIVO";
+                flowStatus.style.color = "var(--hacker-green)";
+            }
+
+            radarDot.style.background = "#fff";
+            radarDot.style.boxShadow = "0 0 20px #fff";
+            setTimeout(() => {
+                radarDot.style.background = "var(--hacker-green)";
+                radarDot.style.boxShadow = "0 0 10px var(--hacker-green)";
+            }, 250);
+
+            statusBadge.className = 'ok-text';
+            statusBadge.innerText = 'VERIFICADO_ESTABLE';
+            hashDisplay.innerText = data.hash;
+
+            if (data.timestamp) {
+                metaDisplay.innerHTML = `
+                    <span style="color: var(--hacker-green);">META_DATA_ORIGEN:</span> ID_${data.meta_id || 'N/A'}<br>
+                    <span style="color: var(--hacker-green);">CLIENTE:</span> ${data.meta_cliente || 'DRAGON3'}<br>
+                    <span style="color: var(--hacker-green);">UNIX_TS:</span> ${data.timestamp}
+                `;
+            }
+
+            const log = document.createElement('div');
+            log.className = 'log-entry';
+            log.innerHTML = `> [${new Date().toLocaleTimeString()}] EVIDENCIA: <span class="ok-text">CERTIFICADA</span> :: HASH: ${data.hash.substring(0,12)}...`;
+            consoleLog.prepend(log);
+        }
+    } catch (e) {
+        // Si hay error, marcamos el flujo como desconectado para que sepa que debe reintentar luego
+        flowStatus.innerText = "REINTENTANDO...";
+        flowStatus.style.color = "orange";
+
+        statusBadge.className = 'error-text';
+        statusBadge.innerText = 'ERROR_DE_DATOS';
+        const logErr = document.createElement('div');
+        logErr.className = 'log-entry';
+        logErr.innerHTML = `> [${new Date().toLocaleTimeString()}] <span class="error-text">ALERTA</span>: FALLO DE SINCRONIZACIÓN CON BACKEND.`;
+        consoleLog.prepend(logErr);
+    }
+
+    if(consoleLog.children.length > 12) consoleLog.lastElementChild.remove();
+    setTimeout(loopPericial, 15000);
+}
+        window.onload = loopPericial;
+    </script>
+</body>
+</html>

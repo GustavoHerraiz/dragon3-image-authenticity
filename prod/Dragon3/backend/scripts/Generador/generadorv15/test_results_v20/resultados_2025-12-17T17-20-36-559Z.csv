@@ -1,0 +1,13 @@
+ID,Nombre,Categoria,Severidad,Resultado,Confianza,Hits,Checks,DuracionAnalisisMs,DuracionTotalMs,TamanoKB,Width,Height,ClienteDetectado,HashDetectado
+V16_01,"🟢 Recorte 50% + JPG 80",crop,leve,EXITO,97.9,8,0,2302,2727,550.5,1463,2317,"Quico Melero",""
+V16_02,"🟡 Esquina 800px + JPG 60",crop,moderada,EXITO,95.8,6,0,1044,1140,68.4,800,800,"Quico Melero",""
+V16_03,"🟠 Tira Vertical + JPG 40",crop,severa,EXITO,96.9,4,0,889,1363,113.4,400,4635,"Quico Melero",""
+V16_04,"🔴 Mini Fragmento + JPG 30",crop,extrema,FALLO,0.0,0,0,14,122,4.9,300,300,"",""
+V17_01,"📐 Giro 5° + Recorte + JPG 90",rotacion,leve,EXITO,89.6,5,0,17855,19428,1386.3,2048,3244,"Quico Melero",""
+V17_02,"🔄 Giro 45° + JPG 80",rotacion,severa,EXITO,90.6,25,0,92579,95257,2069.2,5347,5347,"Quico Melero",""
+V17_03,"🥴 Deformación (0.8x) + JPG 70",deformacion,severa,EXITO,90.6,23,0,32723,33786,1198.7,2927,3708,"Quico Melero",""
+V17_04,"💀 CAOS (Giro+Deform+JPG)",caos,extrema,EXITO,92.7,15,0,28066,30077,524.4,2634,3476,"Quico Melero",""
+V18_01,"🌫️ Blur Gaussiano + JPG 70",filtros,moderada,EXITO,97.9,13,0,4974,6182,593.3,2927,4635,"Quico Melero",""
+V18_02,"🔍 Sharpen + JPG 60",filtros,moderada,EXITO,97.9,13,0,7497,9380,1311.5,2927,4635,"Quico Melero",""
+V18_03,"📱 Resize 50% + JPG 80",resize,leve,EXITO,82.3,4,0,8818,9638,542.8,1463,2317,"Quico Melero",""
+V18_04,"📱 Resize 25% + JPG 70",resize,severa,EXITO,67.7,1,0,1455,2083,109.7,731,1158,"Quico Melero",""

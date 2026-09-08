@@ -1,0 +1,11 @@
+{
+  "name": "dragon3-test-kernel",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node test-kernel.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.4"
+  }
+}

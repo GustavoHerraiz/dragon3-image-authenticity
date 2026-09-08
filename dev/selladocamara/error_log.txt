@@ -1,0 +1,9 @@
+🐉 DRAGON3 V20 [MENTALIST CORE]: Faúndez Physics + Mentalist Checksum
+
+==============================================
+🐉 DRAGON3: SISTEMA PERICIAL ACTIVO (JSON MODE)
+🌐 ACCESO PANEL: https://monitor.bladecorporation.net
+🏠 ORIGEN VÍDEO: http://79.112.40.62:8080/shot.jpg
+🛡️ PROTECCIÓN DE DISCO: ON (Max: 50 capturas | DB: 1000)
+==============================================
+

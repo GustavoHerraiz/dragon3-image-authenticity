@@ -1,0 +1,23 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen",
+    "detectar-doble-compresion-sharp",
+    "extraer-metadatos-exif"
+  ],
+  "nombreBase": "evolucion-cargar-imagen-detectar-doble-compresion-sharp-extraer-metadatos-exif",
+  "motivo": "Combinación exitosa: freq 6, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen",
+      "detectar-doble-compresion-sharp",
+      "extraer-metadatos-exif"
+    ],
+    "frecuencia": 6,
+    "ratioExito": 1,
+    "tiempoPromedio": 10.528516500000174,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

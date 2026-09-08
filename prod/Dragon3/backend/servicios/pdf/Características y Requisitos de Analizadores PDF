@@ -1,0 +1,233 @@
+# Dragon3 FAANG — Características y Requisitos de Analizadores PDF
+
+---
+
+## 📄 Características Obligatorias de un Analizador PDF Nuevo
+
+**Todo analizador PDF Dragon3 debe cumplir estos requisitos (FAANG Enterprise):**
+
+---
+
+### 🚩 Estructura de Carpetas para Analizadores PDF (KISS/FAANG)
+
+**Debes respetar SIEMPRE la siguiente estructura para los analizadores de PDFs, separando las capas para mantener modularidad, trazabilidad y claridad:**
+
+```
+/var/www/Dragon3/backend/servicios/pdf/
+├── analizadores/         # Analizadores de Capa 1 (Metadatos, Cabecera, FirmasDigitales, etc.)
+│   ├── analizadorPdfExif.js
+│   ├── analizadorFirmasDigitalesPDF.js
+│   ├── analizadorCabecerasPdf.js
+│   └── ...
+├── capa2/               # Analizadores de Capa 2 (Texto, Imágenes embebidas, ELA, perplejidad, etc.)
+│   ├── analizadorTextoIA.js
+│   ├── analizadorImagenesIA.js
+│   └── ...
+├── capa3/               # Analizadores de Capa 3 (FFT, ONNX, Consistencia semántica, fact-checking avanzado)
+│   ├── analizadorFFT.js
+│   ├── analizadorONNX.js
+│   └── ...
+```
+
+- **NUNCA mezclar analizadores de distintas capas en la misma carpeta.**
+- **analizadorPDF.js** debe cargar dinámicamente los analizadores de la capa correspondiente según el flujo de decisión.
+- **Actualizar README y documentación cada vez que se añada o modifique una capa/analyzer.**
+
+---
+
+### 1. Entrada y Salida Estandarizada
+
+- **Entrada:**  
+  - Objeto `params` con los campos:
+    - `rutaArchivo` (string, absoluto)
+    - `archivoId` (string, único para trazabilidad)
+    - `correlationId` (string, tracing end-to-end)
+    - `nombreOriginal` (string)
+    - `usuarioId` (string/null)
+    - `clientId` (string/null)
+
+- **Salida:**  
+  - Objeto estructurado, SIEMPRE igual formato para todos los analizadores PDF:
+    - `esAutentico` (boolean)
+    - `confianza` (float 0-1)
+    - `decision` (string: "Artificial", "Humano", "Indeterminado", "Error")
+    - `detalles` (objeto):
+      - Metadatos extraídos: `info`, `xmp`, `anomalías`, `hash`, `tamañoBytes`, `nombreOriginal`, `rutaArchivo`
+      - `auditoriaForense` (todos los metadatos y checks relevantes)
+      - **Nuevo:** `explicacionExtendida` (array priorizado, resumen + motivos principales, máx. 6)
+    - `processingTime` (ms)
+    - `version` (ej: "1.2.0-FAANG")
+    - `archivoId`, `correlationId`, `nombreOriginal`, `usuarioId`, `clientId`, `timestamp`
+
+---
+
+### 2. Explicación Forense Prioritaria (`explicacionExtendida`)
+
+- **Campo obligatorio** en la salida JSON.
+- Formato:
+  - **Array de strings**, máximo 6 elementos.
+    - **Elemento 0:** Resumen principal (1-2 frases, causa principal de la decisión: “Artificial”, “Humano”, “Indeterminado”, etc.).
+    - **Elementos 1-5:** Motivos forenses, ordenados de más fuerte a menos fuerte (máximo 5).
+- Generada automáticamente por el analizador según los metadatos y checks.
+- Debe ser **clara, concisa, priorizada y auditable**.
+- Permite comprender la causa técnica y forense de la decisión sin leer todos los metadatos.
+
+#### Ejemplo:
+```json
+"explicacionExtendida": [
+  "Resumen: El PDF se clasifica como Artificial por productor/creador típicos de IA/web y ausencia de autor.",
+  "Producer ('Skia/PDF m129 Google Docs Renderer') y Creator ('-') son habituales en generadores IA/web.",
+  "Metadatos XMP ausentes o vacíos; no hay trazabilidad editorial humana.",
+  "Anomalía registrada: Falta Author o CreationDate",
+  "Sin fonts o attachments relevantes; característica de generación sintética."
+]
+```
+
+---
+
+### 3. Logging y Trazabilidad
+
+- **SIEMPRE usar `logger.js` y `winston.js`** (no `console.log`) para todos los logs de inicio, éxito, error y performance.
+- Logging estructurado, correlado por `archivoId`, `correlationId`, etc.
+- Todos los logs se guardan en `/var/www/Dragon3/backend/logs/dragon.log` y relacionados.
+
+---
+
+### 4. Performance y Error Handling
+
+- **Performance:** P95 <200ms incluyendo explicación y logging.
+- **Error Handling:** robusto, usando clases DragonError y logs estructurados.
+- Los errores deben estar documentados, logueados y auditables.
+
+---
+
+### 5. Modularidad y KISS
+
+- Código limpio y modular, sin dependencias innecesarias.
+- Función principal exportada como ES Module.
+- Solo una responsabilidad por función.
+
+---
+
+### 6. Testing y Compatibilidad
+
+- Compatible con analizadorPDF.js y server.js (misma entrada/salida).
+- Fácilmente testeable: mocks de entrada/salida, validación de la estructura y logs.
+- Resultados serializables a JSON y compatibles con API/Frontend.
+- **Ensamblaje multicapa**: El analizador debe poder integrarse en pipelines paralelos y ensemble con otros analizadores PDF.
+
+---
+
+### 7. Auditoría, Documentación y Actualización de Readme
+
+- Comentarios y cabecera en cada archivo: nombre, autor, versión, propósito, dependencias, métricas, ejemplo de uso.
+- Documentación exhaustiva de la lógica y los checks.
+- **Toda mejora o nuevo analizador PDF debe actualizar este archivo y README-COPILOT.md** para reflejar nuevos módulos, lógica de fusión, performance y logging.
+
+---
+
+### 8. Fusión Multicapa y Ensemble Adaptativo (Dragon3 PDF)
+
+- Los analizadores PDF deben ser compatibles con sistemas multicapa:
+    - **EXIF** (Metadatos PDF)
+    - **FirmasDigitales** (Autenticidad y validación de firmas)
+    - **CabeceraBinaria** (Chequeo de cabecera PDF y patrones binarios)
+- La arquitectura Dragon3 PDF ejecuta todos los analizadores en paralelo y fusiona resultados mediante **ponderación adaptativa**:
+    - Por defecto: EXIF 40%, FirmasDigitales 40%, CabecerasPDF 20%
+    - Si CabecerasPDF detecta anomalía grave, sube a 50% y reduce el peso de los otros
+    - La decisión global y la explicabilidad se priorizan según el análisis más relevante (motivos clave)
+- Ensemble, explicabilidad y motivos deben quedar estructurados y auditables en la salida final.
+
+---
+
+### 9. Estrategia de Análisis Dragon3 PDF AI Detection
+
+#### 9.1 Enfoque por Capas (Layered/Phased Approach)
+
+- **Capa 1: Filtrado Rápido (Metadatos + Estructura + Cabecera binaria)**
+  - Objetivo: Eliminar falsos positivos/negativos con mínimo coste computacional.
+  - Herramientas: exifr, pdf-lib, fs, qpdf, pdfjs-dist.
+  - Qué busca: Producer, CreatorTool, AIEngine, fechas incoherentes, %PDF-AI, 0xDEADBEEF, número de capas, fuentes inconsistentes.
+  - Tiempo estimado: <2s (ideal <300ms para la mayoría).
+  - Decisión: Si hay sospecha → pasa a Capa 2. Si no, puede terminar aquí con resultado “No IA detectada”.
+
+- **Capa 2: Análisis de Contenido (Texto + Imágenes)**
+  - Objetivo: Detectar generación IA en el contenido con modelos ligeros.
+  - Herramientas: roberta-base-openai-detector, detect-gpt, jimp/sharp (ELA), exifr para metadatos de imágenes.
+  - Qué busca: Perplejidad, burstiness, repeticiones, recompresión uniforme, metadatos de imágenes.
+  - Tiempo estimado: 2-5s (ideal <2s en producción, se puede paralelizar).
+  - Decisión: Si hay sospecha → pasa a Capa 3. Si no, resultado “IA posible” (70% confianza).
+
+- **Capa 3: Análisis Profundo (FFT, ONNX, Consistencia Semántica)**
+  - Objetivo: Confirmar casos dudosos con técnicas avanzadas.
+  - Herramientas: fft-js/opencv.js, onnxruntime-node (ViTDetector), APIs fact-checking.
+  - Qué busca: Picos en frecuencias, huellas neuronales, referencias cruzadas, citas falsas, anacronismos.
+  - Tiempo estimado: 5-10s (solo se aplica si lo anterior no es concluyente).
+  - Decisión: 2/3 positivos → “IA Confirmada” (>95% confianza). 1/3 → “Incierto/Revisión manual”.
+
+#### 9.2 Priorización y Optimización
+
+- Primero: Implementar Capa 1 (rápida, efectiva en 70-80% de los casos).
+- Segundo: Añadir Capa 2 (balance rendimiento/precisión, paralelizable).
+- Tercero: Capa 3 solo si es necesario (flexible para mejoras futuras).
+
+#### 9.3 Ventajas
+
+- **Eficiencia:** La mayoría de PDFs se procesan en <3s y con coste mínimo.
+- **Escalabilidad:** Se pueden añadir más técnicas a Capa 3 según evolucionen los generadores IA.
+- **Trazabilidad:** Cada capa genera logs Dragon3 estructurados y auditables.
+- **Robustez:** Si alguna capa falla, el sistema aplica fallback, nunca bloquea el proceso (KISS total).
+
+#### 9.4 Flujo de Decisión, Logs y Trazabilidad
+
+- Cada análisis debe loguear inicio, resultado, error y métricas de rendimiento usando dragonLogger o winston.js.
+- Siempre incluir en logs: archivoId, correlationId, usuario, cliente, capa, tipo de análisis y confianza.
+
+#### 9.5 Implementación Real
+
+- Cada capa es un módulo/función bien definida.
+- **Paralelización:** Capa 2 (Texto e Imágenes) se puede ejecutar en paralelo.
+- **Fallback seguro:** Si algún análisis falla, loguear con agoniza y continuar con el siguiente.
+
+#### 9.6 Decisión y Retorno
+
+- Devuelve resultado estructurado:
+  - `esIA`: booleano
+  - `confianza`: float 0-1
+  - `capaDetectada`: string
+  - `detalles`: resumen por capa
+  - `processingTime`: ms
+  - `archivoId`, `correlationId`, etc.
+
+#### ✅ Acciones a Seguir Antes de Escribir Código
+
+1. Definir el contrato de entrada/salida. (params y respuesta estructurada)
+2. Acordar el flujo exacto y logging.
+3. Listar dependencias técnicas exactas para cada capa.
+4. Simular payloads y ejemplos de logs.
+5. Validar con el equipo si hay restricciones de performance, seguridad o legalidad en el análisis de PDFs.
+
+---
+
+### 10. Checklist de Cumplimiento
+
+- [x] Entrada/salida estandarizada
+- [x] Campo explicacionExtendida priorizado
+- [x] Logging dragonLogger/winston, no console.log
+- [x] Error handling robusto
+- [x] Performance <200ms
+- [x] Auditoría y trazabilidad
+- [x] Testing y serialización JSON
+- [x] Modularidad y KISS
+- [x] Documentación y comentarios actualizados
+- [x] Compatibilidad multicapa, ensemble y fusión adaptativa
+- [x] Estrategia multicapa y por fases Dragon3
+- [x] Estructura de carpetas por capas (analizadores/capa2/capa3)
+- [x] Actualización de README y README-COPILOT.md tras cada mejora
+
+---
+
+## 🏆 Recordatorio
+
+**Todo analizador PDF Dragon3 debe cumplir estos puntos para ser aceptado y operativo en producción.  
+No se permiten excepciones. La explicabilidad, trazabilidad forense y compatibilidad multicapa son prioritarias.**

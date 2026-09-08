@@ -1,0 +1,126 @@
+{
+  "id_esperado": "0000032",
+  "png": {
+    "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032.png",
+    "success": true,
+    "hash": "0000032",
+    "cliente": "Cliente de Prueba",
+    "obra": "Obra de Prueba",
+    "metodo": "Vogel",
+    "tiempo_ms": 1840.9351999999926,
+    "error": null
+  },
+  "jpeg": [
+    {
+      "calidad": 100,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q100.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 1011.0076000000117,
+      "error": null
+    },
+    {
+      "calidad": 90,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q90.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 1339.8879000000015,
+      "error": null
+    },
+    {
+      "calidad": 80,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q80.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 1089.8718999999983,
+      "error": null
+    },
+    {
+      "calidad": 70,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q70.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 853.6704000000027,
+      "error": null
+    },
+    {
+      "calidad": 60,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q60.jpg",
+      "success": true,
+      "hash": "0000022",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 844.4966999999888,
+      "error": null
+    },
+    {
+      "calidad": 50,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q50.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 1249.6071999999986,
+      "error": null
+    },
+    {
+      "calidad": 40,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q40.jpg",
+      "success": true,
+      "hash": "0000032",
+      "cliente": "Cliente de Prueba",
+      "obra": "Obra de Prueba",
+      "metodo": "JPEG",
+      "tiempo_ms": 1057.383199999982,
+      "error": null
+    },
+    {
+      "calidad": 30,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q30.jpg",
+      "success": true,
+      "hash": "0000010",
+      "cliente": "Cliente Test",
+      "obra": "Obra Test",
+      "metodo": "JPEG",
+      "tiempo_ms": 1984.4286999999895,
+      "error": null
+    },
+    {
+      "calidad": 20,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q20.jpg",
+      "success": true,
+      "hash": "0000003",
+      "cliente": "Sin cliente",
+      "obra": "Sin obra",
+      "metodo": "JPEG",
+      "tiempo_ms": 1857.9612000000197,
+      "error": null
+    },
+    {
+      "calidad": 10,
+      "ruta": "C:\\Users\\Administrador\\Desktop\\Dragon3Github\\Dragon3\\backend\\scripts\\Generador\\dragon3-desktop\\testv5\\test_output\\prueba_GHL_0000032_q10.jpg",
+      "success": true,
+      "hash": "0000025",
+      "cliente": "Sin cliente",
+      "obra": "Sin obra",
+      "metodo": "JPEG",
+      "tiempo_ms": 6059.740099999995,
+      "error": null
+    }
+  ],
+  "fecha": "2026-07-01T21:11:02.105Z"
+}

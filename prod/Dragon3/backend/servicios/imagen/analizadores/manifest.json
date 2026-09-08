@@ -1,0 +1,15 @@
+{
+  "claim_generator": "Dragon3 Test Suite",
+  "format": "image/jpeg",
+  "assertions": {
+    "c2pa.actions": [
+      {
+        "action": "created",
+        "when": "2024-01-01T00:00:00Z",
+        "softwareAgent": {
+          "name": "Dragon3 Testing Framework"
+        }
+      }
+    ]
+  }
+}

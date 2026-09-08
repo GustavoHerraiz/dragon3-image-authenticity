@@ -1,0 +1,9 @@
+{
+  "cargar-imagen": ["tiempoMs", "exito", "formato", "ancho", "alto", "canales", "profundidad", "tamaño", "configLeida"],
+  "detectar-artefactos-ia": ["peso", "tiempoMs", "exito", "varianzaLocalPromedio", "autocorrelacion", "correlacion", "diversidad", "tamañoUsado", "esIA", "confianza"],
+  "detectar-sombreado": ["confianza", "peso", "tiempoMs", "exito", "variacionBrillo", "contraste", "gradienteLuz", "brilloCuadrantes", "decision", "tamañoUsado", "tiempoProcesamientoMs", "puntuacionHumano", "puntuacionIA", "luzArriba", "iluminacionUniforme", "gradienteAnormal", "sombrasInconsistentes", "contrasteAnormal"],
+  "detectar-textura-ruido": ["confianza", "peso", "tiempoMs", "exito", "varianzaLocalPromedio", "entropia", "gradientePromedio", "varianzaRuido", "autocorrelacionNormalizada", "decision", "tamañoUsado", "calidadUsada", "totalPixeles", "formatoOriginal", "dimensionesOriginales", "tiempoProcesamientoMs", "umbralesUsados", "puntuacionHumano", "puntuacionIA"],
+  "detectar-colores": ["confianza", "peso", "tiempoMs", "exito", "saturacionAprox", "temperatura", "dominancia", "variacionCromatica", "decision", "puntuacionIA", "puntuacionHumano", "relacionRB", "porcentajePielIrreal", "tamañoUsado", "tiempoProcesamientoMs"],
+  "detectar-patrones-forenses": ["esIA", "confianza", "peso", "tiempoMs", "exito", "autocorrelacion", "formato", "tamañoUsado", "tiempoProcesamientoMs", "optimizado"],
+  "extraer-metadatos-exif": ["confianza", "peso", "tiempoMs", "exito", "exif", "iptc", "xmp", "icc", "metadatosCompletos", "hasXMP", "cacheActivado", "hasExif", "hasICC", "hasDate"]
+}

@@ -1,0 +1,12 @@
+{
+  "tipo": "poda-celula",
+  "celulaId": "detectar-artefactos-ia",
+  "motivo": "Precisión baja (35%) con 20 ejecuciones",
+  "evidencia": {
+    "celulaId": "detectar-artefactos-ia",
+    "precision": 0.35,
+    "total": 20,
+    "aciertos": 7
+  },
+  "confianza": 0.65
+}

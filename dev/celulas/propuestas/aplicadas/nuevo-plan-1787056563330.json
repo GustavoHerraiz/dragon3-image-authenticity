@@ -1,0 +1,31 @@
+{
+  "tipo": "nuevo-plan",
+  "celulas": [
+    "cargar-imagen",
+    "detectar-doble-compresion-sharp",
+    "detectar-herramienta-ia",
+    "detectar-patrones-forenses",
+    "detectar-sellos-autenticidad",
+    "extraer-metadatos-exif",
+    "generar-veredicto"
+  ],
+  "nombreBase": "evolucion-cargar-imagen-detectar-doble-compresion-sharp-detectar-herramienta-ia-detectar-patrones-forenses-detectar-sellos-autenticidad-extraer-metadatos-exif-generar-veredicto",
+  "motivo": "Combinación exitosa: freq 4, ratio 100%",
+  "evidencia": {
+    "celulas": [
+      "cargar-imagen",
+      "detectar-doble-compresion-sharp",
+      "detectar-herramienta-ia",
+      "detectar-patrones-forenses",
+      "detectar-sellos-autenticidad",
+      "extraer-metadatos-exif",
+      "generar-veredicto"
+    ],
+    "frecuencia": 4,
+    "ratioExito": 1,
+    "tiempoPromedio": 41.2623137499927,
+    "precisionGroundTruth": null,
+    "totalGroundTruth": 0
+  },
+  "confianza": 1
+}

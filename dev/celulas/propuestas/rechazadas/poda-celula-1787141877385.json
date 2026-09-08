@@ -1,0 +1,12 @@
+{
+  "tipo": "poda-celula",
+  "celulaId": "cargar-imagen",
+  "motivo": "Precisión baja (45%) con 20 ejecuciones",
+  "evidencia": {
+    "celulaId": "cargar-imagen",
+    "precision": 0.45,
+    "total": 20,
+    "aciertos": 9
+  },
+  "confianza": 0.55
+}
