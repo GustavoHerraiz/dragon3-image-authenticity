@@ -114,7 +114,9 @@ function purgarObjetosPesados(obj, depth = 0, vistos = new WeakSet()) {
 
   if (Array.isArray(obj)) {
     if (obj.length > 50) return obj.slice(0, 10);
-    return obj.map(item => purgarObjetosPesados(item, depth + 1, vistos));
+    const resultado = obj.map(item => purgarObjetosPesados(item, depth + 1, vistos));
+    vistos.delete(obj);
+    return resultado;
   }
 
   const copia = {};
@@ -129,6 +131,7 @@ function purgarObjetosPesados(obj, depth = 0, vistos = new WeakSet()) {
     }
     copia[key] = purgarObjetosPesados(val, depth + 1, vistos);
   }
+  vistos.delete(obj);
   return copia;
 }
 

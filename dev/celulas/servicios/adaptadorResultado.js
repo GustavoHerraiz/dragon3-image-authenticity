@@ -70,6 +70,7 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
     // 3. EXTRAER TELEMETRÍA PARA TIEMPOS DE CADA CÉLULA
     // ============================================================
     const telemetria = meta.telemetria || resultadoBruto?.telemetria || [];
+    const explicacionCliente = construirExplicacionCliente(resultadoBruto, entradaValida, telemetria);
 
     // ============================================================
     // 4. DETERMINAR DECISIÓN FINAL
@@ -94,7 +95,8 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
       tiempoTotal: Math.round(tiempoTotalReal),  // 🔥 TIEMPO REAL
       etiquetas: entradaValida.etiquetas || [],
       modeloPrincipal: meta.version || 'Dragon3_FAANG_V25',
-      explicacion: entradaValida.explicacion || 'Sin explicación disponible.'
+      explicacion: entradaValida.explicacion || 'Sin explicación disponible.',
+      explicacionCliente: explicacionCliente.resumen
     };
 
     // ============================================================
@@ -106,7 +108,8 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
       herramientasEncontradas: entradaValida.herramientasEncontradas || [],
       sellosEncontrados: entradaValida.sellosEncontrados || [],
       analizadores: construirAnalizadores(entradaValida, resultadoBruto, telemetria),
-      consenso: construirConsenso(entradaValida, resultadoBruto)
+      consenso: construirConsenso(entradaValida, resultadoBruto),
+      explicacionCliente
     };
 
     // ============================================================
@@ -128,7 +131,8 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
         { titulo: 'Veredicto', contenido: `${decision} (confianza: ${(confianzaReal * 100).toFixed(1)}%)` },
         { titulo: 'Score Humano', contenido: `${(score * 100).toFixed(1)}%` },
         { titulo: 'Tiempo Total', contenido: `${Math.round(tiempoTotalReal)}ms` },
-        { titulo: 'Explicación', contenido: resumen.explicacion }
+        { titulo: 'Explicación', contenido: explicacionCliente.resumen },
+        { titulo: 'Limitaciones', contenido: explicacionCliente.limitaciones.join(' ') }
       ]
     };
 
@@ -152,6 +156,7 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
     const resultadoFAANG = {
       resumen,
       detalles,
+      explicacionCliente,
       metadata: metadataFinal,
       paraInforme,
       estado: 'completado',
@@ -195,6 +200,89 @@ export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
 // ============================================================
 // FUNCIONES AUXILIARES
 // ============================================================
+
+function construirExplicacionCliente(resultadoBruto, entrada, telemetria) {
+  const resultadoFinal = resultadoBruto?.resultado || resultadoBruto || {};
+  const detalles = resultadoFinal.detalles || {};
+  const resultados = Array.isArray(detalles.resultados)
+    ? detalles.resultados
+    : Array.isArray(resultadoBruto?.resultados) ? resultadoBruto.resultados : [];
+  const analizadores = detalles.analizadores || {};
+  const resultadosNormalizados = resultados.length > 0
+    ? resultados
+    : Object.entries(analizadores).map(([celula, analizador]) => ({
+        celula,
+        esIA: analizador?.evaluacion?.veredicto === 'Artificial',
+        confianza: analizador?.evaluacion?.confianza,
+        explicacion: analizador?.narrativa?.explicacion_humana,
+        exito: analizador?.exitoso,
+        modelo: analizador?.forense?.raw_data?.modelo,
+        versionModelo: analizador?.forense?.raw_data?.versionModelo,
+        raw_data: analizador?.forense?.raw_data
+      }));
+  const confianza = Math.round((entrada.confianza || 0) * 100);
+  const decision = entrada.esIA ? 'posible contenido generado o alterado por IA' : 'contenido compatible con una imagen humana';
+  const consenso = construirConsenso(entrada, resultadoBruto);
+  const porcentajeHumano = Math.round((consenso.porcentajeAutentico || 0) * 100);
+  const evidencias = resultadosNormalizados
+    .filter(celda => celda && celda.explicacion)
+    .map(celda => ({
+      analizador: celda.celula || celda.nombre || 'Analizador',
+      resultado: celda.esIA === true ? 'Señal compatible con IA' : 'Señal compatible con origen humano',
+      confianza: typeof celda.confianza === 'number' ? Math.round(celda.confianza * 100) : null,
+      detalle: celda.explicacion,
+      tiempoMs: telemetria.find(t => t.celulaId === (celda.celula || celda.nombre))?.tiempoMs || null
+    }));
+
+  const ml = resultadosNormalizados.find(celda => (celda.celula || celda.nombre) === 'ml');
+  const mlDatos = ml?.raw_data || ml?.forense?.raw_data || ml || null;
+  const confianzaML = typeof ml?.confianza === 'number' ? Math.round(ml.confianza * 100) : null;
+  const explicacionML = ml ? {
+    disponible: ml.exito !== false,
+    modelo: ml.modelo || mlDatos?.modelo || 'XGBoost',
+    version: ml.versionModelo || mlDatos?.versionModelo || 'no disponible',
+    probabilidadIA: ml.esIA === true ? confianzaML : 100 - (confianzaML ?? 0),
+    probabilidadHumana: ml.esIA === true ? 100 - (confianzaML ?? 0) : confianzaML,
+    lectura: ml.esIA === true
+      ? `El modelo de aprendizaje automático identifica patrones compatibles con IA con una confianza del ${confianzaML}%.`
+      : `El modelo de aprendizaje automático no identifica patrones suficientes de IA y estima una compatibilidad humana del ${confianzaML}%.`,
+    limitacion: 'La salida del modelo es una probabilidad estadística, no una prueba definitiva ni una atribución de autoría.'
+  } : {
+    disponible: false,
+    modelo: null,
+    version: null,
+    probabilidadIA: null,
+    probabilidadHumana: null,
+    lectura: 'No se pudo obtener una predicción del modelo ML.',
+    limitacion: 'El veredicto se ha calculado sin la señal ML.'
+  };
+
+  const hayConflicto = detalles.todosLosResultados?.['detectar-consistencia-multimodal']?.hayContradiccion ||
+    detalles.todosLosResultados?.['detectar-consistencia-multimodal']?.conflictoFuerte || false;
+  const resumen = hayConflicto
+    ? `El análisis presenta señales contradictorias. Aunque algunas pruebas apuntan a ${decision}, otras apuntan en sentido contrario. El resultado debe revisarse manualmente.`
+    : `El análisis concluye que la imagen es compatible con ${decision}, con una confianza global del ${confianza}%. El consenso de los analizadores estima un ${porcentajeHumano}% de señales compatibles con origen humano.`;
+
+  return {
+    resumen,
+    veredicto: entrada.esIA ? 'IA' : 'Humano',
+    nivelConfianza: confianza >= 80 ? 'alto' : confianza >= 50 ? 'medio' : 'bajo',
+    consenso: {
+      analizadores: consenso.totalAnalizadores,
+      votosHumanos: consenso.analizadoresIncluidos.filter(a => a.veredicto === 'Humano').length,
+      votosIA: consenso.analizadoresIncluidos.filter(a => a.veredicto === 'Artificial').length,
+      porcentajeCompatibleHumano: porcentajeHumano
+    },
+    evidencias,
+    explicacionML,
+    limitaciones: [
+      'El análisis combina señales técnicas y puede producir falsos positivos o falsos negativos.',
+      'La ausencia de metadatos o de una firma C2PA no demuestra por sí sola que una imagen sea artificial.',
+      'El resultado no sustituye una revisión pericial o humana cuando existan consecuencias legales o económicas.'
+    ],
+    requiereRevisionHumana: hayConflicto || confianza < 50
+  };
+}
 
 /**
  * Construye el objeto de analizadores a partir de los resultados de las células.
