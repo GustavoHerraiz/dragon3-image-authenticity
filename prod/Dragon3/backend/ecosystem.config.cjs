@@ -29,12 +29,11 @@
  * NOTAS IMPORTANTES:
  * - El Embassy DEBE arrancar antes que el server, pero PM2 gestiona el orden.
  * - Todas las rutas son absolutas para evitar problemas.
- * - Las variables de entorno incluyen la contraseña de Redis explícitamente
- *   (evitamos REDIS_URL con caracteres especiales que puedan fallar).
+ * - Las credenciales se cargan desde el .env local y nunca se guardan aquí.
  * - El server usa EMBASSY_URL para comunicarse con el Embassy.
  * - Prometheus deshabilitado temporalmente (no se usa en producción actual).
  * - El watcher se ejecuta en segundo plano sin intervención manual.
- * - El watcher incluye MONGO_URI explícitamente para garantizar la conexión.
+ * - El watcher usa el mismo MONGO_URI cargado desde el .env local.
  *
  * ====================================================================
  * USO:
@@ -47,6 +46,9 @@
  *   pm2 startup                          # Iniciar automáticamente al reiniciar servidor
  * ====================================================================
  */
+
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 module.exports = {
   apps: [
@@ -83,10 +85,10 @@ module.exports = {
         EMBASSY_URL: 'http://localhost:3002',
         REDIS_HOST: '127.0.0.1',
         REDIS_PORT: 6379,
-        REDIS_PASSWORD: 'REDIS_PASSWORD_FROM_ENV',
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD,
         REDIS_DB: 1,
-        JWT_SECRET: 'DrAgOn3_2025_S3cUr3_K3y_9f8d7a6b5c4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0',
-        MONGO_URI: 'MONGO_URI_FROM_ENV'
+        JWT_SECRET: process.env.JWT_SECRET,
+        MONGO_URI: process.env.MONGO_URI
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/server.log',
       error_file: '/opt/dragon3/prod/Dragon3/logs/server-error.log',
@@ -122,12 +124,12 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         EMBASSY_PORT: 3002,
-        JWT_SECRET: 'DrAgOn3_2025_S3cUr3_K3y_9f8d7a6b5c4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0',
+        JWT_SECRET: process.env.JWT_SECRET,
         REDIS_HOST: '127.0.0.1',
         REDIS_PORT: 6379,
-        REDIS_PASSWORD: 'REDIS_PASSWORD_FROM_ENV',
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD,
         REDIS_DB: 1,
-        MONGO_URI: 'MONGO_URI_FROM_ENV',
+        MONGO_URI: process.env.MONGO_URI,
         LOG_LEVEL: 'info',
         NODE_PATH: '/opt/dragon3/dev/celulas'
       },
@@ -167,7 +169,7 @@ module.exports = {
       ],
       env: {
         NODE_ENV: 'production',
-        MONGO_URI: 'MONGO_URI_FROM_ENV'
+        MONGO_URI: process.env.MONGO_URI
       },
       log_file: '/opt/dragon3/dev/celulas/dataset/logs/pm2-watcher.log',
       error_file: '/opt/dragon3/dev/celulas/dataset/logs/pm2-watcher-error.log',

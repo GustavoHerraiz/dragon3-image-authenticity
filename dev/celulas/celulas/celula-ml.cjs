@@ -61,8 +61,8 @@ module.exports = async function celulaML(entrada, contexto) {
     // no se usa, pero se lee por cumplir la guía
 
     // 3. LLAMADA AL SCRIPT PYTHON
-    const pythonBin = '/opt/dragon3/dev/celulas/laboratorio/venv_ml/bin/python';
-    const pythonScript = '/opt/dragon3/dev/celulas/celulas/predictor_xgboost.py';
+    const pythonBin = process.env.PYTHON_BIN || path.join(__dirname, '..', 'laboratorio', 'venv_ml', 'bin', 'python');
+    const pythonScript = process.env.ML_PREDICTOR_SCRIPT || path.join(__dirname, 'predictor_xgboost.py');
 
     const resultado = await new Promise((resolve, reject) => {
       const python = spawn(pythonBin, [pythonScript]);
@@ -112,7 +112,7 @@ module.exports = async function celulaML(entrada, contexto) {
     const esIA = resultado.esIA;
     const explicacion = esIA
       ? 'El modelo ML detecta patrones compatibles con IA.'
-      : '🔥 PRUEBA: Este mensaje viene de celula-ml.cjs 🔥';
+      : 'El modelo ML no detecta patrones suficientes para clasificar la imagen como generada por IA.';
 
     return {
       exito: true,

@@ -36,7 +36,14 @@
  * @returns {Object} Objeto en formato FAANG completo.
  */
 export function adaptarResultadoNuevoDragon(resultadoBruto, metadata) {
-  console.log('[adaptador] ENTRADA RECIBIDA:', JSON.stringify(resultadoBruto, null, 2));
+  console.log('[adaptador] Entrada recibida:', {
+    correlationId: resultadoBruto?.correlationId || null,
+    tiempoTotal: resultadoBruto?.tiempoTotal || 0,
+    telemetria: Array.isArray(resultadoBruto?.telemetria) ? resultadoBruto.telemetria.length : 0,
+    resultadoKeys: resultadoBruto?.resultado && typeof resultadoBruto.resultado === 'object'
+      ? Object.keys(resultadoBruto.resultado)
+      : []
+  });
   console.log('🔍 [ADAPTADOR] resultadoBruto.tiempoTotal:', resultadoBruto?.tiempoTotal);
   console.log('🔍 [ADAPTADOR] metadata.tiempoProcesamiento:', metadata?.tiempoProcesamiento);
   console.log('🔍 [ADAPTADOR] metadata.telemetria length:', metadata?.telemetria?.length || 0);
@@ -596,7 +603,12 @@ export function adaptarYEnriquecerResultado(resultadoBruto, contexto = {}, corre
   const tiempoTotal = contexto?.tiempoTotal || resultadoBruto?.tiempoTotal || 0;
   
   console.log('🚨🚨🚨 [ADAPTADOR] adaptarYEnriquecerResultado - tiempoTotal FORZADO:', tiempoTotal);
-  console.log('🚨🚨🚨 [ADAPTADOR] contexto completo:', JSON.stringify(contexto, null, 2));
+  console.log('🚨🚨🚨 [ADAPTADOR] contexto recibido:', {
+    nombreOriginal: contexto?.nombreOriginal || null,
+    tipoArchivo: contexto?.tipoArchivo || null,
+    tiempoTotal,
+    telemetria: Array.isArray(contexto?.telemetria) ? contexto.telemetria.length : 0
+  });
   
   const metadata = {
     archivoId,

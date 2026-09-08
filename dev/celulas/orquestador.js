@@ -245,6 +245,20 @@ class Orquestador {
   fs.appendFileSync("/tmp/orquestador_celulas.log", `[${new Date().toISOString()}] Ejecutando célula: ${celula.id}\n`);
         const fn = modulo.default || modulo;
         salida = await fn(entradaResuelta, this.contexto);
+
+      }
+
+      if (!salida || typeof salida !== 'object' || Array.isArray(salida)) {
+        throw new Error(`La célula "${celula.id}" no devolvió un objeto de resultado.`);
+      }
+      if (!Object.prototype.hasOwnProperty.call(salida, 'resultado')) {
+        throw new Error(`La célula "${celula.id}" no devuelve el campo "resultado".`);
+      }
+      if (salida.exito !== undefined && typeof salida.exito !== 'boolean') {
+        throw new Error(`La célula "${celula.id}" devuelve "exito" con un tipo inválido.`);
+      }
+      if (salida.exito === undefined) {
+        salida.exito = true;
       }
 
       // 3. Guardar resultado

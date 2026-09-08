@@ -23,7 +23,11 @@ const CATALOGO_PATH = path.join(__dirname, 'celulas', 'index.json');
  */
 export function obtenerCatalogo(filtroPublico = false) {
   const data = fs.readFileSync(CATALOGO_PATH, 'utf8');
-  const catalogo = JSON.parse(data);
+  const contenido = JSON.parse(data);
+  const catalogo = Array.isArray(contenido) ? { células: contenido } : contenido;
+  if (!Array.isArray(catalogo.células)) {
+    throw new Error('El catálogo debe contener un array "células".');
+  }
   if (filtroPublico) {
     catalogo.células = catalogo.células.filter(c => c.publica !== false);
   }
@@ -36,7 +40,8 @@ export function obtenerCatalogo(filtroPublico = false) {
  */
 export function obtenerCatalogoCompleto() {
   const data = fs.readFileSync(CATALOGO_PATH, 'utf8');
-  return JSON.parse(data);
+  const contenido = JSON.parse(data);
+  return Array.isArray(contenido) ? { células: contenido } : contenido;
 }
 
 /**

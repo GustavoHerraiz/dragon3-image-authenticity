@@ -189,7 +189,7 @@ export default async function detectarPatronesForenses(entrada, contexto) {
         explicacion,
         evidencias,
         peso: 0.6,
-        varianzaRuido: varianzaGlobal,
+        varianzaRuido: Number(varianzaGlobal),
         autocorrelacion,
         formato,
         tablaCuantizacionAnomala,
