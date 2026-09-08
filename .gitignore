@@ -82,6 +82,14 @@ prod/Dragon3/engine/salida/
 prod/Dragon3/engine/temp/
 prod/Dragon3/data/dataset/
 /dev/celulas/dataset
+/dev/celulas/laboratorio/
+/dev/celulas/meta-analizador/datos/
+/dev/celulas/test_mover/
+/dev/celulas/test_10/
+/dev/celulas/test_seguro/
+/dev/dragon3-desktop/test_output/
+/dev/dragon3-desktop/test_output_full/
+/prod/Dragon3/backend/public-testfiles/
 dev/celulas/laboratorio/venv_ml/
 **/*.so
 **/*.dmg
