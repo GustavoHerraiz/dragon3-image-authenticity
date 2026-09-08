@@ -7,7 +7,7 @@ venv/
 .venv/
 .env
 
-# Node
+# Node / build
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -23,7 +23,7 @@ telemetria/
 *.log
 *.log.*
 
-# Datos y backups
+# Datos, salidas y backups
 dataset/
 datasets/
 backup_*/
@@ -71,6 +71,14 @@ prod/Dragon3/backend/servicios/redSuperior/data/*.bak
 # Datos de experimentación / arrays
 **/*.npy
 
+# Artefactos grandes / binarios
+prod/Dragon3/frontend/downloads/
+dev/celulas/laboratorio/venv_ml/
+**/*.so
+**/*.dmg
+**/*.AppImage
+**/*.exe
+
 # Editor / OS
 .DS_Store
 .idea/
@@ -78,26 +86,3 @@ prod/Dragon3/backend/servicios/redSuperior/data/*.bak
 *.swp
 *.tmp
 *.orig
-
-# artefactos grandes / binarios
-prod/Dragon3/frontend/downloads/
-dev/celulas/laboratorio/venv_ml/
-**/*.so
-**/*.dmg
-**/*.AppImage
-**/*.exe
-
-# artefactos grandes / binarios
-prod/Dragon3/frontend/downloads/
-dev/celulas/laboratorio/venv_ml/
-**/*.so
-**/*.dmg
-**/*.AppImage
-**/*.exe
-# artefactos grandes / binarios
-prod/Dragon3/frontend/downloads/
-dev/celulas/laboratorio/venv_ml/
-**/*.so
-**/*.dmg
-**/*.AppImage
-**/*.exe
