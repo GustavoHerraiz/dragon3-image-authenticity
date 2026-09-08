@@ -1,0 +1,94 @@
+{
+  "agente": {
+    "confianzaMinimaAuto": 0.8,
+    "confianzaMinimaAprobacion": 0.6,
+    "maxPropuestasPorEjecucion": 20
+  },
+  "impacto": {
+    "ajuste-peso": 1,
+    "nuevo-plan": 1,
+    "optimizacion-rendimiento": 2,
+    "ajuste-umbral": 2,
+    "poda-celula": 3,
+    "eliminar-plan": 3,
+    "cambio-arquitectura": 4
+  },
+  "peso": {
+    "minimo": 0.1,
+    "maximo": 1.5,
+    "incremento": 0.1,
+    "precisionAlta": 0.85,
+    "precisionBaja": 0.6,
+    "contribucionMinima": 0.2,
+    "_celulas": {
+      "detectar-artefactos-ia": 0.3,
+      "detectar-patrones-forenses": 0.3,
+      "detectar-sombreado": 1.2,
+      "detectar-textura-ruido": 1.2,
+      "detectar-colores": 1.2,
+      "extraer-metadatos-exif": 1.2,
+      "detectar-herramienta-ia": 1.2,
+      "detectar-sellos-autenticidad": 1.2,
+      "generar-veredicto": 1.2
+    }
+  },
+  "evolucion": {
+    "frecuenciaMinima": 3,
+    "exitoMinimo": 0.8,
+    "precisionMinima": 0.7,
+    "maxCelulasPorPlan": 20
+  },
+  "poda": {
+    "precisionMinima": 0.5,
+    "usosMinimos": 3,
+    "diasInactivo": 30,
+    "diasGracia": 7
+  },
+  "rendimiento": {
+    "percentilLento": 90,
+    "ratioLentitud": 1.5
+  },
+  "autodiagnostico": {
+    "umbralMejora": 0.02,
+    "umbralEmpeoramiento": 0.03,
+    "ejecutarAutomaticamente": true,
+    "minEjecucionesGroundTruth": 10
+  },
+  "carpetas": {
+    "propuestasPendientes": "./propuestas/pendientes",
+    "propuestasAprobadas": "./propuestas/aprobadas",
+    "propuestasRechazadas": "./propuestas/rechazadas",
+    "propuestasAplicadas": "./propuestas/aplicadas"
+  },
+  "optimizacion": {
+    "_comentario": "Parámetros de optimización de rendimiento. Se ajustan automáticamente por el agente.",
+    "tamañoPredeterminado": 256,
+    "tamañoOptimizado": 128,
+    "calidadRecompresion": 90,
+    "calidadOptimizada": 80,
+    "concurrenciaMaxima": 7,
+    "cacheActivado": true,
+    "_anterior": {
+      "cacheActivado": false,
+      "concurrenciaMaxima": 5
+    }
+  },
+  "defensa": {
+    "rateLimit": {
+      "maxPeticionesPorMinuto": 30,
+      "ventanaMs": 60000,
+      "agentes": {
+        "partner-789": 100
+      },
+      "agentesConfianza": []
+    },
+    "segundaLinea": {
+      "umbral": 3,
+      "minUmbral": 10,
+      "maxUmbral": 50,
+      "modoLimitadoPlanId": "analizar-imagen-limitado",
+      "modoNormalPlanId": "analizar-imagen-completa",
+      "concurrenciaMaxima": 10
+    }
+  }
+}

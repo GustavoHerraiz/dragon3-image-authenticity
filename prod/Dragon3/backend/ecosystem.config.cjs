@@ -105,8 +105,8 @@ module.exports = {
     // =================================================================
     {
       name: 'dragon3-embassy',
-      script: '/opt/dragon3/dev/celulas/agent-embassy.js',
-      cwd: '/opt/dragon3/dev/celulas',
+      script: '/opt/dragon3/prod/Dragon3/engine/agent-embassy.js',
+      cwd: '/opt/dragon3/prod/Dragon3/engine',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -131,7 +131,7 @@ module.exports = {
         REDIS_DB: 1,
         MONGO_URI: process.env.MONGO_URI,
         LOG_LEVEL: 'info',
-        NODE_PATH: '/opt/dragon3/dev/celulas'
+        NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/embassy.log',
       error_file: '/opt/dragon3/prod/Dragon3/logs/embassy-error.log',
@@ -151,8 +151,8 @@ module.exports = {
     // =================================================================
     {
       name: 'dataset-watcher',
-      script: '/opt/dragon3/dev/celulas/scripts/watcher-dataset.js',
-      cwd: '/opt/dragon3/dev/celulas',
+      script: '/opt/dragon3/prod/Dragon3/engine/scripts/watcher-dataset.js',
+      cwd: '/opt/dragon3/prod/Dragon3/engine',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -169,11 +169,12 @@ module.exports = {
       ],
       env: {
         NODE_ENV: 'production',
-        MONGO_URI: process.env.MONGO_URI
+        MONGO_URI: process.env.MONGO_URI,
+        DRAGON3_DATASET_DIR: '/opt/dragon3/prod/Dragon3/data/dataset'
       },
-      log_file: '/opt/dragon3/dev/celulas/dataset/logs/pm2-watcher.log',
-      error_file: '/opt/dragon3/dev/celulas/dataset/logs/pm2-watcher-error.log',
-      out_file: '/opt/dragon3/dev/celulas/dataset/logs/pm2-watcher-out.log',
+      log_file: '/opt/dragon3/prod/Dragon3/logs/pm2-watcher.log',
+      error_file: '/opt/dragon3/prod/Dragon3/logs/pm2-watcher-error.log',
+      out_file: '/opt/dragon3/prod/Dragon3/logs/pm2-watcher-out.log',
       merge_logs: true,
       time: true
     }

@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "nombre": "analizar-imagen-limitado",
+  "descripcion": "Plan de respuesta rápida para modo limitado (solo metadatos + veredicto)",
+  "células": [
+    {
+      "id": "cargar-imagen",
+      "ruta": "./celulas/cargar-imagen.js",
+      "entrada": { "payload": "$.contexto.archivo" }
+    },
+    {
+      "id": "extraer-metadatos-exif",
+      "ruta": "./celulas/extraer-metadatos-exif.js",
+      "entrada": { "payload": "$.cargar-imagen.resultado" }
+    },
+    {
+      "id": "generar-veredicto",
+      "ruta": "./celulas/generar-veredicto.js",
+      "entrada": {
+        "payload": {
+          "extraer-metadatos-exif": "$.extraer-metadatos-exif.resultado"
+        }
+      }
+    }
+  ],
+  "salidaFinal": "$.generar-veredicto.resultado",
+  "detenerseEnError": false
+}
