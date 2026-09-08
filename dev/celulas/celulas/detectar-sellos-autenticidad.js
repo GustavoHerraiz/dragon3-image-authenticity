@@ -156,9 +156,23 @@ import { createAsset } from '@trustnxt/c2pa-ts/asset';
 import { SuperBox } from '@trustnxt/c2pa-ts/jumbf';
 import { ManifestStore } from '@trustnxt/c2pa-ts/manifest';
 
+const cacheC2PA = new Map();
+const CACHE_MAX_ENTRIES = 100;
+
+function clonarResultado(resultado) {
+  return JSON.parse(JSON.stringify(resultado));
+}
+
 export default async function detectarSellosAutenticidad(entrada, contexto) {
   const payload = entrada.payload || {};
   const bufferBase64 = payload.buffer;
+  const hash = payload.hash;
+
+  if (hash && cacheC2PA.has(hash)) {
+    const cacheado = clonarResultado(cacheC2PA.get(hash));
+    cacheado.metricas = { ...cacheado.metricas, tiempoMs: 0, cache: true };
+    return cacheado;
+  }
 
   console.log('🚨🚨🚨 [detectar-sellos-autenticidad] === INICIO C2PA COMPLETO ===');
 
@@ -319,7 +333,7 @@ export default async function detectarSellosAutenticidad(entrada, contexto) {
     ? `✅ Firma IA detectada (confianza: 95%). ${evidencias[0]}`
     : `❌ No se detectaron firmas de IA (confianza: 10%). ${evidencias[0]}`;
 
-  return {
+  const salida = {
     exito: true,
     resultado: {
       esIA,
@@ -343,4 +357,13 @@ export default async function detectarSellosAutenticidad(entrada, contexto) {
     },
     metricas: { tiempoMs: 20 }
   };
+
+  if (hash) {
+    if (cacheC2PA.size >= CACHE_MAX_ENTRIES) {
+      cacheC2PA.delete(cacheC2PA.keys().next().value);
+    }
+    cacheC2PA.set(hash, clonarResultado(salida));
+  }
+
+  return salida;
 }
