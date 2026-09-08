@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Predictor XGBoost para la célula ML de Dragon3.
-Recibe una imagen en base64 por stdin, extrae 69 features, carga el modelo optimizado
-y devuelve la predicción en JSON.
-
-Uso:
-    echo "base64..." | python predictor_xgboost.py
-"""
+"""Predictor XGBoost persistente para la célula ML de Dragon3."""
 
 import sys
 import os
@@ -79,10 +72,13 @@ def extraer_vector_features(feats):
         vec.append(feats['wavelet'][sub + '_energy'])
     return vec
 
-def main():
+def cargar_modelo():
+    with open(MODEL_PATH, 'rb') as f:
+        return pickle.load(f)
+
+
+def analizar(input_data, model):
     try:
-        # Leer base64 desde stdin
-        input_data = sys.stdin.read().strip()
         if not input_data:
             raise ValueError("No se recibió entrada")
         
@@ -115,16 +111,6 @@ def main():
         
         t_extract = (time.time() - t_extract_start) * 1000  # ms
         
-        # Cargar modelo (se hace aquí para que no ralentice la extracción)
-        t_load_start = time.time()
-        try:
-            with open(MODEL_PATH, 'rb') as f:
-                model = pickle.load(f)
-        except Exception as e:
-            raise RuntimeError(f"Error cargando el modelo: {e}")
-        
-        t_load = (time.time() - t_load_start) * 1000
-        
         # Predecir
         t_pred_start = time.time()
         proba = model.predict_proba(X)[0]  # [prob_humano, prob_ia]
@@ -140,11 +126,11 @@ def main():
             "esIA": es_ia,
             "confianza": confianza,
             "tiempoExtraccionMs": round(t_extract, 2),
-            "tiempoCargaModeloMs": round(t_load, 2),
+            "tiempoCargaModeloMs": 0,
             "tiempoPrediccionMs": round(t_pred, 2),
-            "tiempoTotalMs": round(t_extract + t_load + t_pred, 2)
+            "tiempoTotalMs": round(t_extract + t_pred, 2)
         }
-        print(json.dumps(respuesta))
+        return respuesta
         
     except Exception as e:
         # Devolver error en JSON
@@ -152,8 +138,21 @@ def main():
             "exito": False,
             "error": str(e)
         }
-        print(json.dumps(respuesta))
-        sys.exit(1)
+        return respuesta
+
+
+def main():
+    try:
+        model = cargar_modelo()
+    except Exception as e:
+        print(json.dumps({"exito": False, "error": f"Error cargando el modelo: {e}"}), flush=True)
+        return 1
+
+    for linea in sys.stdin:
+        respuesta = analizar(linea.strip(), model)
+        print(json.dumps(respuesta), flush=True)
+
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
