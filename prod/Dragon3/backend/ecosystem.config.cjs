@@ -131,6 +131,7 @@ module.exports = {
         REDIS_DB: 1,
         MONGO_URI: process.env.MONGO_URI,
         LOG_LEVEL: 'info',
+        USE_CELL_QUEUE: 'true',
         NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/embassy.log',

@@ -12,7 +12,7 @@
  * @module defensa
  */
 
-import { getCola } from './cola.js';
+import { getCola, estaColaCerrada } from './cola.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -73,6 +73,7 @@ export function crearRateLimiter() {
  */
 export async function actualizarModo() {
   try {
+    if (estaColaCerrada()) return;
     const cola = getCola();
     const counts = await cola.getJobCounts();
     const profundidad = (counts.waiting || 0) + (counts.active || 0);
@@ -92,7 +93,8 @@ export async function actualizarModo() {
 }
 
 // Iniciar monitor cada 5 segundos
-setInterval(actualizarModo, 5000);
+const monitorCola = setInterval(actualizarModo, 5000);
+monitorCola.unref?.();
 
 /**
  * Obtiene el modo de operación actual.

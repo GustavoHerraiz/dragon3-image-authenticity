@@ -221,7 +221,7 @@ class Orquestador {
       const entradaResuelta = this._resolverReferencias(celula.entrada);
 
       // 2. Determinar si esta célula requiere cola (operaciones pesadas con sharp)
-      const usaCola = false; // 🔥 DESACTIVAR COLAS PARA PRUEBAS
+      const usaCola = process.env.USE_CELL_QUEUE === 'true';
       console.log(`🔍 [${celula.id}] usaCola: ${usaCola}`);
 
       let salida;

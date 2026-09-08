@@ -13,10 +13,10 @@
  */
 
 import Bull from 'bull';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { getConcurrenciaMaxima } from './defensa.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +34,12 @@ const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT, 10) || 6379;
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || '';
 const REDIS_DB = parseInt(process.env.REDIS_DB, 10) || 2;
+const CONFIG_PATH = path.join(__dirname, 'configuracion.json');
+
+function getConcurrenciaMaxima() {
+  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  return config.defensa?.segundaLinea?.concurrenciaMaxima || 5;
+}
 
 // Configuración de Redis para Bull (objeto, NO URL)
 // Esto evita problemas con caracteres especiales en la contraseña (/ + @ etc.)
@@ -52,6 +58,7 @@ const QUEUE_NAME = 'celula:cola';
 
 // Instancia única de la cola (singleton)
 let colaInstance = null;
+let colaCerrada = false;
 
 /**
  * Obtiene la instancia de la cola (singleton).
@@ -59,6 +66,7 @@ let colaInstance = null;
  * @returns {Bull.Queue} Instancia de la cola Bull.
  */
 export function getCola() {
+  colaCerrada = false;
   if (!colaInstance) {
     const concurrenciaMaxima = getConcurrenciaMaxima();
     console.log(`📊 Concurrencia máxima configurada: ${concurrenciaMaxima} trabajos/segundo`);
@@ -94,7 +102,7 @@ export function getCola() {
  * @param {Bull.Queue} cola - Instancia de la cola.
  */
 function _configurarWorkers(cola) {
-  cola.process('procesar-celula', async (job) => {
+  cola.process('procesar-celula', getConcurrenciaMaxima(), async (job) => {
     const { celulaId, ruta, entrada, contexto } = job.data;
 
     try {
@@ -175,9 +183,15 @@ export async function recargarConcurrencia() {
  */
 export async function cerrarCola() {
   if (colaInstance) {
+    colaCerrada = true;
     await colaInstance.close();
+    colaInstance = null;
     console.log('🐂 Cola de trabajos cerrada.');
   }
+}
+
+export function estaColaCerrada() {
+  return colaCerrada;
 }
 
 // ============================================================
