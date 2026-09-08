@@ -122,7 +122,7 @@ function purgarObjetosPesados(obj, depth = 0, vistos = new WeakSet()) {
   const copia = {};
   for (const key of Object.keys(obj)) {
     // Omisión explícita de campos binarios o voluminosos
-    if (['archivo', 'base64', 'buffer', 'rawBuffer', 'matrizCompleta', 'raw_data'].includes(key)) {
+    if (['archivo', 'base64', 'buffer', 'rawBuffer', 'matrizCompleta'].includes(key)) {
       continue;
     }
     const val = obj[key];

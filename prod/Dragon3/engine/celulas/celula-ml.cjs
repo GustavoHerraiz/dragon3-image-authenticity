@@ -37,7 +37,7 @@ function predecirConWorker(pythonBin, pythonScript, imagenBase64) {
   colaPredicciones = colaPredicciones.then(() => new Promise((resolve, reject) => {
     const worker = obtenerWorker(pythonBin, pythonScript);
     let respuesta = null;
-    const timeout = setTimeout(() => reject(new Error('Timeout al ejecutar el worker Python')), 15000);
+    const timeout = setTimeout(() => reject(new Error('Timeout al ejecutar el worker Python')), 60000);
     const recibir = datos => {
       bufferSalida += datos.toString();
       const lineas = bufferSalida.split('\n');
