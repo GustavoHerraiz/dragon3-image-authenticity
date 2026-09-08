@@ -221,7 +221,16 @@ class Orquestador {
       const entradaResuelta = this._resolverReferencias(celula.entrada);
 
       // 2. Determinar si esta célula requiere cola (operaciones pesadas con sharp)
-      const usaCola = process.env.USE_CELL_QUEUE === 'true';
+      const celulasPesadas = new Set([
+        'ml',
+        'detectar-sellos-autenticidad',
+        'detectar-patrones-forenses',
+        'detectar-artefactos-ia',
+        'detectar-textura-ruido',
+        'detectar-colores',
+        'detectar-sombreado'
+      ]);
+      const usaCola = process.env.USE_CELL_QUEUE === 'true' && celulasPesadas.has(celula.id);
       console.log(`🔍 [${celula.id}] usaCola: ${usaCola}`);
 
       let salida;
