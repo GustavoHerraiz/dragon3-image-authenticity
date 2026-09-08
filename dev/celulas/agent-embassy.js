@@ -55,7 +55,16 @@ dotenv.config({ path: path.resolve(__dirname, '../../prod/Dragon3/backend/.env')
 
 const app = express();
 const PORT = process.env.EMBASSY_PORT || 3002;
-const JWT_SECRET = process.env.JWT_SECRET || 'mi-secreto-temporal-123';
+let servidorHttp;
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'production'
+    ? null
+    : 'development-only-secret-change-me-before-production'
+);
+
+if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length < 32)) {
+  throw new Error('JWT_SECRET debe estar configurado y tener al menos 32 caracteres en producción.');
+}
 
 // Inicialización de colas Redis/Bull
 getCola();
@@ -95,15 +104,17 @@ function autenticarToken(req, res, next) {
  * @param {number} depth Profundidad máxima de recursión
  * @returns {Object} Objeto saneado
  */
-function purgarObjetosPesados(obj, depth = 0) {
+function purgarObjetosPesados(obj, depth = 0, vistos = new WeakSet()) {
   if (!obj || depth > 8) return obj;
   if (typeof obj !== 'object') return obj;
 
   if (Buffer.isBuffer(obj)) return undefined;
+  if (vistos.has(obj)) return undefined;
+  vistos.add(obj);
 
   if (Array.isArray(obj)) {
     if (obj.length > 50) return obj.slice(0, 10);
-    return obj.map(item => purgarObjetosPesados(item, depth + 1));
+    return obj.map(item => purgarObjetosPesados(item, depth + 1, vistos));
   }
 
   const copia = {};
@@ -116,7 +127,7 @@ function purgarObjetosPesados(obj, depth = 0) {
     if (typeof val === 'string' && val.length > 5000 && val.startsWith('data:image')) {
       continue;
     }
-    copia[key] = purgarObjetosPesados(val, depth + 1);
+    copia[key] = purgarObjetosPesados(val, depth + 1, vistos);
   }
   return copia;
 }
@@ -350,19 +361,42 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
 
 (async () => {
   try {
-    const uri = process.env.MONGO_URI || 'mongodb+srv://gustavoherraiz:Lobosolitario@proyectodragon.yvzan.mongodb.net/dragon?retryWrites=true&w=majority&appName=ProyectoDragon';
+    const uri = process.env.MONGO_URI;
+    if (!uri) {
+      throw new Error('MONGO_URI no está configurado.');
+    }
     await mongoose.connect(uri);
     console.log('✅ MongoDB conectado correctamente');
   } catch (e) {
     console.error('❌ Error al conectar con MongoDB:', e.message);
   }
 
-  app.listen(PORT, () => {
+  servidorHttp = app.listen(PORT, () => {
     console.log(`🤖 Agent Embassy escuchando en http://localhost:${PORT}`);
     console.log(`📚 Catálogo disponible en /agent/catalogo`);
     console.log(`🗂️ Planes disponibles en /agent/planes`);
     console.log(`🚀 Ejecución de agentes activa en /agent/execute`);
   });
 })();
+
+async function apagarEmbassy(signal) {
+  console.log(`🛑 Recibida señal ${signal}. Cerrando Embassy...`);
+  if (servidorHttp) {
+    await new Promise(resolve => servidorHttp.close(resolve));
+  }
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+}
+
+process.once('SIGTERM', async () => {
+  await apagarEmbassy('SIGTERM');
+  process.exit(0);
+});
+
+process.once('SIGINT', async () => {
+  await apagarEmbassy('SIGINT');
+  process.exit(0);
+});
 
 export default app;

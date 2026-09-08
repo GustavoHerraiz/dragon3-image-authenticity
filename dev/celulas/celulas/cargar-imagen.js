@@ -32,6 +32,7 @@
  */
 
 import sharp from 'sharp';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -84,6 +85,7 @@ export default async function cargarImagen(entrada, contexto) {
       // compatible con todas las células del sistema (EXIF, patrones,
       // artefactos, doble compresión, etc.) que esperan un string base64
       buffer: bufferBinario.toString('base64'), // Base64 para compatibilidad
+      hash: crypto.createHash('sha256').update(bufferBinario).digest('hex'),
       
       // Metadatos de la imagen
       formato: metadata.format,

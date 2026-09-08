@@ -21,13 +21,17 @@ import numpy as np
 import xgboost as xgb
 
 # Asegurar que el directorio del laboratorio está en el path para importar el extractor
-LAB_DIR = "/opt/dragon3/dev/celulas/laboratorio"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LAB_DIR = os.environ.get("DRAGON3_LAB_DIR", os.path.join(BASE_DIR, "laboratorio"))
 sys.path.insert(0, LAB_DIR)
 
 from extractor_features_corregido import extraer_features_corregido
 
 # Ruta al modelo optimizado
-MODEL_PATH = "/opt/dragon3/dev/celulas/laboratorio/modelo_xgboost_25000_optimizado.pkl"
+MODEL_PATH = os.environ.get(
+    "ML_MODEL_PATH",
+    os.path.join(LAB_DIR, "modelo_xgboost_25000_optimizado.pkl")
+)
 
 # Nombres de las 69 features en el orden exacto (definido en generar_69_*.py)
 FEATURE_NAMES = [

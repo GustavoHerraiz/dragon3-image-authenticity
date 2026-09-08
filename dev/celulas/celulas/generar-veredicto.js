@@ -22,6 +22,27 @@ const DRAGON3_SELLO = {
   BONUS_PESO: 0.2,
 };
 
+function compactarParaRespuesta(valor, vistos = new WeakSet(), profundidad = 0) {
+  if (valor === null || typeof valor !== 'object') {
+    return typeof valor === 'string' && valor.length > 4096 ? undefined : valor;
+  }
+  if (profundidad > 8 || vistos.has(valor)) return undefined;
+  vistos.add(valor);
+  if (Buffer.isBuffer(valor)) return undefined;
+  if (Array.isArray(valor)) {
+    return valor.slice(0, 50).map(item => compactarParaRespuesta(item, vistos, profundidad + 1));
+  }
+
+  const resultado = {};
+  const camposPesados = new Set(['buffer', 'base64', 'archivo', 'rawBuffer', 'raw_data', 'matrizCompleta']);
+  for (const [clave, contenido] of Object.entries(valor)) {
+    if (camposPesados.has(clave)) continue;
+    const compacto = compactarParaRespuesta(contenido, vistos, profundidad + 1);
+    if (compacto !== undefined) resultado[clave] = compacto;
+  }
+  return resultado;
+}
+
 // ============================================================================
 //  FUNCIÓN PRINCIPAL
 // ============================================================================
@@ -431,11 +452,11 @@ export default async function generarVeredicto(entrada, contexto) {
       confianzaAumentada: selloDragon3Detectado ? confianzaGlobal - (esIAFinal ? confianzaIA : confianzaHumana) : 0,
     },
     resultados: resultados.map(r => {
-      const resultadoCompleto = payload[r.celulaId] || {};
+      const resultadoCompleto = compactarParaRespuesta(payload[r.celulaId] || {});
       return { celula: r.celulaId, esIA: r.esIA, confianza: r.confianza, explicacion: r.explicacion, peso: r.peso, ...resultadoCompleto };
     }),
     analizadores: analizadores,
-    todosLosResultados: payload,
+    todosLosResultados: compactarParaRespuesta(payload),
   };
 
   // ==========================================================================

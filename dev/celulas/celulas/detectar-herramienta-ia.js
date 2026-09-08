@@ -40,7 +40,7 @@ export default async function detectarHerramientaIA(entrada, contexto) {
     // ============================================================
     //  1. CARGAR JSON DE PATRONES
     // ============================================================
-    const patronesPath = path.join(__dirname, '..', 'analizadorHerramientasSospechosas.json');
+    const patronesPath = path.join(__dirname, 'analizadorHerramientasSospechosas.json');
     let patronesJSON = {};
     try {
       const contenido = fs.readFileSync(patronesPath, 'utf8');

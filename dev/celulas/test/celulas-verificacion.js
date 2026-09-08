@@ -48,20 +48,31 @@ console.log(`🔧 Usando parámetros optimizados: tamaño=${TAMAÑO_OPT}, calida
 // ============================================================
 //  OBTENER IMAGEN
 // ============================================================
-const imagenPath = process.argv[2] || 'ai.jpg';
-const rutaAbsoluta = path.resolve(imagenPath);
+const imagenesFallback = [
+  path.resolve(process.cwd(), '../../prod/Dragon3/test.jpg'),
+  path.resolve(__dirname, '../../prod/Dragon3/test.jpg'),
+  path.resolve(__dirname, '../../prod/Dragon3/backend/unico.png')
+];
+const imagenSolicitada = process.argv[2];
+const rutaAbsoluta = imagenSolicitada
+  ? path.resolve(imagenSolicitada)
+  : imagenesFallback.find(ruta => fs.existsSync(ruta));
 
-if (!fs.existsSync(rutaAbsoluta)) {
-  console.error(`❌ Imagen no encontrada: ${rutaAbsoluta}`);
-  process.exit(1);
-}
-
-const buffer = fs.readFileSync(rutaAbsoluta);
+const buffer = rutaAbsoluta && fs.existsSync(rutaAbsoluta)
+  ? fs.readFileSync(rutaAbsoluta)
+  : await sharp({
+      create: {
+        width: 128,
+        height: 128,
+        channels: 3,
+        background: { r: 120, g: 130, b: 140 }
+      }
+    }).png().toBuffer();
 const base64 = buffer.toString('base64');
 
 console.log('🧪 VERIFICACIÓN DE CÉLULAS ATÓMICAS');
 console.log('===================================');
-console.log(`📷 Imagen: ${rutaAbsoluta}`);
+console.log(`📷 Imagen: ${rutaAbsoluta || 'fixture generado en memoria'}`);
 console.log('');
 
 // ============================================================

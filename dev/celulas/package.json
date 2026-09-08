@@ -6,7 +6,10 @@
   "main": "orquestador.js",
   "scripts": {
     "start": "node orquestador.js",
-    "test": "node --test"
+    "test": "node test/celulas-verificacion.js ../../prod/Dragon3/test.jpg",
+    "test:orquestador": "node test-orquestador.js",
+    "test:telemetria": "node test-telemetria.js",
+    "test:integracion": "node test/test-integracion.js"
   },
   "dependencies": {
     "@contentauth/c2pa-node": "^0.5.5",
