@@ -28,3 +28,14 @@ curl -f http://127.0.0.1:3002/health
 ```
 
 La copia de `engine` se regenera con `prod/Dragon3/scripts/prepare-production-engine.sh`.
+
+## Reconstrucción desde GitHub
+
+El modelo XGBoost y el entorno Python no se versionan por su tamaño. En una clonación limpia, copia el artefacto del modelo desde el almacenamiento seguro de modelos o configura `ML_MODEL_PATH` y ejecuta:
+
+```bash
+chmod +x prod/Dragon3/scripts/bootstrap-production-engine.sh
+prod/Dragon3/scripts/bootstrap-production-engine.sh
+```
+
+El script instala dependencias, valida el runtime y falla explícitamente si falta el modelo ML.

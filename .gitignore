@@ -80,6 +80,9 @@ prod/Dragon3/engine/dataset/
 prod/Dragon3/engine/telemetria/
 prod/Dragon3/engine/salida/
 prod/Dragon3/engine/temp/
+prod/Dragon3/engine/telemetria/*
+!prod/Dragon3/engine/telemetria/
+!prod/Dragon3/engine/telemetria/*.js
 prod/Dragon3/data/dataset/
 /dev/celulas/dataset
 /dev/celulas/laboratorio/
