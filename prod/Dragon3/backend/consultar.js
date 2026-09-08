@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 
-const uri = 'MONGO_URI_FROM_ENV';
+const uri = process.env.MONGO_URI;
+if (!uri) throw new Error('MONGO_URI no está configurado.');
 const archivoId = process.argv[2];
 
 if (!archivoId) {

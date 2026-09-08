@@ -422,7 +422,8 @@ async function escanearYProcesar() {
 
 async function conectarMongoDB() {
   try {
-    const uri = process.env.MONGO_URI || 'MONGO_URI_FROM_ENV';
+    const uri = process.env.MONGO_URI;
+    if (!uri) throw new Error('MONGO_URI no está configurado.');
     await mongoose.connect(uri);
     log('✅ Conexión a MongoDB establecida');
     return true;

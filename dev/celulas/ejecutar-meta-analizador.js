@@ -17,7 +17,8 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '../../prod/Dragon3/backend/.env') });
 
-const MONGO_URI = process.env.MONGO_URI || 'MONGO_URI_FROM_ENV';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) throw new Error('MONGO_URI no está configurado.');
 
 async function ejecutar() {
   console.log('🧠 [Meta-Analizador] Ejecutando análisis automático...');

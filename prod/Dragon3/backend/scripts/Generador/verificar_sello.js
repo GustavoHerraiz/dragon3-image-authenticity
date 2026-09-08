@@ -1,7 +1,8 @@
 import sharp from 'sharp';
 import readline from 'readline';
 
-const SECRET = 'MBH_SECRET_FROM_ENV';
+const SECRET = process.env.MBH_SECRET;
+if (!SECRET) throw new Error('MBH_SECRET no está configurado.');
 const BYTES_PER_POINT = 32;
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 

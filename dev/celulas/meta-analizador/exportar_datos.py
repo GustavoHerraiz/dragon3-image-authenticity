@@ -46,7 +46,9 @@ ENV_PATH = Path(__file__).resolve().parent.parent.parent / 'prod' / 'Dragon3' / 
 load_dotenv(ENV_PATH)
 
 # Obtener URI de MongoDB
-MONGO_URI = os.getenv('MONGO_URI', 'MONGO_URI_FROM_ENV')
+MONGO_URI = os.getenv('MONGO_URI')
+if not MONGO_URI:
+    raise RuntimeError('MONGO_URI no está configurado')
 
 # Directorio de salida
 OUTPUT_DIR = Path(__file__).parent / 'datos'

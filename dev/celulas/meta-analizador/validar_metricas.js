@@ -5,7 +5,8 @@
 
 import mongoose from 'mongoose';
 
-const MONGO_URI = 'MONGO_URI_FROM_ENV';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) throw new Error('MONGO_URI no está configurado.');
 
 async function validarMetricas() {
   await mongoose.connect(MONGO_URI);

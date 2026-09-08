@@ -36,7 +36,7 @@ import Redis from 'ioredis';
 const redisEspejo = new Redis({
   host: '127.0.0.1', // Usar IP explícita para evitar bucles de DNS
   port: 6379,
-  password: 'REDIS_PASSWORD_FROM_ENV',
+  password: process.env.REDIS_PASSWORD,
   lazyConnect: false, // Conectar inmediatamente
   connectTimeout: 1000, // 1 segundo de timeout de conexión
   commandTimeout: 1000, // 1 segundo de timeout de comandos

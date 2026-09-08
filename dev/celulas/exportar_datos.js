@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MONGO_URI = 'MONGO_URI_FROM_ENV';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) throw new Error('MONGO_URI no está configurado.');
 
 await mongoose.connect(MONGO_URI);
 const db = mongoose.connection.db;

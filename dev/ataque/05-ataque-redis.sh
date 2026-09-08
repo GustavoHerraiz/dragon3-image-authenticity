@@ -1,7 +1,8 @@
 $Servidor = "192.168.1.200"
 $Puerto = "6379"
 $RedisCli = "C:\Program Files\Redis\redis-cli.exe"
-$PasswordReal = "REDIS_PASSWORD_FROM_ENV"
+$PasswordReal = $env:REDIS_PASSWORD
+if (-not $PasswordReal) { throw "REDIS_PASSWORD no está configurado" }
 
 Write-Host "=== ATAQUE A REDIS ==="
 Write-Host "1. Sin contraseña..."

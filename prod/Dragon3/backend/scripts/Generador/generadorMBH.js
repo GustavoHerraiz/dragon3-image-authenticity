@@ -1,7 +1,8 @@
 import sharp from 'sharp';
 import crypto from 'crypto';
 
-const SECRET = 'MBH_SECRET_FROM_ENV';
+const SECRET = process.env.MBH_SECRET;
+if (!SECRET) throw new Error('MBH_SECRET no está configurado.');
 const TOTAL_BYTES = 96;
 
 class MBHGeneradorFinal {

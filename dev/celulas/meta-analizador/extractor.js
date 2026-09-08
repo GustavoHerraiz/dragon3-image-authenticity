@@ -15,7 +15,8 @@ const __dirname = path.dirname(__filename);
 // Cargar .env desde la ruta correcta
 dotenv.config({ path: path.resolve(__dirname, '../../prod/Dragon3/backend/.env') });
 
-const MONGO_URI = process.env.MONGO_URI || 'MONGO_URI_FROM_ENV';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) throw new Error('MONGO_URI no está configurado.');
 
 export async function conectarMongo() {
   if (mongoose.connection.readyState !== 1) {
