@@ -7,6 +7,7 @@
 - [Architecture Decision Records](architecture/ADRs.md): decisiones con contexto, alternativas y consecuencias.
 - [Service SLOs](operations/SLO.md): SLIs, objetivos, alertas y error budget.
 - [OpenAPI](api/openapi.yaml): contrato HTTP versionable para integradores.
+- [High Concurrency Plan](../HIGH_CONCURRENCY_PLAN.md): fases, gates, workers, carga y certificacion.
 
 ## Como leerla
 

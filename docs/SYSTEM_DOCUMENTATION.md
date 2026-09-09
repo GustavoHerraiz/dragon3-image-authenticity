@@ -23,6 +23,7 @@ Este documento es el mapa principal del sistema. Los documentos especializados s
 - [architecture/ADRs.md](architecture/ADRs.md): decisiones arquitectonicas registradas.
 - [operations/SLO.md](operations/SLO.md): SLIs, SLOs, alertas y error budget.
 - [api/openapi.yaml](api/openapi.yaml): contrato OpenAPI de los endpoints frontales.
+- [HIGH_CONCURRENCY_PLAN.md](../HIGH_CONCURRENCY_PLAN.md): plan de implantacion de alta concurrencia.
 
 Cuando exista una diferencia entre este documento y el codigo ejecutado, prevalecen, en este orden: codigo desplegado, configuracion efectiva del proceso, plan cargado, tests de contrato y documentacion.
 
@@ -580,3 +581,4 @@ Dragon3 esta listo para una entrega cuando un operador nuevo puede clonar el rep
 - Decisiones arquitectonicas: [architecture/ADRs.md](architecture/ADRs.md).
 - SLOs y error budget: [operations/SLO.md](operations/SLO.md).
 - Contrato OpenAPI: [api/openapi.yaml](api/openapi.yaml).
+- Alta concurrencia: [HIGH_CONCURRENCY_PLAN.md](../HIGH_CONCURRENCY_PLAN.md).
