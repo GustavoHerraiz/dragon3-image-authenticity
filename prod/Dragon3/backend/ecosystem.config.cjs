@@ -90,7 +90,9 @@ module.exports = {
         JWT_SECRET: process.env.JWT_SECRET,
         MONGO_URI: process.env.MONGO_URI,
         MAX_SYNC_ANALYSES: process.env.MAX_SYNC_ANALYSES || '4',
-        EMBASSY_TIMEOUT_MS: process.env.EMBASSY_TIMEOUT_MS || '180000'
+        EMBASSY_TIMEOUT_MS: process.env.EMBASSY_TIMEOUT_MS || '180000',
+        ENABLE_METRICS: process.env.ENABLE_METRICS || 'true',
+        METRICS_TOKEN: process.env.METRICS_TOKEN
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/server.log',
       error_file: '/opt/dragon3/prod/Dragon3/logs/server-error.log',

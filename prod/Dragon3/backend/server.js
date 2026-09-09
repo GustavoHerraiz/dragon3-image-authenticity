@@ -35,6 +35,7 @@ import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import fetch from 'node-fetch';
+import client from 'prom-client';
 
 // ============================================================
 // 1. CONFIGURACIÓN INICIAL
@@ -54,7 +55,35 @@ const EMBASSY_URL = process.env.EMBASSY_URL || 'http://localhost:3002';
 const EMBASSY_EXECUTE_ENDPOINT = `${EMBASSY_URL}/agent/execute`;
 const MAX_SYNC_ANALYSES = Math.max(1, Number.parseInt(process.env.MAX_SYNC_ANALYSES || '4', 10));
 const EMBASSY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.EMBASSY_TIMEOUT_MS || '180000', 10));
+const METRICS_ENABLED = process.env.ENABLE_METRICS !== 'false';
+const METRICS_TOKEN = process.env.METRICS_TOKEN || '';
 let activeAnalyses = 0;
+
+const metricsRegistry = new client.Registry();
+client.collectDefaultMetrics({ register: metricsRegistry, prefix: 'dragon3_' });
+const httpRequestsTotal = new client.Counter({
+  name: 'dragon3_http_requests_total',
+  help: 'Total de peticiones HTTP recibidas por el backend',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [metricsRegistry]
+});
+const httpRequestDuration = new client.Histogram({
+  name: 'dragon3_http_request_duration_seconds',
+  help: 'Duracion de peticiones HTTP del backend',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 30, 60, 180],
+  registers: [metricsRegistry]
+});
+const activeAnalysisGauge = new client.Gauge({
+  name: 'dragon3_active_analyses',
+  help: 'Analisis sincronicos activos en esta instancia del backend',
+  registers: [metricsRegistry]
+});
+const analysisCapacityRejections = new client.Counter({
+  name: 'dragon3_analysis_capacity_rejections_total',
+  help: 'Analisis rechazados por falta de slots sincronicos',
+  registers: [metricsRegistry]
+});
 
 console.log(`🔧 [${MODULE_NAME}] Variables de entorno cargadas`);
 console.log(`🤖 Embassy URL: ${EMBASSY_URL}`);
@@ -96,6 +125,18 @@ app.use((req, res, next) => {
   req.correlationId = req.headers['x-correlation-id'] || uuidv4();
   req.startTime = Date.now();
   res.setHeader('X-Correlation-ID', req.correlationId);
+  next();
+});
+
+app.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+  res.once('finish', () => {
+    const route = req.route?.path || req.path || 'unknown';
+    const labels = { method: req.method, route, status_code: String(res.statusCode) };
+    const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
+    httpRequestsTotal.inc(labels);
+    httpRequestDuration.observe(labels, durationSeconds);
+  });
   next();
 });
 
@@ -245,11 +286,13 @@ function tryAcquireAnalysisSlot() {
   }
 
   activeAnalyses += 1;
+  activeAnalysisGauge.inc();
   let released = false;
   return () => {
     if (!released) {
       released = true;
       activeAnalyses -= 1;
+      activeAnalysisGauge.dec();
     }
   };
 }
@@ -257,6 +300,7 @@ function tryAcquireAnalysisSlot() {
 function rejectWhenAtCapacity(req, res) {
   const releaseSlot = tryAcquireAnalysisSlot();
   if (!releaseSlot) {
+    analysisCapacityRejections.inc();
     res.set('Retry-After', '5');
     res.status(429).json({
       error: 'Capacidad de análisis temporalmente agotada',
@@ -267,7 +311,6 @@ function rejectWhenAtCapacity(req, res) {
 
   return releaseSlot;
 }
-
 // ============================================================
 // 7. RUTAS
 // ============================================================
@@ -283,6 +326,24 @@ app.get('/health', (req, res) => {
       embassy: EMBASSY_URL
     }
   });
+});
+
+app.get('/metrics', async (req, res) => {
+  if (!METRICS_ENABLED) {
+    return res.status(404).end();
+  }
+
+  const providedToken = req.get('X-Metrics-Token') || '';
+  const remoteAddress = req.socket.remoteAddress || '';
+  const localRequest = remoteAddress === '127.0.0.1' ||
+    remoteAddress === '::1' ||
+    remoteAddress === '::ffff:127.0.0.1';
+  if (METRICS_TOKEN ? providedToken !== METRICS_TOKEN : !localRequest) {
+    return res.status(404).end();
+  }
+
+  res.set('Content-Type', metricsRegistry.contentType);
+  res.end(await metricsRegistry.metrics());
 });
 
 /**
