@@ -32,6 +32,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { fileTypeFromBuffer } from 'file-type';
 import mongoose from 'mongoose';
+import Bull from 'bull';
 
 // Módulos del núcleo Dragon3
 import Orquestador from './orquestador.js';
@@ -61,6 +62,29 @@ const JWT_SECRET = process.env.JWT_SECRET || (
     ? null
     : 'development-only-secret-change-me-before-production'
 );
+const ASYNC_QUEUE_NAME = 'analisis:cola:v1';
+const ASYNC_JOB_TTL_MS = 24 * 60 * 60 * 1000;
+const ASYNC_UPLOAD_ROOT = path.resolve(__dirname, '../backend/uploads/temporal');
+const asyncQueue = new Bull(ASYNC_QUEUE_NAME, {
+  redis: {
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: Number.parseInt(process.env.REDIS_PORT || '6379', 10),
+    db: 3,
+    ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {})
+  },
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 2000 },
+    timeout: 300000,
+    removeOnComplete: { age: ASYNC_JOB_TTL_MS / 1000 },
+    removeOnFail: { age: ASYNC_JOB_TTL_MS / 1000 }
+  },
+  settings: {
+    lockDuration: 600000,
+    stalledInterval: 30000,
+    maxStalledCount: 1
+  }
+});
 
 if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length < 32)) {
   throw new Error('JWT_SECRET debe estar configurado y tener al menos 32 caracteres en producción.');
@@ -84,7 +108,7 @@ const rateLimiter = crearRateLimiter();
  * Middleware para autenticación mediante JWT.
  */
 function autenticarToken(req, res, next) {
-  const { token } = req.body;
+  const token = req.body?.token || req.get('Authorization')?.replace(/^Bearer\s+/i, '');
   if (!token) {
     return res.status(401).json({ error: 'Token de autenticación requerido' });
   }
@@ -146,6 +170,49 @@ function generarUUID() {
   });
 }
 
+function validarRutaAsync(ruta) {
+  const rutaAbsoluta = path.resolve(ruta);
+  return rutaAbsoluta.startsWith(`${ASYNC_UPLOAD_ROOT}${path.sep}`) ? rutaAbsoluta : null;
+}
+
+asyncQueue.process('analisis-completo', Number.parseInt(process.env.ASYNC_QUEUE_CONCURRENCY || '2', 10), async (job) => {
+  const ruta = validarRutaAsync(job.data.filePath);
+  if (!ruta || !fs.existsSync(ruta)) {
+    throw new Error('Archivo temporal de análisis no disponible');
+  }
+
+  try {
+    await job.progress(10);
+    const archivo = fs.readFileSync(ruta).toString('base64');
+    const token = jwt.sign({ agentId: 'dragon3-async-worker', nivel: 'confianza' }, JWT_SECRET, { expiresIn: '10m' });
+    const response = await fetch(`http://127.0.0.1:${PORT}/agent/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': job.data.correlationId },
+      body: JSON.stringify({
+        token,
+        agentId: 'dragon3-async-worker',
+        peticion: {
+          archivo,
+          params: {},
+          extra: {
+            archivoId: job.data.archivoId,
+            nombreOriginal: job.data.nombreOriginal,
+            usuarioId: job.data.ownerId,
+            correlationId: job.data.correlationId
+          }
+        },
+        configuracion: { planId: job.data.planId }
+      }),
+      signal: AbortSignal.timeout(300000)
+    });
+    if (!response.ok) throw new Error(`Error de ejecución: ${response.status}`);
+    await job.progress(100);
+    return await response.json();
+  } finally {
+    try { fs.unlinkSync(ruta); } catch (error) { /* limpieza best effort */ }
+  }
+});
+
 // ============================================================
 // 3. RUTAS / ENDPOINTS
 // ============================================================
@@ -194,6 +261,78 @@ app.get('/agent/catalogo', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Agent Embassy', timestamp: new Date().toISOString() });
 });
+
+app.post('/agent/analysis-jobs', autenticarToken, async (req, res) => {
+  const { filePath, ownerId, nombreOriginal, archivoId, correlationId, planId, idempotencyKey } = req.body || {};
+  const ruta = validarRutaAsync(filePath);
+  if (!ruta || !fs.existsSync(ruta)) {
+    return res.status(400).json({ error: 'Archivo temporal no válido', correlationId });
+  }
+  if (!ownerId || !correlationId || !planId) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios', correlationId });
+  }
+
+  try {
+    const jobId = idempotencyKey
+      ? `analysis-${crypto.createHash('sha256').update(`${ownerId}:${idempotencyKey}`).digest('hex').slice(0, 48)}`
+      : undefined;
+    if (jobId) {
+      const existingJob = await asyncQueue.getJob(jobId);
+      if (existingJob) {
+        try { fs.unlinkSync(ruta); } catch (error) { /* limpiar temporal duplicado */ }
+        return res.status(202).json({
+          jobId: String(existingJob.id),
+          statusUrl: `/agent/analysis-jobs/${existingJob.id}`,
+          correlationId: existingJob.data.correlationId
+        });
+      }
+    }
+    const job = await asyncQueue.add('analisis-completo', {
+      filePath: ruta,
+      ownerId,
+      nombreOriginal: nombreOriginal || 'archivo_desconocido',
+      archivoId: archivoId || generarUUID(),
+      correlationId,
+      planId
+    }, jobId ? { jobId } : undefined);
+    res.status(202).json({
+      jobId: String(job.id),
+      statusUrl: `/agent/analysis-jobs/${job.id}`,
+      correlationId
+    });
+  } catch (error) {
+    try { fs.unlinkSync(ruta); } catch (cleanupError) { /* ignorar */ }
+    res.status(500).json({ error: 'No se pudo crear el trabajo', correlationId });
+  }
+});
+
+app.get('/agent/analysis-jobs/:jobId', autenticarToken, async (req, res) => {
+  const job = await asyncQueue.getJob(req.params.jobId);
+  if (!job || job.data.ownerId !== req.agente?.ownerId) {
+    return res.status(404).json({ error: 'Trabajo no encontrado' });
+  }
+  const estado = await job.getState();
+  res.json({
+    jobId: String(job.id),
+    estado,
+    progreso: job.progress(),
+    resultado: estado === 'completed' ? job.returnvalue : undefined,
+    error: stateIsFailed(estado) ? job.failedReason : undefined
+  });
+});
+
+app.delete('/agent/analysis-jobs/:jobId', autenticarToken, async (req, res) => {
+  const job = await asyncQueue.getJob(req.params.jobId);
+  if (!job || job.data.ownerId !== req.agente?.ownerId) {
+    return res.status(404).json({ error: 'Trabajo no encontrado' });
+  }
+  await job.remove();
+  res.status(202).json({ jobId: String(job.id), estado: 'cancelled' });
+});
+
+function stateIsFailed(state) {
+  return state === 'failed';
+}
 
 /**
  * POST /agent/execute
@@ -390,6 +529,7 @@ async function apagarEmbassy(signal) {
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
+  await asyncQueue.close();
 }
 
 process.once('SIGTERM', async () => {

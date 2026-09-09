@@ -280,6 +280,57 @@ async function llamarEmbassy(
   return await response.json();
 }
 
+function crearTokenEmbassy(agentId, ownerId) {
+  return jwt.sign({ agentId, ownerId, nivel: 'confianza' }, JWT_SECRET, { expiresIn: '10m' });
+}
+
+async function llamarEmbassyJobs(endpoint, payload, correlationId) {
+  const ownerId = payload.ownerId;
+  const response = await fetch(`${EMBASSY_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId,
+      Authorization: `Bearer ${crearTokenEmbassy('dragon3-async-api', ownerId)}`
+    },
+    body: JSON.stringify({ ...payload, token: crearTokenEmbassy('dragon3-async-api', ownerId) }),
+    signal: AbortSignal.timeout(15000)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body.error || `Embassy jobs error ${response.status}`);
+  }
+  return body;
+}
+
+async function consultarEmbassyJob(jobId, ownerId, correlationId) {
+  const response = await fetch(`${EMBASSY_URL}/agent/analysis-jobs/${encodeURIComponent(jobId)}`, {
+    headers: {
+      'X-Correlation-ID': correlationId,
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${crearTokenEmbassy('dragon3-async-api', ownerId)}`
+    },
+    signal: AbortSignal.timeout(10000)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || `Embassy jobs error ${response.status}`);
+  return body;
+}
+
+async function cancelarEmbassyJob(jobId, ownerId, correlationId) {
+  const response = await fetch(`${EMBASSY_URL}/agent/analysis-jobs/${encodeURIComponent(jobId)}`, {
+    method: 'DELETE',
+    headers: {
+      'X-Correlation-ID': correlationId,
+      Authorization: `Bearer ${crearTokenEmbassy('dragon3-async-api', ownerId)}`
+    },
+    signal: AbortSignal.timeout(10000)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || `Embassy jobs error ${response.status}`);
+  return body;
+}
+
 function tryAcquireAnalysisSlot() {
   if (activeAnalyses >= MAX_SYNC_ANALYSES) {
     return null;
@@ -484,6 +535,49 @@ if (fs.existsSync(frontendPath)) {
 } else {
   console.warn(`⚠️ [${MODULE_NAME}] Frontend no encontrado en: ${frontendPath}`);
 }
+
+app.post('/api/v1/analysis-jobs', authMiddleware, upload.single('archivo'), async (req, res) => {
+  const correlationId = req.correlationId;
+  const ownerId = String(req.usuario?.id || req.usuario?.userId || req.usuario?.sub || 'unknown');
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se ha subido ningún archivo', correlationId });
+  }
+
+  try {
+    const planId = seleccionarPlanPorMimetype(req.file.mimetype);
+    const resultado = await llamarEmbassyJobs('/agent/analysis-jobs', {
+      ownerId,
+      filePath: req.file.path,
+      nombreOriginal: req.file.originalname,
+      archivoId: uuidv4(),
+      correlationId,
+      planId,
+      idempotencyKey: req.get('Idempotency-Key') || null
+    }, correlationId);
+    res.status(202).json(resultado);
+  } catch (error) {
+    try { fs.unlinkSync(req.file.path); } catch (cleanupError) { /* ignorar */ }
+    res.status(502).json({ error: 'No se pudo encolar el análisis', correlationId });
+  }
+});
+
+app.get('/api/v1/analysis-jobs/:jobId', authMiddleware, async (req, res) => {
+  const ownerId = String(req.usuario?.id || req.usuario?.userId || req.usuario?.sub || 'unknown');
+  try {
+    res.json(await consultarEmbassyJob(req.params.jobId, ownerId, req.correlationId));
+  } catch (error) {
+    res.status(404).json({ error: 'Trabajo no encontrado', correlationId: req.correlationId });
+  }
+});
+
+app.delete('/api/v1/analysis-jobs/:jobId', authMiddleware, async (req, res) => {
+  const ownerId = String(req.usuario?.id || req.usuario?.userId || req.usuario?.sub || 'unknown');
+  try {
+    res.status(202).json(await cancelarEmbassyJob(req.params.jobId, ownerId, req.correlationId));
+  } catch (error) {
+    res.status(404).json({ error: 'Trabajo no encontrado', correlationId: req.correlationId });
+  }
+});
 
 // ============================================================
 // 8. INICIAR SERVIDOR
