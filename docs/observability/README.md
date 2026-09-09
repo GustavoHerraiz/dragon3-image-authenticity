@@ -18,6 +18,16 @@ promtool check rules dragon3-alerts.yml
 
 Copiar `prometheus.yml` y `dragon3-alerts.yml` al directorio de configuración de Prometheus. Copiar el dashboard a `/var/lib/grafana/dashboards/dragon3/` y los dos archivos de provisioning a sus directorios equivalentes de Grafana. Ajustar propietarios y reiniciar los servicios mediante el mecanismo de la distribución.
 
+En hosts sin unidad registrada, instalar la unidad incluida:
+
+```bash
+sudo cp prometheus.service /etc/systemd/system/prometheus.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now prometheus
+```
+
+Requisitos: usuario/grupo `prometheus`, `/var/lib/prometheus` y `/etc/prometheus/prometheus.yml` deben existir y ser legibles por ese usuario.
+
 El target Dragon3 es `localhost:3000/metrics`. El endpoint está restringido a localhost por defecto; si Prometheus está en otro host, configurar `METRICS_TOKEN` en PM2 y un header seguro en el scraper o colocar un proxy interno autenticado. No exponer `/metrics` públicamente.
 
 ## Verificación
