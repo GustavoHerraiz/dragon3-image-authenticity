@@ -23,6 +23,7 @@ Este documento es el mapa principal del sistema. Los documentos especializados s
 - [architecture/ADRs.md](architecture/ADRs.md): decisiones arquitectonicas registradas.
 - [operations/SLO.md](operations/SLO.md): SLIs, SLOs, alertas y error budget.
 - [operations/SHARP_QUEUE_RUNBOOK.md](operations/SHARP_QUEUE_RUNBOOK.md): política y operación de la cola serial para células Sharp.
+- [operations/LOAD_TEST_2026-09-09.md](operations/LOAD_TEST_2026-09-09.md): resultados y cuellos detectados en la prueba de carga escalonada.
 - [api/openapi.yaml](api/openapi.yaml): contrato OpenAPI de los endpoints frontales.
 - [HIGH_CONCURRENCY_PLAN.md](../HIGH_CONCURRENCY_PLAN.md): plan de implantacion de alta concurrencia.
 
