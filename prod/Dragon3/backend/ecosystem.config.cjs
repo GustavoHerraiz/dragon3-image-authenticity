@@ -140,6 +140,9 @@ module.exports = {
         QUEUE_CONCURRENCY: process.env.QUEUE_CONCURRENCY || '2',
         ASYNC_WORKER_ENABLED: 'false',
         ASYNC_EXECUTE_URL: 'http://127.0.0.1:3002',
+        LEGACY_STREAMS_ENABLED: 'false',
+        LEGACY_STREAM_MAXLEN: process.env.LEGACY_STREAM_MAXLEN || '1000',
+        LEGACY_STREAM_MAX_PAYLOAD_BYTES: process.env.LEGACY_STREAM_MAX_PAYLOAD_BYTES || '262144',
         NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/embassy.log',
@@ -180,6 +183,9 @@ module.exports = {
         ASYNC_WORKER_ENABLED: 'true',
         ASYNC_QUEUE_CONCURRENCY: process.env.ASYNC_QUEUE_CONCURRENCY || '2',
         ASYNC_EXECUTE_URL: 'http://127.0.0.1:3002',
+        LEGACY_STREAMS_ENABLED: 'false',
+        LEGACY_STREAM_MAXLEN: process.env.LEGACY_STREAM_MAXLEN || '1000',
+        LEGACY_STREAM_MAX_PAYLOAD_BYTES: process.env.LEGACY_STREAM_MAX_PAYLOAD_BYTES || '262144',
         NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/async-worker.log',

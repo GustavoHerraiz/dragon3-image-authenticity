@@ -21,6 +21,8 @@ El orquestador no las incluye en el `Promise.all` de células ligeras. Primero e
 
 La cola de análisis completos asíncronos es independiente: usa Bull en Redis DB 3, publica referencias a archivos temporales y tiene su propia concurrencia configurable. No debe confundirse con la cola serial de Sharp.
 
+El runtime actual de Dragon3 por células no utiliza Redis Streams legacy ni la antigua Red Superior. En producción `LEGACY_STREAMS_ENABLED=false`; cualquier activación de Streams debe ser explícita y temporal.
+
 ## Configuración
 
 Variables relevantes del entorno productivo:

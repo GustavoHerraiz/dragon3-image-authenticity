@@ -11,6 +11,10 @@ import os from 'os';
 import { rawRedisClient } from './core/RedisClient.js';
 import dragon from '../logger.js';
 
+const LEGACY_STREAMS_ENABLED = process.env.LEGACY_STREAMS_ENABLED === 'true';
+const LEGACY_STREAM_MAXLEN = Math.max(1, Number.parseInt(process.env.LEGACY_STREAM_MAXLEN || '1000', 10));
+const LEGACY_STREAM_MAX_PAYLOAD_BYTES = Math.max(1024, Number.parseInt(process.env.LEGACY_STREAM_MAX_PAYLOAD_BYTES || '262144', 10));
+
 class QueueManager {
     /**
      * @param {string} serviceName - Nombre del servicio (ej: 'imagen-analyzer')
@@ -45,10 +49,25 @@ class QueueManager {
      * Usa el cliente compartido (rápido, no bloqueante).
      */
     async publish(stream, payload) {
+        if (!LEGACY_STREAMS_ENABLED) {
+            dragon.respira(`Publicación legacy omitida en ${stream}`, 'QueueManager', 'LEGACY_STREAM_DISABLED');
+            return null;
+        }
+
         try {
             const dataStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
-            // XADD stream * payload ...
-            await rawRedisClient.xadd(stream, '*', 'payload', dataStr, 'ts', Date.now());
+            const payloadBytes = Buffer.byteLength(dataStr, 'utf8');
+            if (payloadBytes > LEGACY_STREAM_MAX_PAYLOAD_BYTES) {
+                throw new Error(`Payload legacy demasiado grande (${payloadBytes} bytes; límite ${LEGACY_STREAM_MAX_PAYLOAD_BYTES})`);
+            }
+            await rawRedisClient.xadd(
+                stream,
+                'MAXLEN', '~',
+                LEGACY_STREAM_MAXLEN,
+                '*',
+                'payload', dataStr,
+                'ts', Date.now()
+            );
         } catch (e) {
             dragon.agoniza(`Error publicando en ${stream}`, e, 'QueueManager', 'PUBLISH_ERROR');
             throw e;
