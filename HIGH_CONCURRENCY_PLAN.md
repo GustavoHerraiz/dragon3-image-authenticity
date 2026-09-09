@@ -25,7 +25,7 @@ Este plan no considera "alta concurrencia" como aumentar procesos sin mas. La ca
 - **Fase 1:** backpressure inicial activo en el backend: cuatro analisis simultaneos por worker PM2, timeout configurable hacia Embassy y respuesta `429` con `Retry-After` cuando se agota la capacidad local.
 - **Validacion inicial:** con dos workers PM2 se observaron siete analisis completados y rechazos `429` inmediatos al superar los slots disponibles; la carga concurrente produjo aproximadamente 50 segundos de latencia, por lo que no se considera capacidad Enterprise certificada.
 - **Fase 2:** instrumentacion Prometheus activa en el backend: peticiones, latencia, estados HTTP, analisis activos y rechazos por capacidad; `/metrics` queda limitado a localhost salvo `METRICS_TOKEN` explicito.
-- **Fase 3:** endpoint asincrono activo: `POST /api/v1/analysis-jobs`, `GET /api/v1/analysis-jobs/:jobId` y `DELETE /api/v1/analysis-jobs/:jobId`; Bull usa una cola separada en Redis DB 3, payload con referencia a archivo, ownership, TTL, reintentos e idempotencia. Validado E2E: `202`, progreso, resultado `completed` e idempotencia con el mismo `jobId`.
+- **Fase 3:** endpoint asincrono activo: `POST /api/v1/analysis-jobs`, `GET /api/v1/analysis-jobs/:jobId` y `DELETE /api/v1/analysis-jobs/:jobId`; Bull usa una cola separada en Redis DB 3, payload con referencia a archivo, ownership, TTL, reintentos e idempotencia. Validado E2E: `202`, progreso, resultado `completed` e idempotencia con el mismo `jobId`. Carga inicial: 5/5 jobs aceptados en aproximadamente 0,66 s, con `2` activos y `3` en espera.
 - **Siguiente gate:** conectar scraping Prometheus/Grafana y ejecutar pruebas de jobs bajo carga antes de aumentar slots o declarar una capacidad superior.
 
 ## 3. Arquitectura objetivo
