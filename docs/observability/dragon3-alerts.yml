@@ -1,0 +1,48 @@
+groups:
+  - name: dragon3-availability
+    rules:
+      - alert: Dragon3BackendDown
+        expr: up{job="dragon3-server"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: dragon3
+        annotations:
+          summary: Dragon3 backend no responde
+          description: Prometheus no puede scrapear el backend Dragon3 durante 2 minutos.
+
+      - alert: Dragon3HighErrorRate
+        expr: |
+          sum(rate(dragon3_http_requests_total{status_code=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(dragon3_http_requests_total[5m])), 1) > 0.01
+        for: 10m
+        labels:
+          severity: warning
+          service: dragon3
+        annotations:
+          summary: Tasa de errores HTTP elevada
+          description: Las respuestas 5xx superan el 1% durante 10 minutos.
+
+      - alert: Dragon3CapacityRejections
+        expr: increase(dragon3_analysis_capacity_rejections_total[10m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          service: dragon3
+        annotations:
+          summary: Dragon3 rechaza análisis por capacidad
+          description: Se han producido más de 20 rechazos 429 en 10 minutos.
+
+      - alert: Dragon3HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(dragon3_http_request_duration_seconds_bucket{route=~"/analizar-imagen-publico|/api/analizar-imagen"}[5m]))
+          ) > 5
+        for: 10m
+        labels:
+          severity: warning
+          service: dragon3
+        annotations:
+          summary: Latencia p95 elevada
+          description: La latencia p95 del análisis supera 5 segundos durante 10 minutos.
