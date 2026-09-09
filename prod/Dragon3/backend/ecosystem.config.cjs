@@ -138,6 +138,8 @@ module.exports = {
         // El análisis síncrono usa Promise.all; Bull queda disponible para trabajos asíncronos.
         USE_CELL_QUEUE: 'false',
         QUEUE_CONCURRENCY: process.env.QUEUE_CONCURRENCY || '10',
+        ASYNC_WORKER_ENABLED: 'false',
+        ASYNC_EXECUTE_URL: 'http://127.0.0.1:3002',
         NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/embassy.log',
@@ -146,7 +148,47 @@ module.exports = {
     },
 
     // =================================================================
-    // 3. DATASET WATCHER (PROCESAMIENTO EN SEGUNDO PLANO)
+    // 3. ASYNC ANALYSIS WORKER (CONSUMIDOR BULL)
+    // =================================================================
+    // No abre HTTP ni duplica Embassy. Consume Redis DB 3.
+    {
+      name: 'dragon3-async-worker',
+      script: '/opt/dragon3/prod/Dragon3/engine/agent-embassy.js',
+      cwd: '/opt/dragon3/prod/Dragon3/engine',
+      instances: parseInt(process.env.DRAGON3_ASYNC_WORKERS || '1', 10),
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      min_uptime: '10s',
+      max_restarts: 5,
+      restart_delay: 5000,
+      kill_timeout: 10000,
+      node_args: [
+        '--expose-gc',
+        '--max-old-space-size=1024',
+        '--enable-source-maps'
+      ],
+      env: {
+        NODE_ENV: 'production',
+        EMBASSY_PORT: 3002,
+        JWT_SECRET: process.env.JWT_SECRET,
+        REDIS_HOST: '127.0.0.1',
+        REDIS_PORT: 6379,
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+        ASYNC_WORKER_ONLY: 'true',
+        ASYNC_WORKER_ENABLED: 'true',
+        ASYNC_QUEUE_CONCURRENCY: process.env.ASYNC_QUEUE_CONCURRENCY || '2',
+        ASYNC_EXECUTE_URL: 'http://127.0.0.1:3002',
+        NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
+      },
+      log_file: '/opt/dragon3/prod/Dragon3/logs/async-worker.log',
+      error_file: '/opt/dragon3/prod/Dragon3/logs/async-worker-error.log',
+      merge_logs: true
+    },
+
+    // =================================================================
+    // 4. DATASET WATCHER (PROCESAMIENTO EN SEGUNDO PLANO)
     // =================================================================
     // Modo: fork (1 instancia)
     // Función: Escanea carpetas calientes y procesa imágenes automáticamente

@@ -65,6 +65,7 @@ const JWT_SECRET = process.env.JWT_SECRET || (
 const ASYNC_QUEUE_NAME = 'analisis:cola:v1';
 const ASYNC_JOB_TTL_MS = 24 * 60 * 60 * 1000;
 const ASYNC_UPLOAD_ROOT = path.resolve(__dirname, '../backend/uploads/temporal');
+const ASYNC_EXECUTE_URL = process.env.ASYNC_EXECUTE_URL || `http://127.0.0.1:${PORT}`;
 const asyncQueue = new Bull(ASYNC_QUEUE_NAME, {
   redis: {
     host: process.env.REDIS_HOST || '127.0.0.1',
@@ -90,9 +91,12 @@ if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length <
   throw new Error('JWT_SECRET debe estar configurado y tener al menos 32 caracteres en producción.');
 }
 
-// Inicialización de colas Redis/Bull
-getCola();
-console.log('🐂 Workers de Bull inicializados correctamente');
+// La cola de células solo es necesaria para el Embassy HTTP; el worker async
+// consume exclusivamente la cola de análisis en Redis DB 3.
+if (process.env.ASYNC_WORKER_ONLY !== 'true') {
+  getCola();
+  console.log('🐂 Workers de Bull inicializados correctamente');
+}
 
 // Configurar límite de tamaño de payload entrante
 app.use(express.json({ limit: '50mb' }));
@@ -175,7 +179,10 @@ function validarRutaAsync(ruta) {
   return rutaAbsoluta.startsWith(`${ASYNC_UPLOAD_ROOT}${path.sep}`) ? rutaAbsoluta : null;
 }
 
-asyncQueue.process('analisis-completo', Number.parseInt(process.env.ASYNC_QUEUE_CONCURRENCY || '2', 10), async (job) => {
+const asyncWorkerEnabled = process.env.ASYNC_WORKER_ENABLED !== 'false';
+
+if (asyncWorkerEnabled) {
+  asyncQueue.process('analisis-completo', Number.parseInt(process.env.ASYNC_QUEUE_CONCURRENCY || '2', 10), async (job) => {
   const ruta = validarRutaAsync(job.data.filePath);
   if (!ruta || !fs.existsSync(ruta)) {
     throw new Error('Archivo temporal de análisis no disponible');
@@ -185,7 +192,7 @@ asyncQueue.process('analisis-completo', Number.parseInt(process.env.ASYNC_QUEUE_
     await job.progress(10);
     const archivo = fs.readFileSync(ruta).toString('base64');
     const token = jwt.sign({ agentId: 'dragon3-async-worker', nivel: 'confianza' }, JWT_SECRET, { expiresIn: '10m' });
-    const response = await fetch(`http://127.0.0.1:${PORT}/agent/execute`, {
+    const response = await fetch(`${ASYNC_EXECUTE_URL}/agent/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': job.data.correlationId },
       body: JSON.stringify({
@@ -211,7 +218,8 @@ asyncQueue.process('analisis-completo', Number.parseInt(process.env.ASYNC_QUEUE_
   } finally {
     try { fs.unlinkSync(ruta); } catch (error) { /* limpieza best effort */ }
   }
-});
+  });
+}
 
 // ============================================================
 // 3. RUTAS / ENDPOINTS
@@ -507,18 +515,24 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
     if (!uri) {
       throw new Error('MONGO_URI no está configurado.');
     }
-    await mongoose.connect(uri);
-    console.log('✅ MongoDB conectado correctamente');
+    if (process.env.ASYNC_WORKER_ONLY !== 'true') {
+      await mongoose.connect(uri);
+      console.log('✅ MongoDB conectado correctamente');
+    }
   } catch (e) {
     console.error('❌ Error al conectar con MongoDB:', e.message);
   }
 
-  servidorHttp = app.listen(PORT, () => {
-    console.log(`🤖 Agent Embassy escuchando en http://localhost:${PORT}`);
-    console.log(`📚 Catálogo disponible en /agent/catalogo`);
-    console.log(`🗂️ Planes disponibles en /agent/planes`);
-    console.log(`🚀 Ejecución de agentes activa en /agent/execute`);
-  });
+  if (process.env.ASYNC_WORKER_ONLY === 'true') {
+    console.log(`👷 Worker async dedicado activo con concurrencia ${process.env.ASYNC_QUEUE_CONCURRENCY || '2'}`);
+  } else {
+    servidorHttp = app.listen(PORT, () => {
+      console.log(`🤖 Agent Embassy escuchando en http://localhost:${PORT}`);
+      console.log(`📚 Catálogo disponible en /agent/catalogo`);
+      console.log(`🗂️ Planes disponibles en /agent/planes`);
+      console.log(`🚀 Ejecución de agentes activa en /agent/execute`);
+    });
+  }
 })();
 
 async function apagarEmbassy(signal) {
@@ -529,7 +543,10 @@ async function apagarEmbassy(signal) {
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
-  await asyncQueue.close();
+  await Promise.race([
+    asyncQueue.close(),
+    new Promise(resolve => setTimeout(resolve, 5000))
+  ]);
 }
 
 process.once('SIGTERM', async () => {
