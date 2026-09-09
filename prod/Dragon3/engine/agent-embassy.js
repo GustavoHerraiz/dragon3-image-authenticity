@@ -44,6 +44,8 @@ import { crearRateLimiter, getModo, validarMime } from './defensa.js';
 import { adaptarYEnriquecerResultado } from './servicios/adaptadorResultado.js';
 import { getCola } from './cola.js';
 
+const REDIS_PASSWORD = String(process.env.REDIS_PASSWORD || '').replace(/^['"]+|['"]+$/g, '');
+
 // ============================================================
 // 1. CONFIGURACIÓN E INICIALIZACIÓN
 // ============================================================
@@ -71,7 +73,7 @@ const asyncQueue = new Bull(ASYNC_QUEUE_NAME, {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: Number.parseInt(process.env.REDIS_PORT || '6379', 10),
     db: 3,
-    ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {})
+    ...(REDIS_PASSWORD ? { password: REDIS_PASSWORD } : {})
   },
   defaultJobOptions: {
     attempts: 2,

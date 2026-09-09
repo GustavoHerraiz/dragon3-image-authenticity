@@ -120,7 +120,9 @@ class Orquestador {
     // 1.1. Buscar cargar-imagen (si existe)
     const celulaCargar = celulas.find(c => c.id === 'cargar-imagen');
 
-    // 1.2. Células que dependen SOLO de cargar-imagen (se pueden paralelizar)
+    // 1.2. Células que dependen SOLO de cargar-imagen
+    // Separamos las pesadas del lote paralelo para evitar que Sharp y otros
+    // procesos intensivos se lancen todas a la vez bajo Promise.all.
     const celulasIndependientes = celulas.filter(c =>
       c.id !== 'cargar-imagen' &&
       c.id !== 'extraer-metadatos-exif' &&
@@ -128,6 +130,8 @@ class Orquestador {
       c.id !== 'detectar-consistencia-multimodal' &&
       c.id !== 'generar-veredicto'
     );
+    const celulasLigeras = celulasIndependientes.filter(c => !this._esCelulaPesada(c.id));
+    const celulasPesadasIndependientes = celulasIndependientes.filter(c => this._esCelulaPesada(c.id));
 
     // 1.3. Células que dependen de otras (ejecución secuencial)
     const celulasDependientes = celulas.filter(c =>
@@ -139,7 +143,8 @@ class Orquestador {
 
     console.log(`📊 Estrategia de ejecución:`);
     console.log(`   📦 cargar-imagen: secuencial (${celulaCargar ? '✅' : '❌ no existe'})`);
-    console.log(`   ⚡ Paralelo: ${celulasIndependientes.map(c => c.id).join(', ')}`);
+    console.log(`   ⚡ Paralelo ligero: ${celulasLigeras.map(c => c.id).join(', ') || 'ninguna'}`);
+    console.log(`   🐂 Pesadas en cola/serial: ${celulasPesadasIndependientes.map(c => c.id).join(', ') || 'ninguna'}`);
     console.log(`   🔗 Secuencial: ${celulasDependientes.map(c => c.id).join(', ')}`);
 
     // ============================================================
@@ -152,19 +157,16 @@ class Orquestador {
     }
 
     // ============================================================
-    // FASE 3: Ejecutar células independientes en PARALELO
+    // FASE 3: Ejecutar células ligeras en PARALELO y las pesadas en cola/serial
     // ============================================================
 
-    if (celulasIndependientes.length > 0) {
-      console.log(`⚡ Ejecutando ${celulasIndependientes.length} células en PARALELO...`);
+    if (celulasLigeras.length > 0) {
+      console.log(`⚡ Ejecutando ${celulasLigeras.length} células ligeras en PARALELO...`);
 
-      // Crear promesas para todas las células independientes
-      const promesas = celulasIndependientes.map(celula =>
+      const promesas = celulasLigeras.map(celula =>
         this._ejecutarCelula(celula)
           .catch(error => {
             console.error(`❌ Error en célula paralela "${celula.id}":`, error.message);
-            // No propagar el error para que las demás sigan ejecutándose
-            // (a menos que el plan indique detenerse en error)
             if (this.plan.detenerseEnError === true) {
               throw error;
             }
@@ -172,9 +174,21 @@ class Orquestador {
           })
       );
 
-      // Esperar a que TODAS terminen
       await Promise.all(promesas);
-      console.log(`✅ Todas las células paralelas completadas.`);
+      console.log(`✅ Todas las células ligeras completadas.`);
+    }
+
+    if (celulasPesadasIndependientes.length > 0) {
+      console.log(`🐂 Ejecutando ${celulasPesadasIndependientes.length} células pesadas con política acotada...`);
+      for (const celula of celulasPesadasIndependientes) {
+        await this._ejecutarCelula(celula).catch(error => {
+          console.error(`❌ Error en célula pesada "${celula.id}":`, error.message);
+          if (this.plan.detenerseEnError === true) {
+            throw error;
+          }
+        });
+      }
+      console.log(`✅ Todas las células pesadas completadas.`);
     }
 
     // ============================================================
@@ -208,6 +222,18 @@ class Orquestador {
     };
   }
 
+  _esCelulaPesada(celulaId) {
+    const celulasPesadas = new Set([
+      'detectar-patrones-forenses',
+      'detectar-artefactos-ia',
+      'detectar-textura-ruido',
+      'detectar-colores',
+      'detectar-sombreado',
+      'detectar-doble-compresion-sharp'
+    ]);
+    return celulasPesadas.has(celulaId);
+  }
+
   /**
    * Ejecuta una célula individual (con soporte de cola para operaciones pesadas).
    *
@@ -221,21 +247,12 @@ class Orquestador {
       const entradaResuelta = this._resolverReferencias(celula.entrada);
 
       // 2. Determinar si esta célula requiere cola (operaciones pesadas con sharp)
-      const celulasPesadas = new Set([
-        'ml',
-        'detectar-sellos-autenticidad',
-        'detectar-patrones-forenses',
-        'detectar-artefactos-ia',
-        'detectar-textura-ruido',
-        'detectar-colores',
-        'detectar-sombreado'
-      ]);
-      const usaCola = process.env.USE_CELL_QUEUE === 'true' && celulasPesadas.has(celula.id);
+      const usaCola = this._esCelulaPesada(celula.id);
       console.log(`🔍 [${celula.id}] usaCola: ${usaCola}`);
 
       let salida;
       if (usaCola) {
-        console.log(`🐂 [${celula.id}] ENCOLANDO...`);
+        console.log(`🐂 [${celula.id}] ENCOLANDO y dejando la cola viva para más trabajo...`);
         const cola = getCola();
         console.log(`🐂 [${celula.id}] Cola obtenida: ${cola ? 'OK' : 'FALLO'}`);
         const job = await cola.add('procesar-celula', {
@@ -244,9 +261,9 @@ class Orquestador {
           entrada: entradaResuelta,
           contexto: this.contexto
         });
-        console.log(`📨 [${celula.id}] Trabajo encolado (job ID: ${job.id})`);
+        console.log(`📨 [${celula.id}] Trabajo encolado (job ID: ${job.id}) y esperando a que Bull lo procese`);
         salida = await job.finished();
-        console.log(`✅ [${celula.id}] Trabajo completado (job ID: ${job.id})`);
+        console.log(`✅ [${celula.id}] Trabajo completado (job ID: ${job.id}) y la cola queda en espera para más trabajo`);
       } else {
         console.log(`⚡ [${celula.id}] Ejecutando DIRECTAMENTE (sin cola)`);
         const modulo = await import(path.resolve(celula.ruta));

@@ -22,6 +22,7 @@ Este documento es el mapa principal del sistema. Los documentos especializados s
 - [architecture/C4.md](architecture/C4.md): vistas C4 y flujos de secuencia.
 - [architecture/ADRs.md](architecture/ADRs.md): decisiones arquitectonicas registradas.
 - [operations/SLO.md](operations/SLO.md): SLIs, SLOs, alertas y error budget.
+- [operations/SHARP_QUEUE_RUNBOOK.md](operations/SHARP_QUEUE_RUNBOOK.md): política y operación de la cola serial para células Sharp.
 - [api/openapi.yaml](api/openapi.yaml): contrato OpenAPI de los endpoints frontales.
 - [HIGH_CONCURRENCY_PLAN.md](../HIGH_CONCURRENCY_PLAN.md): plan de implantacion de alta concurrencia.
 
@@ -51,7 +52,8 @@ Embassy :3002
   v
 Orquestador
   |-- cargar-imagen (secuencial)
-  |-- celulas independientes (Promise.all)
+  |-- celulas ligeras independientes (Promise.all)
+  |-- celulas Sharp pesadas --> Bull/Redis DB 2 (worker serial)
   |-- celulas dependientes (orden topologico)
   |-- generar-veredicto
   |
@@ -85,11 +87,12 @@ En produccion se ejecutan normalmente dos instancias cluster del backend, una in
 2. El backend autentica, valida el fichero y crea un `correlationId`.
 3. Embassy selecciona el plan y crea el contexto de ejecucion.
 4. El orquestador carga la imagen y calcula hash, formato y dimensiones.
-5. Las celulas sin dependencias se ejecutan en paralelo.
-6. Las celulas que consumen resultados anteriores se ejecutan despues de sus dependencias.
-7. El veredicto agrega evidencias y calcula confianza.
-8. El adapter elimina buffers y campos binarios de la respuesta publica, conserva `raw_data` forense seguro y genera `explicacionCliente`.
-9. Se persiste el resultado y se devuelve una respuesta trazable.
+5. Las celulas ligeras sin dependencias se ejecutan en paralelo.
+6. Las celulas pesadas que usan Sharp se separan del lote paralelo y pasan por Bull en Redis DB 2 con worker serial.
+7. Las celulas que consumen resultados anteriores se ejecutan despues de sus dependencias.
+8. El veredicto agrega evidencias y calcula confianza.
+9. El adapter elimina buffers y campos binarios de la respuesta publica, conserva `raw_data` forense seguro y genera `explicacionCliente`.
+10. Se persiste el resultado y se devuelve una respuesta trazable.
 
 ### 4.2 Seleccion de plan
 
@@ -415,12 +418,14 @@ Los nombres exactos del endpoint frontal deben comprobarse en el backend despleg
 
 ## 10. Rendimiento y escalabilidad
 
-La ruta sincrona de produccion usa `USE_CELL_QUEUE=false` para evitar que cada celula espere una cola Redis. La paralelizacion directa es el camino de baja latencia para analisis interactivo. Bull/Redis queda reservado para cargas pesadas, lotes y un futuro endpoint asincrono con estado de job.
+La ruta sincrona de produccion mantiene las celulas ligeras en ejecucion directa para reducir latencia, pero las celulas Sharp pesadas se separan del `Promise.all` y pasan siempre por `celula:cola` en Bull/Redis DB 2 con concurrencia serial. La cola de trabajos completos asincronos usa Bull/Redis DB 3 y es independiente. Esta política reduce presión de CPU y memoria bajo carga; no garantiza menor latencia para una única imagen.
 
 Variables relevantes:
 
-- `USE_CELL_QUEUE`: activa o desactiva cola en la ruta soportada.
-- `QUEUE_CONCURRENCY`: concurrencia del worker Bull.
+- `USE_CELL_QUEUE`: compatibilidad de configuración; la clasificación de células pesadas del orquestador determina su ruta.
+- `QUEUE_CONCURRENCY`: límite configurado del sistema de cola; el worker de células Sharp mantiene concurrencia efectiva `1` para proteger memoria y CPU.
+- `ASYNC_QUEUE_CONCURRENCY`: concurrencia independiente de la cola de análisis completos en Redis DB 3.
+- `REDIS_DB`: base de entorno; la cola Sharp usa DB 2 y la cola asíncrona usa DB 3.
 - `DRAGON3_SERVER_INSTANCES`: numero de instancias del backend.
 - rutas del modelo ML y del dataset.
 

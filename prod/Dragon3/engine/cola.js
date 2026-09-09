@@ -32,7 +32,7 @@ dotenv.config({ path: path.resolve(__dirname, '../backend/.env') });
 
 const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT, 10) || 6379;
-const REDIS_PASSWORD = process.env.REDIS_PASSWORD || '';
+const REDIS_PASSWORD = String(process.env.REDIS_PASSWORD || '').replace(/^['"]+|['"]+$/g, '');
 const REDIS_DB = parseInt(process.env.REDIS_DB, 10) || 2;
 const CONFIG_PATH = path.join(__dirname, 'configuracion.json');
 
@@ -63,6 +63,21 @@ const QUEUE_NAME = 'celula:cola';
 let colaInstance = null;
 let colaCerrada = false;
 
+async function logEstadoCola(cola, fase) {
+  try {
+    const [waiting, active, completed, failed, delayed] = await Promise.all([
+      cola.getWaitingCount(),
+      cola.getActiveCount(),
+      cola.getCompletedCount(),
+      cola.getFailedCount(),
+      cola.getDelayedCount()
+    ]);
+    console.log(`[Bull:${QUEUE_NAME}] ${fase} | waiting=${waiting} active=${active} completed=${completed} failed=${failed} delayed=${delayed}`);
+  } catch (error) {
+    console.warn(`[Bull:${QUEUE_NAME}] ${fase} | no se pudo leer el estado: ${error.message}`);
+  }
+}
+
 /**
  * Obtiene la instancia de la cola (singleton).
  * La concurrencia máxima se lee en tiempo real desde defensa.js.
@@ -77,25 +92,59 @@ export function getCola() {
     colaInstance = new Bull(QUEUE_NAME, {
       redis: redisOptions,
       defaultJobOptions: {
-        attempts: 3,                    // Reintentar hasta 3 veces si falla
+        attempts: 3,
         backoff: {
           type: 'exponential',
-          delay: 1000                  // Espera 1s, 2s, 4s entre reintentos
+          delay: 1000
         },
-        timeout: 30000,                // Tiempo máximo de ejecución por defecto (30s)
-        removeOnComplete: true,        // Eliminar trabajos completados
-        removeOnFail: false            // Mantener fallidos para depuración
+        timeout: 30000,
+        removeOnComplete: true,
+        removeOnFail: false
       },
       limiter: {
-        max: concurrenciaMaxima,       // Número máximo de trabajos concurrentes (leído de defensa.js)
-        duration: 1000                 // Por segundo
+        max: concurrenciaMaxima,
+        duration: 1000
       }
+    });
+
+    colaInstance.on('ready', async () => {
+      console.log(`[Bull:${QUEUE_NAME}] cola lista y en espera de trabajo`);
+      await logEstadoCola(colaInstance, 'ready');
+    });
+
+    colaInstance.on('waiting', async (jobId) => {
+      console.log(`[Bull:${QUEUE_NAME}] trabajo en espera: ${jobId}`);
+      await logEstadoCola(colaInstance, 'waiting');
+    });
+
+    colaInstance.on('active', async (job) => {
+      console.log(`[Bull:${QUEUE_NAME}] trabajo activo: job=${job.id} celula=${job.data.celulaId}`);
+      await logEstadoCola(colaInstance, 'active');
+    });
+
+    colaInstance.on('completed', async (job, result) => {
+      console.log(`[Bull:${QUEUE_NAME}] trabajo completado: job=${job.id} celula=${job.data.celulaId} resultado=${result ? 'ok' : 'vacío'}`);
+      await logEstadoCola(colaInstance, 'completed');
+    });
+
+    colaInstance.on('failed', async (job, err) => {
+      console.error(`[Bull:${QUEUE_NAME}] trabajo fallido: job=${job?.id} celula=${job?.data?.celulaId} error=${err?.message}`);
+      await logEstadoCola(colaInstance, 'failed');
+    });
+
+    colaInstance.on('drained', async () => {
+      console.log(`[Bull:${QUEUE_NAME}] cola drenada: queda en espera y lista para más trabajo`);
+      await logEstadoCola(colaInstance, 'drained');
+    });
+
+    colaInstance.on('error', (error) => {
+      console.error(`[Bull:${QUEUE_NAME}] error global de cola: ${error.message}`);
     });
 
     // Configurar workers
     _configurarWorkers(colaInstance);
 
-    console.log('🐂 Cola de trabajos inicializada (Redis DB 2)');
+    console.log(`🐂 Cola de trabajos inicializada (Redis DB 2) y queda en espera para más trabajo`);
   }
   return colaInstance;
 }
@@ -105,8 +154,10 @@ export function getCola() {
  * @param {Bull.Queue} cola - Instancia de la cola.
  */
 function _configurarWorkers(cola) {
-  cola.process('procesar-celula', getConcurrenciaMaxima(), async (job) => {
+  const concurrenciaSerial = 1;
+  cola.process('procesar-celula', concurrenciaSerial, async (job) => {
     const { celulaId, ruta, entrada, contexto } = job.data;
+    console.log(`[Bull:${QUEUE_NAME}] procesando job=${job.id} celula=${celulaId} en worker serial`);
 
     try {
       // Importar dinámicamente la célula (ruta absoluta)
@@ -116,10 +167,10 @@ function _configurarWorkers(cola) {
 
       // Ejecutar la célula
       const salida = await fn(entrada, contexto);
-
+      console.log(`[Bull:${QUEUE_NAME}] salida OK job=${job.id} celula=${celulaId}`);
       return salida;
     } catch (error) {
-      // Relanzar el error para que Bull lo maneje (reintentos)
+      console.error(`[Bull:${QUEUE_NAME}] fallo en job=${job.id} celula=${celulaId}: ${error.message}`);
       throw new Error(`Error al procesar célula "${celulaId}": ${error.message}`);
     }
   });

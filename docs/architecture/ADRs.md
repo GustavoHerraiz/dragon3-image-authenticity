@@ -8,13 +8,13 @@
 - **Consecuencias:** el backend escala horizontalmente; Embassy requiere cuidado especial ante failover y no debe duplicarse sin diseño de locks/caches.
 - **Alternativas:** ejecutar todo en un proceso; descartada por acoplamiento y peor aislamiento.
 
-## ADR-002: Paralelismo directo para análisis síncrono
+## ADR-002: Paralelismo controlado para análisis síncrono
 
 - **Estado:** aceptado.
 - **Contexto:** poner todas las células en Bull añadió decenas de segundos de latencia y serializó fases.
-- **Decision:** `USE_CELL_QUEUE=false` en la ruta síncrona; `Promise.all` para señales independientes.
-- **Consecuencias:** baja latencia warm; la presión de concurrencia debe controlarse con límites y un endpoint async separado.
-- **Alternativas:** Bull para cada célula; descartada para hot path.
+- **Decision:** las células ligeras independientes usan `Promise.all`; las células Sharp pesadas se excluyen de ese lote y pasan siempre por `celula:cola` en Bull/Redis DB 2 con worker serial de concurrencia efectiva `1`. Los trabajos completos asíncronos usan una cola independiente en Redis DB 3.
+- **Consecuencias:** se conserva baja latencia warm para señales ligeras y se limita la presión de CPU/memoria de Sharp bajo carga; la ruta síncrona debe monitorizar profundidad de cola, RSS y latencia.
+- **Alternativas:** Bull para cada célula, descartada por latencia innecesaria; `Promise.all` también para Sharp, descartada por presión de recursos y riesgo de degradación.
 
 ## ADR-003: Worker ML persistente
 

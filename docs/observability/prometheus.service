@@ -11,6 +11,9 @@ WorkingDirectory=/var/lib/prometheus
 ExecStart=/usr/local/bin/prometheus \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/var/lib/prometheus \
+  --storage.tsdb.retention.time=15d \
+  --storage.tsdb.retention.size=8GB \
+  --storage.tsdb.wal-compression \
   --web.listen-address=127.0.0.1:9090 \
   --web.enable-lifecycle
 Restart=on-failure

@@ -31,6 +31,12 @@ Este plan no considera "alta concurrencia" como aumentar procesos sin mas. La ca
 - **Carga inicial:** 10/10 jobs async aceptados y completados con `1` worker y concurrencia `2`; cola final `0 waiting / 0 active`, sin reinicios observados. Durante la tanda, Embassy alcanzó aproximadamente 289 MB RSS y el worker 84 MB RSS.
 - **Siguiente gate:** activar Prometheus con esos artefactos, completar la auditoria de dependencias documentada en `docs/SECURITY_DEPENDENCY_AUDIT.md` y ejecutar una ventana sostenida de 30 minutos antes de escalar gradualmente `DRAGON3_ASYNC_WORKERS`/`ASYNC_QUEUE_CONCURRENCY` o declarar capacidad Enterprise. La certificacion de seguridad queda pendiente mientras existan vulnerabilidades sin remediar o aceptar formalmente.
 
+### Decision de colas para el camino sincrono
+
+- Las celulas que usan Sharp (`detectar-patrones-forenses`, `detectar-artefactos-ia`, `detectar-textura-ruido`, `detectar-colores`, `detectar-sombreado` y `detectar-doble-compresion-sharp`) se separan del lote `Promise.all` y usan siempre la cola global de celulas con worker serial de concurrencia efectiva `1`.
+- Las celulas ligeras y `ml` siguen ejecutandose en paralelo/directamente; `cargar-imagen` permanece secuencial/directa y `detectar-sellos-autenticidad` no se clasifica como celula Sharp pesada.
+- La cola de celulas usa Redis DB 2; la cola de jobs completos permanece separada en Redis DB 3.
+
 ## 3. Arquitectura objetivo
 
 ```text
