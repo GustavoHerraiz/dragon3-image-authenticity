@@ -63,7 +63,7 @@ module.exports = {
       name: 'dragon3-server',
       script: 'server.js',
       cwd: '/opt/dragon3/prod/Dragon3/backend',
-      instances: 2,
+      instances: parseInt(process.env.DRAGON3_SERVER_INSTANCES || '2', 10),
       exec_mode: 'cluster',
       autorestart: true,
       watch: false,
@@ -133,6 +133,7 @@ module.exports = {
         LOG_LEVEL: 'info',
         // El análisis síncrono usa Promise.all; Bull queda disponible para trabajos asíncronos.
         USE_CELL_QUEUE: 'false',
+        QUEUE_CONCURRENCY: process.env.QUEUE_CONCURRENCY || '10',
         NODE_PATH: '/opt/dragon3/prod/Dragon3/engine'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/embassy.log',

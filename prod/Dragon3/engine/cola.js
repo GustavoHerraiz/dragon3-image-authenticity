@@ -37,6 +37,9 @@ const REDIS_DB = parseInt(process.env.REDIS_DB, 10) || 2;
 const CONFIG_PATH = path.join(__dirname, 'configuracion.json');
 
 function getConcurrenciaMaxima() {
+  if (process.env.QUEUE_CONCURRENCY) {
+    return Math.max(1, Math.min(20, Number(process.env.QUEUE_CONCURRENCY)));
+  }
   const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
   return config.defensa?.segundaLinea?.concurrenciaMaxima || 5;
 }
