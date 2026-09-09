@@ -52,6 +52,9 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mi-secreto-temporal-123';
 const EMBASSY_URL = process.env.EMBASSY_URL || 'http://localhost:3002';
 const EMBASSY_EXECUTE_ENDPOINT = `${EMBASSY_URL}/agent/execute`;
+const MAX_SYNC_ANALYSES = Math.max(1, Number.parseInt(process.env.MAX_SYNC_ANALYSES || '4', 10));
+const EMBASSY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.EMBASSY_TIMEOUT_MS || '180000', 10));
+let activeAnalyses = 0;
 
 console.log(`🔧 [${MODULE_NAME}] Variables de entorno cargadas`);
 console.log(`🤖 Embassy URL: ${EMBASSY_URL}`);
@@ -223,7 +226,8 @@ async function llamarEmbassy(
       'Content-Type': 'application/json',
       'X-Correlation-ID': correlationId
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(EMBASSY_TIMEOUT_MS)
   });
 
   if (!response.ok) {
@@ -233,6 +237,35 @@ async function llamarEmbassy(
 
   // El Embassy ya devuelve el formato FAANG completo (con resultado, imagenId, etc.)
   return await response.json();
+}
+
+function tryAcquireAnalysisSlot() {
+  if (activeAnalyses >= MAX_SYNC_ANALYSES) {
+    return null;
+  }
+
+  activeAnalyses += 1;
+  let released = false;
+  return () => {
+    if (!released) {
+      released = true;
+      activeAnalyses -= 1;
+    }
+  };
+}
+
+function rejectWhenAtCapacity(req, res) {
+  const releaseSlot = tryAcquireAnalysisSlot();
+  if (!releaseSlot) {
+    res.set('Retry-After', '5');
+    res.status(429).json({
+      error: 'Capacidad de análisis temporalmente agotada',
+      correlationId: req.correlationId
+    });
+    return null;
+  }
+
+  return releaseSlot;
 }
 
 // ============================================================
@@ -272,6 +305,14 @@ function seleccionarPlanPorMimetype(mimetype) {
 app.post('/analizar-imagen-publico', upload.single('archivo'), async (req, res) => {
   const correlationId = req.correlationId;
   const archivoId = uuidv4();
+  const releaseSlot = rejectWhenAtCapacity(req, res);
+
+  if (!releaseSlot) {
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (error) { /* ignorar */ }
+    }
+    return;
+  }
 
   try {
     if (!req.file) {
@@ -292,9 +333,6 @@ app.post('/analizar-imagen-publico', upload.single('archivo'), async (req, res) 
       planId
     );
 
-    // Limpiar archivo temporal
-    try { fs.unlinkSync(req.file.path); } catch (e) { /* ignorar */ }
-
     // El resultado ya es el FAANG completo
     res.json(resultado);
   } catch (error) {
@@ -307,6 +345,11 @@ app.post('/analizar-imagen-publico', upload.single('archivo'), async (req, res) 
       correlationId,
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  } finally {
+    releaseSlot();
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (error) { /* ignorar */ }
+    }
   }
 });
 
@@ -315,6 +358,14 @@ app.post('/api/analizar-imagen', authMiddleware, upload.single('archivo'), async
   const correlationId = req.correlationId;
   const archivoId = uuidv4();
   const usuarioId = req.usuario?.id || req.usuario?.userId || null;
+  const releaseSlot = rejectWhenAtCapacity(req, res);
+
+  if (!releaseSlot) {
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (error) { /* ignorar */ }
+    }
+    return;
+  }
 
   try {
     if (!req.file) {
@@ -335,9 +386,6 @@ app.post('/api/analizar-imagen', authMiddleware, upload.single('archivo'), async
       planId
     );
 
-    // Limpiar archivo temporal
-    try { fs.unlinkSync(req.file.path); } catch (e) {}
-
     // Aquí podrías guardar en MongoDB si lo necesitas
     // const analisis = new AnalisisArchivo({ ... });
     // await analisis.save();
@@ -353,6 +401,11 @@ app.post('/api/analizar-imagen', authMiddleware, upload.single('archivo'), async
       correlationId,
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  } finally {
+    releaseSlot();
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (error) { /* ignorar */ }
+    }
   }
 });
 

@@ -88,7 +88,9 @@ module.exports = {
         REDIS_PASSWORD: process.env.REDIS_PASSWORD,
         REDIS_DB: 1,
         JWT_SECRET: process.env.JWT_SECRET,
-        MONGO_URI: process.env.MONGO_URI
+        MONGO_URI: process.env.MONGO_URI,
+        MAX_SYNC_ANALYSES: process.env.MAX_SYNC_ANALYSES || '4',
+        EMBASSY_TIMEOUT_MS: process.env.EMBASSY_TIMEOUT_MS || '180000'
       },
       log_file: '/opt/dragon3/prod/Dragon3/logs/server.log',
       error_file: '/opt/dragon3/prod/Dragon3/logs/server-error.log',

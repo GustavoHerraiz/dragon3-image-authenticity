@@ -19,6 +19,13 @@ Este plan no considera "alta concurrencia" como aumentar procesos sin mas. La ca
 - Dataset watcher: proceso separado.
 - Riesgo principal: multiplicar Embassy o ML sin coordinar memoria, caches, locks, colas y ownership.
 
+## 2.1 Estado de implantacion
+
+- **Fase 0:** health checks y baseline manual ejecutados el 2026-09-09.
+- **Fase 1:** backpressure inicial activo en el backend: cuatro analisis simultaneos por worker PM2, timeout configurable hacia Embassy y respuesta `429` con `Retry-After` cuando se agota la capacidad local.
+- **Validacion inicial:** con dos workers PM2 se observaron siete analisis completados y rechazos `429` inmediatos al superar los slots disponibles; la carga concurrente produjo aproximadamente 50 segundos de latencia, por lo que no se considera capacidad Enterprise certificada.
+- **Siguiente gate:** instrumentar metricas y construir el endpoint asincrono antes de aumentar slots o declarar una capacidad superior.
+
 ## 3. Arquitectura objetivo
 
 ```text
