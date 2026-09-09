@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Dragon3 Image Authenticity API
+  version: 1.0.0
+  description: API de análisis de autenticidad visual. El veredicto es probabilístico y explicable.
+servers:
+  - url: http://localhost:3000
+    description: Backend local o interno
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Comprueba salud del backend
+      responses:
+        '200':
+          description: Servicio disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /analizar-imagen-publico:
+    post:
+      operationId: analyzePublicImage
+      summary: Analiza una imagen sin sesión de usuario
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUpload'
+      responses:
+        '200':
+          description: Análisis terminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/analizar-imagen:
+    post:
+      operationId: analyzeAuthenticatedImage
+      summary: Analiza una imagen autenticada
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUpload'
+      responses:
+        '200':
+          description: Análisis terminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ImageUpload:
+      type: object
+      required: [archivo]
+      properties:
+        archivo:
+          type: string
+          format: binary
+        planId:
+          type: string
+          example: analizar-imagen-completa
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    AnalysisResponse:
+      type: object
+      required: [correlationId, resultado]
+      properties:
+        correlationId:
+          type: string
+          format: uuid
+        resultado:
+          $ref: '#/components/schemas/AnalysisResult'
+    AnalysisResult:
+      type: object
+      properties:
+        estado:
+          type: string
+          enum: [completado, completado_con_advertencias, rechazado, error]
+        veredicto:
+          type: object
+          additionalProperties: true
+        explicacionCliente:
+          $ref: '#/components/schemas/ClientExplanation'
+        detalles:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+    ClientExplanation:
+      type: object
+      properties:
+        resumen:
+          type: string
+        veredicto:
+          type: string
+        nivelConfianza:
+          type: string
+        evidencias:
+          type: array
+          items: { type: string }
+        limitaciones:
+          type: array
+          items: { type: string }
+        requiereRevisionHumana:
+          type: boolean
+  responses:
+    BadRequest:
+      description: Entrada inválida
+    Unauthorized:
+      description: JWT ausente o inválido
+    RateLimited:
+      description: Límite de peticiones excedido
+    ServerError:
+      description: Error interno; usar correlationId para soporte

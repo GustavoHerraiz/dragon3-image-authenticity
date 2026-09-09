@@ -14,6 +14,10 @@ El proyecto está diseñado para:
 - generar veredictos y sellos para fotografía profesional
 - servir como capa de validación para entornos de producción y laboratorio
 
+## Documentacion del sistema
+
+El manual maestro de arquitectura, contratos, operacion, seguridad, recuperacion y desarrollo de nuevas celulas esta en [docs/SYSTEM_DOCUMENTATION.md](docs/SYSTEM_DOCUMENTATION.md).
+
 ## Alcance
 
 Dragon3 combina varias capas:
