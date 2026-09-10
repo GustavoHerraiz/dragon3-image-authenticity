@@ -24,6 +24,8 @@ Para Renfe, Dragon3 puede convertirse en una capa de confianza visual para imág
 
 Dragon3 se ha desarrollado en Mataró, prácticamente en solitario y con recursos de hardware muy limitados. El premio permitiría convertir una tecnología funcional y multidisciplinar en un producto ferroviario validado, seguro e integrable.
 
+Este dossier diferencia deliberadamente entre capacidades demostradas, código disponible y trabajo de industrialización pendiente. Esa distinción es esencial para una tecnología que pretende proteger evidencias.
+
 ---
 
 ## 2. La idea que defendemos
@@ -117,6 +119,8 @@ Dragon3 Desktop es una aplicación Electron distribuible para fotógrafos. Su pr
 
 El producto ya está compilado y preparado para ser probado por fotógrafos externos. Es el PMV más presentable para una validación inicial de usuarios.
 
+La revisión del código confirma un flujo de trabajo concreto: el watcher espera a que el archivo termine de escribirse, recorre la carpeta de proyectos, ignora carpetas `Originales` y archivos que ya siguen el patrón de sello, crea el proyecto si es necesario y puede mover el original a `Originales` o eliminarlo según la configuración. También existen sellado individual, sellado por lotes con progreso y cancelación, análisis rápido o forense, bandeja residente, activación de licencia y dos rutas de generación de informes PDF.
+
 ### 5.3 Sello MBH
 
 MBH significa **Made By Humans**. El concepto comercial es otorgar un sello a una imagen que Dragon3 ha analizado y para la que no ha detectado señales incompatibles con un origen humano, dentro de los límites del modelo y de la evidencia disponible.
@@ -164,6 +168,8 @@ Cámara existente -> Raspberry Pi -> sello MBH -> canal seguro -> verificación
 ```
 
 Esto reduce el coste de implantación: no es necesario sustituir todas las cámaras ni modificar su firmware; se incorpora una capa adaptadora junto a cada fuente.
+
+La implementación contiene dos variantes experimentales: una `cajita_edge` que responde inmediatamente y sella el frame en segundo plano, y una `sala_control`/`conector` que coordina captura, descarga, análisis y túnel de vídeo. La primera separación permite que el nodo junto a la cámara haga únicamente captura y sellado, mientras que el análisis puede ejecutarse en otro equipo.
 
 ---
 
@@ -321,6 +327,8 @@ En la validación operativa del 10 de septiembre de 2026:
 - health check correcto después del arranque;
 - comprobación sintáctica de los módulos modificados superada.
 
+En la auditoría profunda realizada para este dossier, las comprobaciones `node --check` pasaron para los módulos principales de Desktop y para los cinco scripts del prototipo de cámara. Las pruebas de integración disponibles de Desktop arrancan tras reconstruir `sqlite3` para Linux, pero actualmente fallan antes del flujo funcional por desajustes entre tests antiguos y la API actual: un test crea `GeneradorMBH` sin inyectar `LicenseManager` y otro llama a `activarLicencia`, mientras que la implementación vigente expone `activarPremium`. Por tanto, esas pruebas no se presentan como evidencia verde y deben actualizarse antes de una certificación externa.
+
 ### Lo que todavía no debe afirmarse
 
 - no existe aún certificación empresarial de alta concurrencia;
@@ -329,6 +337,8 @@ En la validación operativa del 10 de septiembre de 2026:
 - el nodo Edge aún es prototipo y necesita endurecimiento industrial;
 - la integración ferroviaria todavía es una propuesta, no un piloto de Renfe;
 - faltan pruebas independientes de seguridad y resistencia contra ataques.
+- las pruebas automatizadas heredadas de Desktop todavía requieren alinearse con la API actual;
+- el código experimental de cámara contiene configuraciones de desarrollo que deben externalizarse antes de cualquier despliegue.
 
 La honestidad sobre estos límites aumenta la credibilidad de la candidatura.
 
@@ -427,6 +437,8 @@ Medidas necesarias para la siguiente fase:
 - realizar auditoría externa de seguridad;
 - proteger marca MBH y documentación técnica;
 - estudiar patentabilidad o secreto empresarial de los componentes diferenciales.
+
+La revisión del código confirma que esta industrialización es necesaria: el prototipo de cámara contiene credenciales de acceso y una política CORS abierta para desarrollo, y el módulo de licencias de Desktop contiene un secreto local de demostración. Estos elementos no se consideran configuración de producción y deben rotarse, extraerse a secretos protegidos y someterse a revisión antes de compartir el software fuera del círculo de pruebas.
 
 La ventaja soberana no significa aislarse de toda colaboración. Significa que la organización decide dónde se procesa la información, quién la puede consultar y bajo qué reglas.
 
