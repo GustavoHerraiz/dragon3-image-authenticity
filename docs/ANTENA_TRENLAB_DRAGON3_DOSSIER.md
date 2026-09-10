@@ -12,7 +12,7 @@
 
 Dragon3 es una plataforma de soberanía tecnológica para analizar, proteger y verificar imágenes.
 
-Su propósito es recuperar la confianza en la evidencia visual en un momento en que una imagen puede generarse o modificarse en segundos. Dragon3 combina análisis de autenticidad, explicabilidad, trazabilidad y sellado forense. El resultado no es únicamente una etiqueta de “humana” o “IA”, sino un registro verificable de qué se analizó, qué evidencias se encontraron, qué limitaciones existían y qué ocurrió después con la imagen.
+Su propósito es recuperar la confianza en la evidencia visual en un momento en que una imagen puede generarse o modificarse en segundos. Dragon3 combina análisis de autenticidad, explicabilidad, trazabilidad y sellado forense. El resultado no es únicamente una etiqueta de “humana” o “IA”, sino un registro verificable de qué se analizó, qué evidencias se encontraron, qué limitaciones existían y qué registro de trazabilidad se generó.
 
 El proyecto tiene tres expresiones complementarias:
 
@@ -20,7 +20,7 @@ El proyecto tiene tres expresiones complementarias:
 2. **Dragon3 Desktop:** aplicación para fotógrafos que trabaja como residente, vigila una hot folder, sella automáticamente las imágenes terminadas y genera informes PDF con metadatos, derechos y trazabilidad.
 3. **Dragon3 Edge/Cámara:** arquitectura de adaptación que permite añadir una capa de sellado a cámaras existentes sin cambiar su firmware ni sustituir el parque instalado.
 
-Para Renfe, Dragon3 puede convertirse en una capa de confianza visual para imágenes de mantenimiento, inspección, seguridad, incidencias y activos. La propuesta no es sustituir las plataformas de visión artificial existentes, sino garantizar que la evidencia visual asociada a sus decisiones es íntegra, trazable y procesada dentro de la infraestructura de la organización.
+Para Renfe, Dragon3 puede convertirse en una capa de confianza visual para imágenes de mantenimiento, inspección, seguridad, incidencias y activos. La propuesta no es sustituir las plataformas de visión artificial existentes, sino aportar una forma de verificar la integridad y trazabilidad de la evidencia visual asociada a sus decisiones dentro de la infraestructura de la organización.
 
 Dragon3 se ha desarrollado en Mataró, prácticamente en solitario y con recursos de hardware muy limitados. El premio permitiría convertir una tecnología funcional y multidisciplinar en un producto ferroviario validado, seguro e integrable.
 
@@ -73,7 +73,7 @@ Dragon3 crea una cadena de confianza visual en cuatro pasos:
 1. **Capturar o recibir:** imagen procedente de una cámara, dispositivo móvil, carpeta de trabajo o API.
 2. **Analizar:** células independientes revisan metadatos, integridad, señales forenses, sellos, patrones de imagen y modelos de análisis.
 3. **Explicar y registrar:** el sistema conserva un `correlationId`, las células ejecutadas, tiempos, evidencias, limitaciones y veredicto.
-4. **Proteger y verificar:** el generador MBH inserta un identificador en la imagen, añade metadatos y registra la relación entre sello, proyecto, autor y derechos.
+4. **Proteger y verificar:** el generador MBH inserta un identificador en la imagen, añade metadatos y registra la relación entre sello, proyecto, autor y derechos para su posterior comprobación contra un registro autorizado.
 
 El resultado se expresa como evidencia técnica y nivel de confianza. Dragon3 no debe presentarse como una autoridad metafísica capaz de conocer la verdad absoluta; debe presentarse como una infraestructura reproducible que aumenta la capacidad de verificarla.
 
@@ -132,7 +132,7 @@ El generador actual combina:
 
 El analizador puede buscar el identificador en metadatos y en la estructura de píxeles, probar escalas, rotaciones, reflejo y desplazamientos, validar el checksum y contrastar el resultado con el registro local.
 
-En comunicación comercial debe utilizarse una formulación responsable: **“Dragon3 no detectó señales de generación artificial y emitió un sello MBH verificable”**, no una garantía absoluta de autoría humana.
+En comunicación comercial debe utilizarse una formulación responsable: **“Dragon3 no detectó señales de generación artificial y emitió un sello MBH comprobable contra un registro autorizado”**, no una garantía absoluta de autoría humana.
 
 ### 5.4 Adaptador Edge para cámaras
 
@@ -255,7 +255,7 @@ Dragon3 encaja por cuatro vías:
 
 ### Nota de verificación
 
-La página pública de TecnoCampus localizada durante la preparación no cargó correctamente en acceso directo y devolvió un 404, aunque los resultados públicos de TecnoCampus y Railgrup muestran la dotación, los retos y los requisitos anteriores. Antes de enviar la candidatura hay que descargar y revisar la convocatoria y el formulario activos, especialmente fechas, forma jurídica, límites de extensión y documentación obligatoria.
+Antes de enviar la candidatura hay que descargar y revisar la convocatoria y el formulario activos, especialmente fechas, forma jurídica, límites de extensión y documentación obligatoria.
 
 ---
 
@@ -491,7 +491,7 @@ Podemos seguir dependiendo de grandes plataformas, enviar nuestros datos e imág
 
 Dragon3 es una plataforma de autenticidad y trazabilidad visual. Analiza imágenes, busca señales de generación o manipulación, explica las evidencias encontradas y registra el proceso con una visión casi forense.
 
-Además, puede sellar una imagen con un identificador verificable. Así se puede comprobar posteriormente su integridad, su origen y su relación con el registro correspondiente.
+Además, puede sellar una imagen con un identificador comprobable contra un registro autorizado. Así se puede contrastar posteriormente su integridad, su origen y su relación con el registro correspondiente.
 
 Para fotógrafos, Dragon3 funciona de forma invisible: vigila una carpeta de trabajo, detecta cuándo una imagen está terminada y la sella automáticamente antes de entregarla al cliente. También puede generar un informe PDF con la información de la entrega y los derechos cedidos.
 
