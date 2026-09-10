@@ -17,10 +17,15 @@ Dragon3 combina análisis de autenticidad, explicabilidad, trazabilidad y sellad
 El proyecto se compone de tres piezas complementarias:
 
 1. **Dragon3 Engine:** motor de análisis con células especializadas, planes de análisis y veredictos explicables.
-2. **Dragon3 Desktop:** aplicación para fotógrafos, ya compilada, que vigila una carpeta de trabajo, sella automáticamente las imágenes terminadas y genera informes de protección.
-3. **Dragon3 Edge:** arquitectura que añade una capa de sellado a cámaras ya instaladas, sin sustituirlas ni modificar su firmware.
+2. **Dragon3 Desktop:** aplicación para fotógrafos y operarios, ya compilada, que vigila una carpeta de trabajo, sella automáticamente las fotografías terminadas y genera informes de protección.
+3. **Dragon3 Edge:** arquitectura que añade una capa de sellado a cámaras de videovigilancia y vídeo ya instaladas, sin sustituirlas ni modificar su firmware.
 
-Para el sector ferroviario, Dragon3 permite proteger imágenes de mantenimiento, inspección, seguridad e incidencias sin sustituir el parque de cámaras existente y sin enviar los datos a nubes de terceros.
+La misma tecnología de análisis y sellado funciona sobre dos tipos de fuente visual distintos:
+
+- **Fotografías tomadas por operarios y técnicos:** por ejemplo, una imagen capturada con un móvil o cámara para documentar una incidencia o una inspección.
+- **Imágenes y vídeo de cámaras de videovigilancia:** capturas continuas o periódicas de cámaras fijas ya instaladas en estaciones, talleres o infraestructuras.
+
+Para el sector ferroviario, esto significa que Dragon3 puede proteger tanto las fotografías que un operario toma manualmente para justificar una incidencia como el flujo de imágenes de las cámaras de videovigilancia ya instaladas, sin sustituir ese parque de cámaras y sin enviar los datos a nubes de terceros.
 
 Dragon3 se ha desarrollado íntegramente en Mataró. El programa de aceleración permitiría convertir una tecnología ya funcional en una solución ferroviaria validada y medible en términos de eficiencia y sostenibilidad.
 
@@ -46,7 +51,7 @@ Dragon3 responde a estas dos necesidades a la vez: recuperar la confianza en la 
 
 Dragon3 construye una cadena de confianza visual en cuatro pasos:
 
-1. **Captura:** la imagen procede de una cámara, un dispositivo móvil o una carpeta de trabajo.
+1. **Captura:** la imagen procede de una fotografía tomada por una persona, de una cámara de videovigilancia ya instalada o de una carpeta de trabajo.
 2. **Análisis:** células independientes revisan metadatos, integridad, señales forenses y patrones de imagen.
 3. **Explicación y registro:** el sistema conserva un identificador de correlación, las evidencias encontradas y el veredicto.
 4. **Protección y verificación:** un sello se incorpora a la imagen y queda asociado a un registro para su comprobación posterior.
@@ -61,21 +66,21 @@ Dragon3 encaja en Green Experience porque plantea una modernización frugal de l
 
 El impacto que Dragon3 propone validar durante la aceleración es:
 
-- reutilización de cámaras IP ya instaladas, en lugar de sustituirlas;
-- prolongación de la vida útil del equipamiento existente;
-- nodos Edge de bajo consumo situados junto a la cámara;
-- menor transferencia de imágenes completas hacia servicios externos;
+- reutilización de cámaras de videovigilancia IP ya instaladas, en lugar de sustituirlas;
+- prolongación de la vida útil de ese equipamiento;
+- nodos Edge de bajo consumo situados junto a cada cámara;
+- menor transferencia de imágenes y vídeo completos hacia servicios externos;
 - retención limitada y purga automática de capturas temporales;
-- despliegue gradual, sin necesidad de una renovación masiva del parque;
+- despliegue gradual, sin necesidad de una renovación masiva del parque de videovigilancia;
 - operación en hardware accesible, reparable y sustituible por módulos.
 
-Este impacto se medirá con datos concretos: cámaras reutilizadas, consumo eléctrico del nodo, volumen de datos transferido y coste de sustitución evitado.
+Este impacto se medirá con datos concretos: cámaras de videovigilancia reutilizadas, consumo eléctrico del nodo, volumen de datos transferido y coste de sustitución evitado.
 
 ---
 
-## Producto: Dragon3 Desktop
+## Producto: Dragon3 Desktop (fotografía de operarios y profesionales)
 
-Dragon3 Desktop es una aplicación de escritorio ya compilada, pensada para fotógrafos profesionales, que protege su trabajo sin cambiar su forma de trabajar:
+Dragon3 Desktop es una aplicación de escritorio ya compilada, pensada para fotógrafos profesionales y para operarios que documentan incidencias con fotografías, que protege su trabajo sin cambiar su forma de trabajar:
 
 - funciona como aplicación residente y puede iniciarse con el sistema;
 - vigila automáticamente la carpeta de proyectos;
@@ -88,16 +93,16 @@ El fotógrafo sigue trabajando como siempre; Dragon3 protege cada imagen en segu
 
 ---
 
-## Producto: adaptador Edge para cámaras
+## Producto: adaptador Edge para cámaras de videovigilancia
 
-Dragon3 incluye una arquitectura de adaptación que permite añadir sellado y verificación a cámaras IP ya instaladas, sin modificar su firmware ni sustituirlas:
+Dragon3 incluye una arquitectura de adaptación que permite añadir sellado y verificación a cámaras de videovigilancia IP ya instaladas, sin modificar su firmware ni sustituirlas:
 
 ```text
-Cámara IP existente
+Cámara de videovigilancia existente
         |
         v
 Nodo Edge Dragon3
-  captura el frame
+  captura el frame de vídeo
   sella localmente
         |
         v
@@ -105,22 +110,22 @@ Verificación
   analiza y confirma la evidencia
 ```
 
-Esta arquitectura ya ha sido probada de extremo a extremo: captura, sellado y verificación remota funcionando en conjunto. El siguiente paso de desarrollo es un adaptador físico de bajo coste, basado en una placa de tipo Raspberry Pi, que se instala junto a cada cámara existente.
+Esta arquitectura ya ha sido probada de extremo a extremo: captura de vídeo, sellado y verificación remota funcionando en conjunto sobre una cámara IP real. El siguiente paso de desarrollo es un adaptador físico de bajo coste, basado en una placa de tipo Raspberry Pi, que se instala junto a cada cámara de videovigilancia existente.
 
-Esta aproximación reduce drásticamente el coste y el impacto de la implantación: no es necesario sustituir cámaras que todavía funcionan, solo añadir una capa adaptadora eficiente junto a cada una.
+Esta aproximación reduce drásticamente el coste y el impacto de la implantación: no es necesario sustituir las cámaras de videovigilancia que todavía funcionan, solo añadir una capa adaptadora eficiente junto a cada una.
 
 ---
 
 ## Aplicación al sector ferroviario
 
-Dragon3 puede proteger la evidencia visual asociada a procesos ya existentes en el ámbito ferroviario:
+Dragon3 puede proteger la evidencia visual asociada a procesos ya existentes en el ámbito ferroviario, combinando dos fuentes de imagen:
 
-- **Mantenimiento e inspección:** sellar fotografías de componentes, averías y reparaciones, asociadas a un activo, una fecha y una orden de trabajo.
-- **Estaciones e infraestructura:** documentar de forma verificable el estado de instalaciones y posibles incidencias.
-- **Seguridad:** conservar trazabilidad de quién capturó, selló y verificó una evidencia visual.
-- **Logística:** sellar imágenes de vagones, cargas y precintos para su trazabilidad.
+- **Mantenimiento e inspección (fotografía de operarios):** sellar fotografías de componentes, averías y reparaciones tomadas por técnicos, asociadas a un activo, una fecha y una orden de trabajo.
+- **Estaciones e infraestructura (videovigilancia):** proteger y verificar de forma continua las imágenes de las cámaras de videovigilancia ya instaladas, documentando el estado de instalaciones y posibles incidencias.
+- **Seguridad (videovigilancia y fotografía):** conservar trazabilidad de quién capturó, selló y verificó una evidencia visual, sea una fotografía puntual o una captura de vídeo.
+- **Logística (fotografía de operarios):** sellar imágenes de vagones, cargas y precintos tomadas por el personal para su trazabilidad.
 
-Dragon3 no sustituye los sistemas de visión artificial o videovigilancia que puedan existir. Aporta una capa adicional que verifica la integridad y el origen de la imagen que alimenta esos sistemas, procesada localmente y sin salir de la infraestructura de la organización.
+Dragon3 no sustituye los sistemas de visión artificial o videovigilancia que puedan existir. Aporta una capa adicional que verifica la integridad y el origen de la imagen o el vídeo que alimenta esos sistemas, procesada localmente y sin salir de la infraestructura de la organización.
 
 ---
 
@@ -153,16 +158,31 @@ Medir la reducción de sustitución de hardware, el consumo eléctrico del nodo,
 
 ---
 
+## Equipo
+
+Dragon3 ha sido diseñado y desarrollado íntegramente por su fundador, de forma individual, desde Mataró.
+
+Esta decisión ha sido deliberada: Dragon3 protege evidencias visuales que pueden llegar a ser críticas, y mantener el control total del código, los sellos y las claves durante la fase de diseño ha permitido garantizar la integridad del sistema sin depender de terceros ni exponer el núcleo tecnológico antes de que estuviera maduro.
+
+Con la fase de diseño crítico ya cerrada, la siguiente etapa natural del proyecto es incorporar un equipo: perfiles de seguridad, hardware embebido, validación de datos y desarrollo de negocio. El apoyo del programa de aceleración se destinaría, en parte, a dar ese paso de forma ordenada, con accesos controlados y responsabilidades bien definidas.
+
+---
+
 ## Uso previsto del apoyo del programa
 
-| Área | Uso |
+El apoyo económico y el programa de aceleración se destinarían a convertir la tecnología actual en una solución ferroviaria validada:
+
+| Partida | Destino |
 |---|---|
-| Hardware | Adaptadores Edge de bajo coste y cámaras de prueba |
-| Sostenibilidad | Medición de consumo, tráfico de datos y hardware reutilizado |
-| Validación | Pruebas de precisión con conjuntos de datos externos |
-| Integración | Conexión con procesos de mantenimiento e incidencias |
-| Producto | Empaquetado, instalador y soporte |
-| Piloto | Diseño y ejecución de una prueba real supervisada |
+| Adaptador Edge | Diseño y fabricación de un adaptador de bajo coste para cámaras de videovigilancia ya instaladas |
+| Cámaras y hardware de prueba | Adquisición de cámaras de videovigilancia y equipos de prueba representativos del entorno ferroviario |
+| Medición de sostenibilidad | Instrumentación para medir consumo eléctrico, tráfico de datos y hardware reutilizado |
+| Seguridad | Revisión externa de seguridad, gestión de claves y cifrado de comunicaciones |
+| Validación técnica | Pruebas de precisión con conjuntos de imágenes independientes |
+| Incorporación de equipo | Primeros perfiles especializados en seguridad, hardware e integración |
+| Piloto ferroviario | Diseño, despliegue y evaluación de una prueba real supervisada |
+
+La distribución final del presupuesto se ajustará a las bases económicas del programa y se detallará en un plan financiero específico.
 
 ---
 
