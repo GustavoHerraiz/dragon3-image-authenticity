@@ -53,8 +53,10 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mi-secreto-temporal-123';
 const EMBASSY_URL = process.env.EMBASSY_URL || 'http://localhost:3002';
 const EMBASSY_EXECUTE_ENDPOINT = `${EMBASSY_URL}/agent/execute`;
-const MAX_SYNC_ANALYSES = Math.max(1, Number.parseInt(process.env.MAX_SYNC_ANALYSES || '4', 10));
+const MAX_SYNC_ANALYSES = Math.max(1, Number.parseInt(process.env.MAX_SYNC_ANALYSES || '2', 10));
 const EMBASSY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.EMBASSY_TIMEOUT_MS || '180000', 10));
+const WARMUP_DELAY_MS = Math.max(1000, Number.parseInt(process.env.WARMUP_DELAY_MS || '3000', 10));
+const WARMUP_IMAGE_PATH = process.env.WARMUP_IMAGE_PATH || path.resolve(__dirname, '../test.jpg');
 const METRICS_ENABLED = process.env.ENABLE_METRICS !== 'false';
 const METRICS_TOKEN = process.env.METRICS_TOKEN || '';
 let activeAnalyses = 0;
@@ -352,15 +354,44 @@ function rejectWhenAtCapacity(req, res) {
   const releaseSlot = tryAcquireAnalysisSlot();
   if (!releaseSlot) {
     analysisCapacityRejections.inc();
-    res.set('Retry-After', '5');
+    res.set('Retry-After', '10');
     res.status(429).json({
       error: 'Capacidad de análisis temporalmente agotada',
-      correlationId: req.correlationId
+      correlationId: req.correlationId,
+      retryAfterSeconds: 10,
+      activeAnalyses,
+      maxSyncAnalyses: MAX_SYNC_ANALYSES
     });
     return null;
   }
 
   return releaseSlot;
+}
+
+async function lanzarWarmupSilencioso() {
+  try {
+    if (!fs.existsSync(WARMUP_IMAGE_PATH)) {
+      console.warn(`[${MODULE_NAME}] Warm-up omitido: no existe la imagen de precarga ${WARMUP_IMAGE_PATH}`);
+      return;
+    }
+
+    const correlationId = `warmup-${Date.now()}`;
+    const archivoId = uuidv4();
+    console.log(`[${MODULE_NAME}] Activando warm-up silencioso del modelo ...`);
+
+    await llamarEmbassy(
+      WARMUP_IMAGE_PATH,
+      'warmup.jpg',
+      correlationId,
+      archivoId,
+      null,
+      seleccionarPlanPorMimetype('image/jpeg')
+    );
+
+    console.log(`[${MODULE_NAME}] Warm-up silencioso completado`);
+  } catch (error) {
+    console.warn(`[${MODULE_NAME}] Warm-up silencioso fallido: ${error.message}`);
+  }
 }
 // ============================================================
 // 7. RUTAS
@@ -594,6 +625,11 @@ async function startServer() {
     console.log(`🔍 Análisis público: http://localhost:${PORT}/analizar-imagen-publico`);
     console.log(`🔒 Análisis autenticado: http://localhost:${PORT}/api/analizar-imagen`);
     console.log(`🤖 Embassy en: ${EMBASSY_URL}`);
+    console.log(`[${MODULE_NAME}] Capacidad síncrona limitada a ${MAX_SYNC_ANALYSES} en-flight y warm-up silencioso en ${WARMUP_DELAY_MS}ms`);
+
+    setTimeout(() => {
+      lanzarWarmupSilencioso();
+    }, WARMUP_DELAY_MS);
   });
 
   // Graceful shutdown
