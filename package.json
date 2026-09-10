@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "exiftool-vendored": "35.21.0",
+    "express": "4.22.2",
+    "helmet": "8.3.0",
+    "ioredis": "5.11.1",
+    "mongoose": "8.24.4",
+    "multer": "2.3.0",
+    "node-addon-api": "8.9.2",
+    "onnxruntime-node": "1.29.0",
+    "puppeteer": "24.43.1",
+    "sharp": "0.35.4",
+    "uuid": "11.1.1",
+    "ws": "8.21.3"
+  }
+}
