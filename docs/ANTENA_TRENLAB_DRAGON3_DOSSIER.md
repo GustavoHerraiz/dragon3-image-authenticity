@@ -1,8 +1,10 @@
 # Dragon3
-## Dossier de candidatura a los Premios Antena TrenLab 2026
+## Confianza visual sostenible para la movilidad ferroviaria
+### Dossier de candidatura a los Premios Antena TrenLab 2026 · Green Experience
 
 **Promotor:** Blade Corporation  
 **Origen:** Mataró  
+**Categoría propuesta:** Green Experience
 **Estado:** PMV funcional, producto Desktop compilado y prototipo Edge en evolución  
 **Versión del dossier:** 10 de septiembre de 2026
 
@@ -10,7 +12,7 @@
 
 ## 1. Resumen ejecutivo
 
-Dragon3 es una plataforma de soberanía tecnológica para analizar, proteger y verificar imágenes.
+Dragon3 es una plataforma de soberanía tecnológica para analizar, proteger y verificar imágenes con una arquitectura eficiente y reutilizable.
 
 Su propósito es recuperar la confianza en la evidencia visual en un momento en que una imagen puede generarse o modificarse en segundos. Dragon3 combina análisis de autenticidad, explicabilidad, trazabilidad y sellado forense. El resultado no es únicamente una etiqueta de “humana” o “IA”, sino un registro verificable de qué se analizó, qué evidencias se encontraron, qué limitaciones existían y qué registro de trazabilidad se generó.
 
@@ -20,9 +22,9 @@ El proyecto tiene tres expresiones complementarias:
 2. **Dragon3 Desktop:** aplicación para fotógrafos que trabaja como residente, vigila una hot folder, sella automáticamente las imágenes terminadas y genera informes PDF con metadatos, derechos y trazabilidad.
 3. **Dragon3 Edge/Cámara:** arquitectura de adaptación que permite añadir una capa de sellado a cámaras existentes sin cambiar su firmware ni sustituir el parque instalado.
 
-Para Renfe, Dragon3 puede convertirse en una capa de confianza visual para imágenes de mantenimiento, inspección, seguridad, incidencias y activos. La propuesta no es sustituir las plataformas de visión artificial existentes, sino aportar una forma de verificar la integridad y trazabilidad de la evidencia visual asociada a sus decisiones dentro de la infraestructura de la organización.
+Para Renfe, Dragon3 puede convertirse en una capa de confianza visual para imágenes de mantenimiento, inspección, seguridad, incidencias y activos. La propuesta no es sustituir las plataformas de visión artificial ni el parque de cámaras existentes, sino añadir una capa eficiente que verifique la integridad y trazabilidad de la evidencia visual dentro de la infraestructura de la organización.
 
-Dragon3 se ha desarrollado en Mataró, prácticamente en solitario y con recursos de hardware muy limitados. El premio permitiría convertir una tecnología funcional y multidisciplinar en un producto ferroviario validado, seguro e integrable.
+Dragon3 se ha desarrollado en Mataró, prácticamente en solitario y con recursos de hardware muy limitados. El premio permitiría convertir una tecnología funcional y multidisciplinar en un producto ferroviario validado, seguro, integrable y medible desde el punto de vista ambiental.
 
 Este dossier diferencia deliberadamente entre capacidades demostradas, código disponible y trabajo de industrialización pendiente. Esa distinción es esencial para una tecnología que pretende proteger evidencias.
 
@@ -183,6 +185,8 @@ La propuesta para Renfe es:
 
 > Proteger las imágenes de mantenimiento, inspección, seguridad e incidencias sin obligar a sustituir las cámaras existentes y sin sacar los datos críticos a nubes de terceros.
 
+En clave **Green Experience**, la propuesta añade una decisión de eficiencia: prolongar la vida útil del equipamiento existente y añadir capacidad mediante software y nodos Edge de bajo consumo, en lugar de sustituir masivamente cámaras que todavía funcionan. La sostenibilidad se medirá con datos de equipos reutilizados, energía del nodo, almacenamiento evitado y coste material no generado.
+
 ### 6.2 Aplicaciones posibles
 
 #### Mantenimiento e inspección
@@ -224,9 +228,27 @@ La solución puede instalarse dentro de la infraestructura de Renfe, en servidor
 - adaptar la capacidad al nivel de criticidad;
 - conservar control sobre claves, registros y políticas de retención.
 
+La soberanía y la sostenibilidad se refuerzan mutuamente: procesar cerca de la fuente reduce transferencias innecesarias, permite conservar solo la evidencia necesaria y evita que cada captura tenga que viajar a una infraestructura externa para ser protegida.
+
 ---
 
-## 7. Por qué es innovador y disruptivo
+## 7. Green Experience: eficiencia sin sustituir el parque instalado
+
+Dragon3 encaja en Green Experience porque plantea una modernización frugal de la movilidad: **más capacidad de confianza visual con menos sustitución de hardware**.
+
+El impacto sostenible que se propone validar es:
+
+- reutilización de cámaras IP ya instaladas;
+- prolongación de la vida útil del equipamiento;
+- nodos Edge de bajo consumo junto a la fuente de imagen;
+- menor transferencia de imágenes completas hacia servicios externos;
+- retención limitada y purga automática de capturas temporales;
+- despliegue gradual, evitando una renovación masiva del parque;
+- operación en hardware accesible, reparable y sustituible por módulos.
+
+Dragon3 no presentará un ahorro ambiental como hecho ya certificado. Lo convertirá en una hipótesis medible durante la aceleración mediante comparación entre adaptador Edge, sustitución de cámara y procesamiento centralizado.
+
+## 8. Por qué es innovador y disruptivo
 
 La innovación no está únicamente en añadir otro detector de IA. Está en unir cinco decisiones que normalmente aparecen separadas:
 
@@ -240,7 +262,7 @@ La alternativa no es “IA contra no IA”. Es elegir si la tecnología se utili
 
 ---
 
-## 8. Encaje con los Premios Antena TrenLab 2026
+## 9. Encaje con los Premios Antena TrenLab 2026
 
 La información pública localizada sobre la convocatoria indica:
 
@@ -252,12 +274,14 @@ La información pública localizada sobre la convocatoria indica:
 - participación dirigida a pyme, micropyme o startup;
 - compromiso de asistencia presencial al programa.
 
-Dragon3 encaja por cuatro vías:
+Dragon3 encaja especialmente en **Green Experience** y debe presentarse con ese foco:
 
 1. **PMV:** Dragon3 Desktop está compilado y listo para validación externa; el motor productivo y el prototipo Edge amplían la base tecnológica.
-2. **Movilidad y ferrocarril:** la evidencia visual de mantenimiento, seguridad, inspección e incidencias es un caso de uso ferroviario claro.
-3. **Sostenibilidad y eficiencia:** se aprovecha el parque de cámaras existente, se evita reemplazar equipos y se puede procesar localmente con hardware de bajo consumo.
+2. **Impacto verde:** se reutilizan cámaras existentes, se evita una renovación prematura y se plantea una medición de energía, almacenamiento y hardware evitado.
+3. **Movilidad y ferrocarril:** la evidencia visual de mantenimiento, seguridad, inspección e incidencias es un caso de uso ferroviario claro.
 4. **Territorio:** es una tecnología nacida en Mataró y puede ser desarrollada y pilotada desde Antena TrenLab.
+
+El encaje en **Accesibilidad Universal** es secundario y no debe ser el eje de la candidatura. El producto puede facilitar la documentación y consulta de evidencias, pero su innovación principal es la eficiencia y reutilización aplicada a movilidad.
 
 ### Nota de verificación
 
@@ -265,7 +289,7 @@ Antes de enviar la candidatura hay que descargar y revisar la convocatoria y el 
 
 ---
 
-## 9. Dos modelos de negocio
+## 10. Dos modelos de negocio
 
 ### 9.1 Mercado profesional y general: MBH
 
@@ -295,7 +319,7 @@ La misma tecnología sirve para dos necesidades distintas: demostrar origen huma
 
 ---
 
-## 10. Estado real del proyecto
+## 11. Estado real del proyecto
 
 ### Ya funciona o está disponible
 
@@ -344,11 +368,11 @@ La honestidad sobre estos límites aumenta la credibilidad de la candidatura.
 
 ---
 
-## 11. Segunda fase propuesta con Antena TrenLab
+## 12. Segunda fase propuesta con Antena TrenLab
 
 ### Objetivo
 
-Convertir Dragon3 en una capa ferroviaria validada de confianza visual, con un piloto diseñado junto a Renfe y ejecutado sin sacar datos críticos de su entorno.
+Convertir Dragon3 en una capa ferroviaria validada de confianza visual y eficiencia operativa, con un piloto diseñado junto a Renfe y ejecutado sin sacar datos críticos de su entorno.
 
 ### Fase 1: definición y seguridad
 
@@ -356,7 +380,8 @@ Convertir Dragon3 en una capa ferroviaria validada de confianza visual, con un p
 - definir qué imagen se sella, cuándo y con qué metadatos;
 - revisar protección de datos, retención y accesos;
 - separar claramente datos de demostración y datos operativos;
-- definir métricas de éxito y criterios de parada.
+- definir métricas de éxito y criterios de parada;
+- fijar una línea base ambiental: cámaras sustituidas, consumo, tráfico de red y almacenamiento.
 
 ### Fase 2: adaptador Edge
 
@@ -385,6 +410,10 @@ Métricas propuestas:
 - detección de modificaciones deliberadas;
 - tiempo de sellado y de verificación;
 - uso de CPU, memoria y almacenamiento del Edge;
+- consumo eléctrico estimado por nodo y por captura;
+- volumen de datos transferido frente a un flujo centralizado equivalente;
+- número de cámaras reutilizadas y equipos cuya sustitución se evita;
+- vida útil adicional estimada del parque instalado;
 - disponibilidad con pérdida de conectividad;
 - reducción de coste frente a sustitución de cámaras;
 - aceptación de técnicos y responsables de seguridad;
@@ -402,13 +431,14 @@ Métricas propuestas:
 
 ---
 
-## 12. Uso previsto del premio
+## 13. Uso previsto del premio
 
-El premio se dedicaría a convertir la demostración individual en una validación profesional:
+El premio se dedicaría a convertir la demostración individual en una validación profesional y medible para Green Experience:
 
 | Área | Uso |
 |---|---|
 | Hardware | Raspberry Pi y Edge industrial, almacenamiento y cámaras de prueba |
+| Sostenibilidad | Medición de consumo, tráfico, almacenamiento y hardware reutilizado |
 | Seguridad | revisión externa, gestión de claves, autenticación y cifrado |
 | Validación | dataset externo, pruebas de precisión y resistencia |
 | Integración | conectores para activos, incidencias y operaciones ferroviarias |
@@ -420,7 +450,7 @@ La asignación final debe ajustarse a las reglas económicas de la convocatoria 
 
 ---
 
-## 13. Seguridad, propiedad intelectual y soberanía
+## 14. Seguridad, propiedad intelectual y soberanía
 
 La protección del proyecto es parte de la propuesta, pero no debe confundirse con afirmar que el sistema ya está certificado para Defensa o infraestructura crítica.
 
@@ -444,7 +474,7 @@ La ventaja soberana no significa aislarse de toda colaboración. Significa que l
 
 ---
 
-## 14. Riesgos y mitigaciones
+## 15. Riesgos y mitigaciones
 
 | Riesgo | Mitigación |
 |---|---|
@@ -459,7 +489,7 @@ La ventaja soberana no significa aislarse de toda colaboración. Significa que l
 
 ---
 
-## 15. Demo recomendada para el jurado
+## 16. Demo recomendada para el jurado
 
 La demostración debe durar pocos minutos y mostrar un flujo completo:
 
@@ -477,7 +507,7 @@ La demo debe evitar depender de una conexión pública o de un servicio externo.
 
 ---
 
-## 16. Discurso de presentación
+## 17. Discurso de presentación
 
 Hola. Gracias por la oportunidad de presentar mi proyecto.
 
@@ -515,6 +545,8 @@ En Renfe, Dragon3 podría proteger imágenes de mantenimiento, inspecciones, inc
 
 Los datos no tendrían que salir a una nube de terceros. La organización conservaría el control sobre sus imágenes, sus evidencias y sus procesos.
 
+Además, esta propuesta es eficiente por diseño: reutiliza cámaras que ya existen, añade nodos Edge de bajo consumo y evita sustituir hardware antes de tiempo. La segunda fase mediría ese impacto con datos de consumo, tráfico, almacenamiento y equipos reutilizados.
+
 Y esto no es solo una visión futura. Dragon3 ya tiene un motor funcional, una aplicación de escritorio compilada y una arquitectura probada con cámaras y dispositivos existentes.
 
 He desarrollado esta tecnología en Mataró, prácticamente en solitario y con recursos muy limitados.
@@ -539,7 +571,7 @@ Muchas gracias.
 
 ---
 
-## 17. Fuentes y evidencias internas
+## 18. Fuentes y evidencias internas
 
 ### Fuentes públicas consultadas
 
@@ -561,10 +593,10 @@ La información pública recuperada durante esta preparación identifica tres re
 
 ---
 
-## 18. Resumen final para el jurado
+## 19. Resumen final para el jurado
 
-Dragon3 es una tecnología nacida en Mataró que propone una alternativa al modelo de procesamiento centralizado: proteger y verificar imágenes de forma local, explicable y trazable.
+Dragon3 es una tecnología nacida en Mataró que propone una alternativa eficiente al modelo de procesamiento centralizado: proteger y verificar imágenes de forma local, explicable y trazable, reutilizando el equipamiento existente.
 
-Ya existe un PMV para fotógrafos, un motor de análisis y un prototipo de adaptación a cámaras. El siguiente paso no es imaginar si la idea puede funcionar, sino validarla en un entorno ferroviario real y convertirla en una infraestructura profesional de confianza visual.
+Ya existe un PMV para fotógrafos, un motor de análisis y un prototipo de adaptación a cámaras. El siguiente paso no es imaginar si la idea puede funcionar, sino medir su impacto ambiental y validarla en un entorno ferroviario real como una infraestructura profesional de confianza visual sostenible.
 
 Renfe puede ser la locomotora de esa transformación.
