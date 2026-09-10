@@ -192,7 +192,6 @@ if (asyncWorkerEnabled) {
 
   try {
     await job.progress(10);
-    const archivo = fs.readFileSync(ruta).toString('base64');
     const token = jwt.sign({ agentId: 'dragon3-async-worker', nivel: 'confianza' }, JWT_SECRET, { expiresIn: '10m' });
     const response = await fetch(`${ASYNC_EXECUTE_URL}/agent/execute`, {
       method: 'POST',
@@ -201,7 +200,7 @@ if (asyncWorkerEnabled) {
         token,
         agentId: 'dragon3-async-worker',
         peticion: {
-          archivo,
+          filePath: ruta,
           params: {},
           extra: {
             archivoId: job.data.archivoId,
@@ -350,8 +349,25 @@ function stateIsFailed(state) {
  */
 app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
   let archivoBase64 = req.body.peticion?.archivo || null;
+  const filePath = req.body.peticion?.filePath || null;
+  const limpiarBase64EnRequest = () => {
+    if (req.body?.peticion) {
+      delete req.body.peticion.archivo;
+      delete req.body.peticion.filePath;
+    }
+    if (req.body) {
+      delete req.body.archivo;
+      delete req.body.filePath;
+    }
+  };
 
   try {
+    if (filePath && fs.existsSync(filePath)) {
+      const fileBuffer = fs.readFileSync(filePath);
+      archivoBase64 = fileBuffer.toString('base64');
+      delete req.body.peticion.archivo;
+    }
+
     const { agentId, peticion, configuracion } = req.body;
     let plan;
     let planId = 'fallback';
@@ -415,7 +431,7 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
 
     // 4. Liberación inmediata de memoria de la solicitud entrante
     entrada.archivo = null;
-    if (req.body.peticion) req.body.peticion.archivo = null;
+    limpiarBase64EnRequest();
 
     // 5. Identificadores de Trazabilidad
     const correlationId = resultado.correlationId || peticion?.extra?.correlationId || generarUUID();
@@ -461,16 +477,17 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
 
     // 9. Persistencia asíncrona en MongoDB (No bloqueante)
     if (mongoose.connection.readyState === 1) {
+      let tamañoBytes = 0;
+      let hashArchivo = null;
+      if (archivoBase64) {
+        const buf = Buffer.from(archivoBase64, 'base64');
+        tamañoBytes = buf.length;
+        hashArchivo = crypto.createHash('sha256').update(buf).digest('hex');
+      }
+      archivoBase64 = null;
+
       setImmediate(async () => {
         try {
-          let tamañoBytes = 0;
-          let hashArchivo = null;
-          if (archivoBase64) {
-            const buf = Buffer.from(archivoBase64, 'base64');
-            tamañoBytes = buf.length;
-            hashArchivo = crypto.createHash('sha256').update(buf).digest('hex');
-          }
-
           const db = mongoose.connection.db;
           await db.collection('ejecuciones').insertOne({
             correlationId,
@@ -490,8 +507,6 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
           });
         } catch (e) {
           console.error('❌ Error registrando ejecución en MongoDB:', e.message);
-        } finally {
-          archivoBase64 = null;
         }
       });
     }
@@ -504,6 +519,10 @@ app.post('/agent/execute', rateLimiter, autenticarToken, async (req, res) => {
     res.status(500).json({ status: 'error', error: error.message });
   } finally {
     archivoBase64 = null;
+    limpiarBase64EnRequest();
+    if (filePath && fs.existsSync(filePath)) {
+      try { fs.unlinkSync(filePath); } catch (error) { /* best effort */ }
+    }
   }
 });
 
