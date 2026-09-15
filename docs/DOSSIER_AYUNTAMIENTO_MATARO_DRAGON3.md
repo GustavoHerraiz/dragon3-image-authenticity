@@ -182,3 +182,252 @@ La verificación aporta evidencia técnica y trazabilidad; la valoración juríd
 - `dev/dragon3-desktop/src/backend/database.js`: estructura SQLite de proyectos, sellos, derechos y configuración.
 - `dev/dragon3-desktop/src/backend/reportePDF.js`: informes de proyecto y listado de imágenes protegidas.
 - `docs/INDICE_DOSSIER_AYUNTAMIENTO_MATARO_DRAGON3.md`: alcance, piloto y decisiones municipales.
+
+---
+
+## 4. Gestión del Archivo Histórico Fotográfico
+
+Dragon3 Desktop organiza el trabajo mediante proyectos y carpetas. Para el Ayuntamiento, cada proyecto puede representar un fondo, una colección, una serie o una campaña de digitalización.
+
+El registro local puede asociar cada imagen protegida con:
+
+- la colección o serie;
+- la descripción de la obra;
+- el autor o titular conocido;
+- las condiciones de reproducción;
+- un email de contacto;
+- el identificador de la copia.
+
+La base local SQLite no pretende reemplazar el sistema archivístico municipal. Su función es mantener el índice operativo de las protecciones realizadas y permitir que el personal recupere el vínculo entre imagen, proyecto y derechos.
+
+La política recomendada para el piloto es conservar tres elementos separados:
+
+1. el original maestro;
+2. la copia protegida para uso o entrega;
+3. el registro o informe que documenta la operación.
+
+## 5. Informes y documentación
+
+Dragon3 Desktop puede generar documentación asociada a un proyecto y a sus imágenes. Para el Archivo Histórico Fotográfico, el informe serviría como resumen de una colección procesada o de un conjunto de imágenes entregadas.
+
+El informe puede incluir:
+
+- institución responsable;
+- nombre y descripción del proyecto;
+- número de imágenes procesadas;
+- identificadores de los sellos;
+- colección y obra;
+- derechos y condiciones de uso;
+- fechas de registro;
+- firma o identificación del titular.
+
+Para una petición individual, el Ayuntamiento podría conservar la imagen protegida junto con una ficha o informe que documente qué copia fue preparada y bajo qué condiciones se entregó.
+
+## 6. Dos modalidades de operación
+
+### 6.1. Sellado bajo demanda
+
+Cuando un medio de comunicación, investigador, estudiante o ciudadano solicite una fotografía, el archivero localizará el original y solicitará la generación de una copia protegida.
+
+```text
+Solicitud de imagen
+	|
+	v
+Archivero selecciona el original
+	|
+	v
+Dragon3 genera la copia protegida
+	|
+	v
+Entrega de imagen e información de derechos
+```
+
+Es la modalidad más sencilla para comenzar: permite probar el servicio con pocas imágenes y comprobar el tiempo de respuesta, la calidad de los metadatos y la utilidad del informe.
+
+### 6.2. Sellado preventivo en segundo plano
+
+El Ayuntamiento puede configurar una carpeta autorizada que contenga una colección o parte del archivo. Dragon3 Desktop la procesa progresivamente en segundo plano mediante la hot folder.
+
+Las imágenes protegidas se generan sin modificar los originales. Cuando llegue una solicitud posterior, el archivero podrá buscar directamente la copia preparada y entregarla con su identificador y sus derechos asociados.
+
+### 6.3. Procesamiento por lotes
+
+Para una colección ya existente, Desktop dispone de procesamiento por lotes con progreso, estimación de tiempo, registro de éxitos y fallos y posibilidad de cancelación. Esto permite comenzar con una muestra, pausar el trabajo y continuar por fases.
+
+### 6.4. Estrategia municipal recomendada
+
+La propuesta inicial es:
+
+1. seleccionar una colección piloto;
+2. procesar un lote limitado;
+3. probar una solicitud real bajo demanda;
+4. evaluar el flujo con el personal;
+5. activar después el sellado preventivo de nuevas colecciones.
+
+Así el Ayuntamiento obtiene valor desde el primer piloto sin comprometer de entrada todo el archivo.
+
+## 7. Experiencia de usuario y operación residente
+
+Desktop está diseñado para que el personal no tenga que aprender un procedimiento técnico complejo. La aplicación puede iniciarse con el sistema, permanecer en la bandeja y mostrar notificaciones cuando termina una operación.
+
+La configuración permite definir:
+
+- carpeta de proyectos;
+- carpeta de entrada;
+- nombre de la institución;
+- web y email de contacto;
+- logotipo;
+- derechos por defecto;
+- modo automático o manual;
+- tratamiento de originales;
+- colecciones y subcarpetas.
+
+La interfaz permite consultar proyectos, archivos, imágenes pendientes, lotes y resultados. Para el piloto se definirán perfiles de uso sencillos y una guía operativa para el personal autorizado.
+
+## 8. Derechos, privacidad y soberanía
+
+Dragon3 no determina por sí mismo quién es legalmente titular de una fotografía. El Ayuntamiento seguirá siendo responsable de decidir qué derechos declara y qué condiciones aplica a cada colección o entrega.
+
+Dragon3 aporta una capa técnica para que esa información no quede separada de la copia protegida:
+
+- el registro local conserva los derechos declarados;
+- los metadatos pueden acompañar a la imagen;
+- el identificador permite relacionarla con su proyecto;
+- el informe documenta el conjunto procesado.
+
+El procesamiento se realiza localmente en el ordenador autorizado del archivo. Las imágenes no necesitan enviarse a una nube externa. El Ayuntamiento conserva el control sobre originales, copias protegidas, base de datos, permisos y políticas de retención.
+
+## 9. Propuesta de piloto municipal
+
+### Fase 1: preparación
+
+- seleccionar una colección limitada y representativa;
+- acordar los campos documentales y derechos por defecto;
+- definir carpetas de originales y copias protegidas;
+- configurar un ordenador autorizado;
+- establecer copias de seguridad;
+- formar al personal que participará.
+
+### Fase 2: prueba controlada
+
+- procesar un lote representativo;
+- comprobar que no se modifican los originales;
+- verificar metadatos e identificadores;
+- generar un informe PDF;
+- simular una petición externa;
+- entregar una copia protegida de prueba.
+
+### Fase 3: ampliación progresiva
+
+- incorporar nuevas colecciones;
+- activar la hot folder para nuevas digitalizaciones;
+- utilizar procesamiento por lotes para fondos existentes;
+- establecer una política uniforme de nombres y derechos.
+
+### Fase 4: evaluación
+
+Se medirán:
+
+- imágenes protegidas;
+- tiempo medio por imagen;
+- errores y reintentos;
+- integridad de originales;
+- completitud de metadatos;
+- informes generados;
+- tiempo de respuesta a solicitudes;
+- aceptación del personal.
+
+## 10. Beneficios para Mataró y encaje Smart City
+
+Dragon3 convertiría una función municipal existente, la entrega de imágenes del archivo, en un servicio digital más seguro, trazable y preparado para el futuro.
+
+Los beneficios serían:
+
+- protección del patrimonio visual municipal;
+- mejor servicio a medios, investigadores, estudiantes y ciudadanía;
+- conservación de derechos y procedencia;
+- reducción de tareas manuales repetitivas;
+- procesamiento local y soberanía sobre los datos;
+- reutilización de la infraestructura informática existente;
+- posibilidad de extender el modelo a patrimonio, comunicación, urbanismo y otros fondos documentales.
+
+La propuesta encaja con una Smart City entendida no solo como una ciudad sensorizada, sino como una administración que gestiona mejor sus activos, conserva su memoria, protege sus datos y ofrece servicios públicos más inteligentes.
+
+## 11. Implantación y escalado
+
+La primera instalación puede realizarse en un único ordenador autorizado, con una colección piloto y una política clara de copias de seguridad. No es necesario desplegar una infraestructura compleja para empezar.
+
+Después, el servicio puede crecer por:
+
+- colecciones;
+- puestos de digitalización;
+- usuarios autorizados;
+- procesamiento por lotes;
+- informes periódicos;
+- integración futura con gestores documentales municipales.
+
+## 12. Seguridad operativa
+
+Antes del piloto se definirán:
+
+- permisos de acceso a carpetas;
+- usuarios autorizados;
+- copias de seguridad y recuperación;
+- separación entre originales y derivados;
+- protección de la base local;
+- política de actualizaciones;
+- procedimiento ante error o interrupción;
+- retención de informes y registros.
+
+## 13. Decisiones que debe cerrar el Ayuntamiento
+
+El piloto permitirá acordar con los responsables municipales:
+
+- colección inicial;
+- formatos maestros y derivados;
+- política de nombres y carpetas;
+- metadatos obligatorios;
+- titulares y textos de derechos;
+- ubicación de la base de datos;
+- frecuencia de copias de seguridad;
+- usuarios autorizados;
+- modalidad bajo demanda o preventiva;
+- volumen y duración del piloto;
+- necesidades de integración futura.
+
+## 14. Propuesta económica
+
+La propuesta económica se concretará después de conocer el volumen de imágenes, los usuarios, los puestos de digitalización, la duración del piloto, el soporte necesario y la integración con los sistemas municipales.
+
+Se separarán claramente:
+
+- instalación y configuración;
+- licencia institucional;
+- formación;
+- soporte y mantenimiento;
+- almacenamiento y copias de seguridad;
+- procesamiento inicial por lotes;
+- integraciones opcionales.
+
+## 15. Evidencias técnicas anexas
+
+El dossier se completará con:
+
+- capturas de Desktop;
+- ejemplo de imagen original y copia protegida;
+- metadatos antes y después;
+- prueba de verificación;
+- informe PDF generado;
+- registro de un lote;
+- demostración de hot folder;
+- manual de usuario;
+- manual de instalación;
+- explicación técnica resumida del generador y analizador.
+
+## 16. Cierre de la propuesta
+
+Dragon3 Desktop permitiría que las imágenes que salen del Archivo Histórico Fotográfico de Mataró salgan preparadas, identificadas y vinculadas a su procedencia y sus derechos.
+
+El Ayuntamiento podría comenzar con una colección limitada o con el sellado bajo demanda y ampliar después al resto del archivo. La propuesta es reversible, local, progresiva y compatible con el trabajo actual del personal.
+
+La tecnología no es el fin de la propuesta. Es el medio para que Mataró gestione mejor su patrimonio fotográfico y lo ponga a disposición de la ciudadanía con más control, más trazabilidad y más confianza.
