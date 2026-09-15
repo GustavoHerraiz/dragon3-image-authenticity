@@ -235,6 +235,41 @@ Adecuado para fondos históricos ya digitalizados. Incluye:
 - registro de éxitos y fallos;
 - cancelación del proceso.
 
+### 6.4 Sellado bajo demanda
+
+Cuando un medio de comunicación, historiador, estudiante o ciudadano solicite una imagen, el archivero localiza el original y solicita su protección. Dragon3 genera una copia sellada para entregar, manteniendo el original preservado y separado.
+
+Flujo:
+
+```text
+Solicitud de imagen
+        |
+        v
+Archivero selecciona el original
+        |
+        v
+Dragon3 genera la copia protegida
+        |
+        v
+Entrega de imagen sellada e identificada
+```
+
+Este modo permite iniciar el proyecto con un piloto pequeño y controlado.
+
+### 6.5 Sellado preventivo del archivo
+
+El Ayuntamiento puede indicar a Dragon3 cuál es la carpeta que contiene la colección fotográfica. El sistema la procesa en segundo plano mediante la hot folder, protege progresivamente las imágenes y mantiene los originales separados.
+
+Cuando llega una solicitud posterior, el archivero solo tiene que localizar y entregar la copia ya sellada.
+
+Este modo convierte el fondo histórico en un archivo preparado para distribución, con las imágenes protegidas antes de que sean solicitadas. El procesamiento puede comenzar por una colección piloto y ampliarse por fases hasta cubrir todo el archivo.
+
+### 6.6 Estrategia recomendada
+
+Se propone comenzar con el sellado bajo demanda o con una colección limitada mediante procesamiento por lotes. Tras validar el flujo, los derechos, los tiempos y la aceptación del personal, se puede activar el sellado preventivo progresivo del resto del archivo.
+
+Las dos modalidades utilizan la misma aplicación, la misma base local de registros y el mismo mecanismo de protección; cambia únicamente el momento en que se procesa la imagen.
+
 ## 7. Experiencia de usuario y operación residente
 
 - Inicio automático con el sistema.
