@@ -21,7 +21,7 @@ La aplicación se instala en un ordenador autorizado del archivo y puede trabaja
 - **Sellado bajo demanda:** cuando llega una solicitud, el archivero selecciona la imagen y Dragon3 genera una copia protegida para entregar.
 - **Sellado preventivo:** el Ayuntamiento configura la carpeta de una colección y Dragon3 procesa progresivamente sus imágenes en segundo plano. Cuando llega una solicitud posterior, el personal entrega la copia ya preparada.
 
-En ambos casos, el original se conserva separado y la copia protegida queda relacionada con un identificador, la colección, la autoría o titularidad declarada, los derechos y el registro local del archivo.
+En ambos casos, la copia protegida queda relacionada con un identificador, la colección, la autoría o titularidad declarada, los derechos y el registro local del archivo. La conservación separada del original será una política obligatoria del piloto y deberá configurarse y validarse expresamente.
 
 La propuesta no exige trasladar las imágenes a una nube externa ni sustituir el flujo de trabajo del personal. Añade una capacidad de protección, documentación y recuperación sobre la infraestructura existente.
 
@@ -113,10 +113,11 @@ La aplicación puede funcionar como residente en el ordenador autorizado del arc
 4. crea o utiliza el proyecto correspondiente;
 5. genera la copia protegida;
 6. registra sus datos y derechos;
-7. conserva o mueve el original según la política acordada;
-8. muestra una notificación y deja la operación trazable.
+7. genera la copia protegida en la ruta de salida configurada;
+8. conserva o mueve el original según la política acordada;
+9. muestra una notificación y deja la operación trazable.
 
-La fuente principal de esta descripción es el flujo implementado en `main.js`, especialmente el watcher recursivo, el modo automático, la gestión de originales y las notificaciones. La propuesta municipal deberá adaptar los nombres de carpetas, metadatos y política de conservación a las decisiones del Ayuntamiento.
+La fuente principal de esta descripción es el flujo implementado en `main.js`, especialmente el watcher recursivo, el modo automático, la gestión de originales y las notificaciones. El watcher espera a que los archivos terminen de escribirse y está configurado para ignorar los archivos iniciales ya existentes; por eso, el fondo histórico existente se procesará mediante lotes o una incorporación controlada, mientras que las nuevas imágenes podrán sellarse automáticamente. La propuesta municipal deberá adaptar los nombres de carpetas, metadatos y política de conservación a las decisiones del Ayuntamiento.
 
 ---
 
@@ -130,16 +131,16 @@ No sustituye un contrato de cesión, una resolución administrativa ni una decla
 
 ### 3.2. Capas técnicas del sellado
 
-El generador de Desktop trabaja sobre los píxeles de la imagen y sobre sus metadatos:
+El generador de Desktop trabaja sobre los píxeles de la imagen y sobre sus metadatos. En la implementación actual, la salida se genera como PNG para conservar las capas de señal y geometría:
 
 - calcula un identificador a partir del registro del proyecto;
-- incorpora un checksum para detectar inconsistencias;
+- incorpora un checksum para validar la lectura de la señal embebida;
 - modifica señales del canal azul mediante bloques DCT de 8x8;
 - añade una geometría de puntos tipo Vogel en posiciones calculadas;
 - escribe metadatos documentales mediante ExifTool;
 - guarda el vínculo entre el identificador, el proyecto y los derechos en SQLite.
 
-Esta combinación permite que la verificación no dependa únicamente del nombre del archivo o de un campo de metadatos que podría desaparecer durante una conversión.
+Esta combinación permite que la verificación no dependa únicamente del nombre del archivo o de un campo de metadatos que podría desaparecer durante una conversión. El comportamiento frente a conversiones, recortes o recomprensiones debe validarse con los formatos concretos que utilice el archivo.
 
 ### 3.3. Datos documentales de la copia
 
@@ -155,7 +156,7 @@ Para el piloto municipal se propondrá una plantilla de metadatos que incluya, c
 - fecha de protección;
 - referencia al proyecto local.
 
-Los campos definitivos se acordarán con el personal del archivo y se probarán con una colección representativa.
+La implementación conserva un conjunto filtrado de metadatos técnicos permitidos y añade los campos documentales del sello. Los campos definitivos se acordarán con el personal del archivo y se probarán con una colección representativa.
 
 ### 3.4. Verificación posterior
 
@@ -170,6 +171,38 @@ El resultado puede indicar si:
 - la copia puede relacionarse con un proyecto o colección.
 
 La verificación aporta evidencia técnica y trazabilidad; la valoración jurídica final seguirá correspondiendo al Ayuntamiento y a la normativa aplicable.
+
+### 3.5. Arquitectura técnica del proceso
+
+Desktop separa la interfaz de usuario, el proceso principal de Electron y los módulos de backend que trabajan con imágenes, base de datos y generación de informes. El flujo no requiere un servidor remoto para sellar una imagen:
+
+```text
+Electron residente
+	|
+	+--> watcher de carpetas
+	+--> generador de sello
+	+--> analizador local V5/V6
+	+--> SQLite local
+	+--> ExifTool y Sharp
+	+--> informe PDF
+```
+
+La base de datos utiliza SQLite en una ruta local del usuario y funciona con modo WAL. Las tablas principales separan proyectos, sellos, configuración y licencia. La arquitectura permite empezar en un único puesto del archivo y añadir después procedimientos de copia, puestos adicionales o integración con sistemas municipales.
+
+La aplicación actual es un MVP de escritorio para Windows/Electron; la adaptación institucional deberá validar el sistema operativo del puesto municipal, las rutas de ExifTool, las políticas antivirus, los permisos de carpeta y el procedimiento de backup.
+
+### 3.6. Alcance actual y adaptación institucional
+
+El sellado, la hot folder, la base local, el procesamiento por lotes, la verificación y la generación de informes forman parte del producto Desktop. Para un archivo municipal será necesario adaptar la configuración y el modelo de operación:
+
+- sustituir los valores de demostración por la identidad y políticas del Ayuntamiento;
+- definir una licencia institucional sin límites de prueba;
+- configurar los derechos y metadatos del Archivo Histórico Fotográfico;
+- establecer una política explícita de originales, derivados y copias de seguridad;
+- validar los informes y el tratamiento de lotes con una colección real;
+- preparar soporte, actualización y recuperación del puesto.
+
+Estas tareas no requieren cambiar el principio técnico del producto. Son la fase de configuración, endurecimiento y validación necesaria para pasar de una aplicación preparada para profesionales a una instalación institucional.
 
 ---
 
@@ -246,7 +279,7 @@ Es la modalidad más sencilla para comenzar: permite probar el servicio con poca
 
 ### 6.2. Sellado preventivo en segundo plano
 
-El Ayuntamiento puede configurar una carpeta autorizada que contenga una colección o parte del archivo. Dragon3 Desktop la procesa progresivamente en segundo plano mediante la hot folder.
+El Ayuntamiento puede configurar una carpeta autorizada que contenga una colección o parte del archivo. Dragon3 Desktop procesa automáticamente los archivos nuevos que llegan a la hot folder. Para una colección que ya existe antes de activar el watcher, se utilizará el procesamiento por lotes o una incorporación controlada; así se evitan reprocesados y se mantiene el control del volumen.
 
 Las imágenes protegidas se generan sin modificar los originales. Cuando llegue una solicitud posterior, el archivero podrá buscar directamente la copia preparada y entregarla con su identificador y sus derechos asociados.
 
