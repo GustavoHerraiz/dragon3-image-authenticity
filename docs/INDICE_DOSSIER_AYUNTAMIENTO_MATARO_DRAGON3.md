@@ -5,11 +5,28 @@
 **Ámbito:** preservación, autoría, derechos y trazabilidad de imágenes históricas  
 **Destinatario:** Ayuntamiento de Mataró y servicios técnicos municipales
 
+## Propuesta central del dossier
+
+El dossier no se presentará como una explicación general de Dragon3 Desktop, sino como una propuesta concreta para el Ayuntamiento:
+
+> **Convertir el Archivo Histórico Fotográfico de Mataró en un archivo preparado para distribuir imágenes protegidas, trazables y soberanas.**
+
+La propuesta será que toda imagen que salga del archivo hacia un medio de comunicación, investigador, estudiante, institución o ciudadano pueda entregarse ya protegida y vinculada a su autoría, colección, derechos y registro municipal, sin cambiar el flujo habitual de trabajo ni depender de una nube externa.
+
+El resto del documento responderá a cuatro preguntas institucionales:
+
+1. ¿Qué problema del archivo resuelve?
+2. ¿Cómo mejora el servicio público y la gestión del patrimonio?
+3. ¿Cómo se implanta sin riesgo y sin sustituir los sistemas actuales?
+4. ¿Qué piloto puede iniciar el Ayuntamiento y cómo se medirá?
+
+La explicación técnica aparecerá como garantía de que la propuesta es viable, pero el centro del dossier será el servicio municipal, el patrimonio fotográfico y el valor para la ciudadanía.
+
 ---
 
 ## 0. Resumen ejecutivo
 
-Este capítulo debe permitir que un responsable municipal entienda la propuesta en menos de dos minutos. Presentará Dragon3 Desktop como una herramienta que protege automáticamente las imágenes del archivo antes de su consulta, publicación o entrega, sin cambiar el trabajo habitual del personal. Debe cerrar con una propuesta concreta: empezar con una colección piloto y decidir después entre sellado bajo demanda o protección progresiva de todo el fondo.
+Este capítulo debe permitir que un responsable municipal entienda la propuesta en menos de dos minutos. Presentará la transformación del Archivo Histórico Fotográfico en un servicio de distribución de imágenes protegidas: cuando una persona solicite una fotografía, el Ayuntamiento podrá entregar una copia ya identificada, documentada y vinculada a sus derechos. Debe cerrar con una propuesta concreta: empezar con una colección piloto y decidir después entre sellado bajo demanda o protección progresiva de todo el fondo.
 
 - Qué es Dragon3 Desktop.
 - Qué problema resuelve en el Archivo Histórico Fotográfico.
@@ -429,7 +446,7 @@ Indicadores:
 
 ## 11. Beneficios para Mataró
 
-Este capítulo resumirá el retorno municipal: patrimonio mejor preparado para su difusión, derechos más claros, trabajo más repetible, menor dependencia externa y un caso visible de innovación local aplicada a Smart City.
+Este capítulo resumirá el retorno municipal: un Archivo Histórico Fotográfico preparado para responder mejor a las peticiones, patrimonio mejor protegido y difundido, derechos más claros, trabajo más repetible, menor dependencia externa y un caso visible de innovación local aplicada a Smart City. La idea central será que Dragon3 no añade una capa tecnológica aislada: convierte una función municipal existente, la entrega de imágenes, en un servicio más seguro, trazable y preparado para el futuro.
 
 - Protección de un patrimonio visual municipal.
 - Mejora de la trazabilidad de imágenes históricas.
@@ -537,7 +554,7 @@ Estas fuentes sirven para respaldar la descripción del producto y mantener traz
 
 ## 18. Resumen de la propuesta
 
-El cierre debe dejar una decisión clara: empezar con un piloto municipal de bajo riesgo y alto valor demostrable, protegiendo primero una colección o las imágenes solicitadas y ampliando después al resto del archivo.
+El cierre debe dejar una decisión clara: empezar con un piloto municipal de bajo riesgo y alto valor demostrable. El Ayuntamiento podrá elegir entre proteger primero las imágenes solicitadas o iniciar la protección preventiva de una colección completa. En ambos casos, el resultado será el mismo: cuando una imagen salga del Archivo Histórico Fotográfico de Mataró, podrá salir protegida, identificada y acompañada de la información necesaria para conservar su procedencia y sus derechos.
 
 Dragon3 Desktop permite que el Archivo Histórico Fotográfico de Mataró continúe trabajando con sus imágenes y sus carpetas habituales, incorporando automáticamente una capa de protección, derechos y trazabilidad.
 
