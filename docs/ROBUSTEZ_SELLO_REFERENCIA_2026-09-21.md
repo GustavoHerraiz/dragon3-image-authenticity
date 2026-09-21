@@ -6,12 +6,16 @@
 **Script:** `prod/Dragon3/backend/scripts/Generador/dragon3-desktop/src/tests/test_robustez_sello.js`  
 **Informe de ejecución:** `/tmp/dragon3-robustez-parcial-transformaciones.log`
 
+**Extensión posterior:** ataques dobles y triples ejecutados el mismo día.
+**Resultado de la extensión:** **15/15 detectados**, sin regresiones en las pruebas obligatorias.
+
 ## Resultado de referencia
 
 | Medición | Resultado |
 |---|---:|
 | Pruebas obligatorias superadas | **18/18** |
 | Ataques exploratorios detectados | **42/42** |
+| Ataques dobles y triples adicionales | **15/15** |
 | Imagen limpia rechazada | **Sí** |
 | Falsos positivos observados | **0** |
 
@@ -73,15 +77,34 @@ Este documento fija el estado de referencia del generador y del analizador V6 de
 - JPEG Q30 combinado con escala 50%
 - JPEG Q30 combinado con escala 75%
 
+### Ataques dobles y triples
+
+- JPEG Q20 y escala 125%;
+- rotación y JPEG Q30;
+- recorte y escala 75%;
+- desenfoque y JPEG Q30;
+- doble escala y WebP Q20;
+- escala de grises y JPEG Q20;
+- brillo y nitidez;
+- recorte, escala y JPEG;
+- rotación, escala y JPEG;
+- espejo, escala y WebP;
+- desenfoque, escala y JPEG;
+- escala de grises, gamma y JPEG;
+- brillo, saturación y JPEG;
+- nitidez, escala y WebP;
+- recorte, rotación y JPEG.
+
 ## Criterio de aceptación
 
 La prueba se considera válida cuando se cumplen simultáneamente estas condiciones:
 
 1. Las 18 pruebas obligatorias pasan.
 2. Los 42 ataques exploratorios son detectados.
-3. La imagen sin sello es rechazada.
-4. El identificador recuperado coincide con el sello generado.
-5. No se producen excepciones durante búsquedas agotadas o transformaciones extremas.
+3. Los 15 ataques dobles y triples son detectados.
+4. La imagen sin sello es rechazada.
+5. El identificador recuperado coincide con el sello generado.
+6. No se producen excepciones durante búsquedas agotadas o transformaciones extremas.
 
 ## Regla para cambios futuros
 

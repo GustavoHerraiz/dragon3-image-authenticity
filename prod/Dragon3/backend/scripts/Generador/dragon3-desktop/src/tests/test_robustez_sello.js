@@ -148,7 +148,22 @@ async function main() {
         'JPEG Q70 dos generaciones': sharp(sealedPath).jpeg({ quality: 70 }).jpeg({ quality: 70 }),
         'JPEG Q30 dos generaciones': sharp(sealedPath).jpeg({ quality: 30 }).jpeg({ quality: 30 }),
         'JPEG Q30 y escala 50%': sharp(sealedPath).resize({ width: 384 }).jpeg({ quality: 30, chromaSubsampling: '4:4:4' }),
-        'JPEG Q30 y escala 75%': sharp(sealedPath).resize({ width: 576 }).jpeg({ quality: 30, chromaSubsampling: '4:4:4' })
+        'JPEG Q30 y escala 75%': sharp(sealedPath).resize({ width: 576 }).jpeg({ quality: 30, chromaSubsampling: '4:4:4' }),
+        'Doble JPEG Q20 y escala 125%': sharp(sealedPath).resize({ width: 960 }).jpeg({ quality: 20 }).jpeg({ quality: 20 }),
+        'Doble rotación y JPEG Q30': sharp(sealedPath).rotate(180).jpeg({ quality: 30 }),
+        'Doble recorte y escala 75%': sharp(sealedPath).extract({ left: 96, top: 64, width: 576, height: 384 }).resize({ width: 432 }),
+        'Doble desenfoque y JPEG Q30': sharp(sealedPath).blur(1.5).jpeg({ quality: 30 }),
+        'Doble escala y WebP Q20': sharp(sealedPath).resize({ width: 576 }).resize({ width: 384 }).webp({ quality: 20 }),
+        'Doble gris y JPEG Q20': sharp(sealedPath).grayscale().jpeg({ quality: 20 }),
+        'Doble brillo y nitidez': sharp(sealedPath).modulate({ brightness: 0.7 }).sharpen(),
+        'Triple recorte escala JPEG': sharp(sealedPath).extract({ left: 96, top: 64, width: 576, height: 384 }).resize({ width: 384 }).jpeg({ quality: 30 }),
+        'Triple rotación escala JPEG': sharp(sealedPath).rotate(90).resize({ width: 576 }).jpeg({ quality: 30 }),
+        'Triple espejo escala WebP': sharp(sealedPath).flop().resize({ width: 576 }).webp({ quality: 20 }),
+        'Triple desenfoque escala JPEG': sharp(sealedPath).blur(1.5).resize({ width: 576 }).jpeg({ quality: 30 }),
+        'Triple gris gamma JPEG': sharp(sealedPath).grayscale().gamma(1.8).jpeg({ quality: 30 }),
+        'Triple brillo saturación JPEG': sharp(sealedPath).modulate({ brightness: 0.7, saturation: 0.3 }).jpeg({ quality: 30 }),
+        'Triple nitidez WebP escala': sharp(sealedPath).sharpen().resize({ width: 576 }).webp({ quality: 20 }),
+        'Triple recorte rotación JPEG': sharp(sealedPath).extract({ left: 96, top: 64, width: 576, height: 384 }).rotate(180).jpeg({ quality: 30 })
     };
 
     for (const [name, pipeline] of Object.entries(attacks)) {
