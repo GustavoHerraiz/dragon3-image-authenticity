@@ -182,11 +182,11 @@ export class DragonDB {
       // INSERT OR IGNORE
       // ==========================================================
       await this.db.run(
-        `INSERT OR IGNORE INTO licencia (rowid, activa, tipo, contador_global, sellos_usados, servidor_verificado) 
+        `INSERT OR IGNORE INTO licencia (rowid, activa, tipo, contador_global, sellos_usados, servidor_verificado)
          VALUES (1, 0, 'gratuita', 0, 0, 0)`
       );
       await this.db.run(
-        `INSERT OR IGNORE INTO configuracion (id, prefijo_usuario, email_usuario, nombre_autor, web_autor, telefono_autor, logo_path, direccion_autor, descripcion_autor, redes_sociales, ruta_proyectos, coleccion_por_defecto, mover_original, activar_watcher, modo_automatico, proyecto_por_defecto, subcarpeta_por_defecto, cliente_por_defecto, obra_por_defecto) 
+        `INSERT OR IGNORE INTO configuracion (id, prefijo_usuario, email_usuario, nombre_autor, web_autor, telefono_autor, logo_path, direccion_autor, descripcion_autor, redes_sociales, ruta_proyectos, coleccion_por_defecto, mover_original, activar_watcher, modo_automatico, proyecto_por_defecto, subcarpeta_por_defecto, cliente_por_defecto, obra_por_defecto)
          VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mover', 1, 1, NULL, NULL, NULL, NULL)`
       );
 
@@ -256,7 +256,7 @@ export class DragonDB {
       }
 
       const result = await this.db.run(
-        `INSERT INTO proyectos 
+        `INSERT INTO proyectos
          (id_numerico, hash_suffix, cliente, obra, proyecto_nombre, coleccion, derechos, email_contacto, compartir_blade, descripcion)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         id_numerico, hash, cliente, obra, nombreProyecto, coleccion, derechos, email_contacto, compartir_blade, descripcion
@@ -296,13 +296,13 @@ export class DragonDB {
             telemetry.debug(MODULE, `Hash encontrado en proyectos: ${hash}`, { cliente: row.cliente });
             return row;
         }
-        
+
         row = await this.db.get('SELECT * FROM sellos WHERE hash_suffix = ?', hash);
         if (row) {
             telemetry.debug(MODULE, `Hash encontrado en sellos: ${hash}`, { cliente: row.cliente });
             return row;
         }
-        
+
         telemetry.debug(MODULE, `Hash NO encontrado: ${hash}`);
         return null;
     } catch (err) {
@@ -330,6 +330,24 @@ export class DragonDB {
       return rows;
     } catch (err) {
       telemetry.error(MODULE, `Error listando proyectos: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async obtenerCandidatosSello() {
+    await this._ensureOpen();
+    try {
+      const rows = await this.db.all(`
+        SELECT id_numerico, hash_suffix, cliente, obra
+        FROM proyectos
+        UNION
+        SELECT id_numerico, hash_suffix, cliente, obra
+        FROM sellos
+        ORDER BY id_numerico
+      `);
+      return rows;
+    } catch (err) {
+      telemetry.error(MODULE, `Error listando candidatos de sello: ${err.message}`);
       throw err;
     }
   }
@@ -373,7 +391,7 @@ export class DragonDB {
       }
 
       const result = await this.db.run(
-        `INSERT INTO sellos 
+        `INSERT INTO sellos
          (id_numerico, hash_suffix, proyecto_id, cliente, obra, coleccion, derechos, email_contacto, compartir_blade)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         id_numerico, hash_suffix, proyecto_id, cliente, obra, coleccion, derechos, email_contacto, compartir_blade
@@ -424,34 +442,34 @@ export class DragonDB {
         }
 
         const camposPermitidos = [
-            'cliente', 'obra', 'coleccion', 'derechos', 
+            'cliente', 'obra', 'coleccion', 'derechos',
             'email_contacto', 'compartir_blade'
         ];
-        
+
         const sets = [];
         const values = [];
-        
+
         for (const [key, val] of Object.entries(datos)) {
             if (camposPermitidos.includes(key) && val !== undefined && val !== null) {
                 sets.push(`${key} = ?`);
                 values.push(val);
             }
         }
-        
+
         if (sets.length === 0) {
             throw new Error('No se proporcionaron campos válidos para actualizar');
         }
-        
+
         values.push(hash_suffix);
-        
+
         const sql = `UPDATE sellos SET ${sets.join(', ')} WHERE hash_suffix = ?`;
         const result = await this.db.run(sql, values);
-        
-        telemetry.info(MODULE, `✅ Sello ${hash_suffix} actualizado en DB`, { 
+
+        telemetry.info(MODULE, `✅ Sello ${hash_suffix} actualizado en DB`, {
             campos: sets.join(', '),
-            changes: result.changes 
+            changes: result.changes
         });
-        
+
         return await this.db.get('SELECT * FROM sellos WHERE hash_suffix = ?', hash_suffix);
     } catch (err) {
         telemetry.error(MODULE, `❌ Error actualizando sello: ${err.message}`, { hash_suffix });
@@ -464,10 +482,10 @@ export class DragonDB {
     await this._ensureOpen();
     try {
       const row = await this.db.get('SELECT * FROM configuracion WHERE id = 1');
-      return row || { 
-        prefijo_usuario: null, 
-        email_usuario: null, 
-        nombre_autor: null, 
+      return row || {
+        prefijo_usuario: null,
+        email_usuario: null,
+        nombre_autor: null,
         web_autor: null,
         telefono_autor: null,
         logo_path: null,
@@ -476,7 +494,7 @@ export class DragonDB {
         redes_sociales: null,
         ruta_proyectos: null,
         coleccion_por_defecto: null,
-        derechos_por_defecto: null, 
+        derechos_por_defecto: null,
         sincronizar_blade_por_defecto: 0,
         mover_original: 'mover',
         activar_watcher: 1,

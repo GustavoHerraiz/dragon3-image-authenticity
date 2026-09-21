@@ -8,6 +8,8 @@
     "start": "electron .",
     "test:step1": "node src/tests/test_step1.js",
     "test:report": "node src/tests/test_report.js",
+    "test:robustez": "node src/tests/test_robustez_sello.js",
+    "test:parcial": "node src/tests/test_deteccion_parcial.js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
@@ -56,17 +58,20 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "resources/icon.ico"
+      "icon": "resources/icon.ico",
+      "artifactName": "dragon3-desktop-win-${arch}.${ext}"
     },
     "mac": {
       "target": "dmg",
       "icon": "resources/icon.icns",
-      "category": "public.app-category.photography"
+      "category": "public.app-category.photography",
+      "artifactName": "dragon3-desktop-mac-${arch}.${ext}"
     },
     "linux": {
       "target": "AppImage",
       "icon": "resources/icon.png",
-      "category": "Graphics"
+      "category": "Graphics",
+      "artifactName": "dragon3-desktop-linux-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,

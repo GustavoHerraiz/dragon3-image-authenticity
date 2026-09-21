@@ -2,10 +2,10 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { MotorEspacial } from './MotorEspacial.js';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import util from 'util';
 import { telemetry } from './telemetry.js';
-const execPromise = util.promisify(exec);
+const execFilePromise = util.promisify(execFile);
 
 const MODULE = 'GeneradorMBH';
 
@@ -26,6 +26,7 @@ const CONFIG = {
 // ================================================================
 function getExifToolPath() {
     const baseDir = process.cwd();
+    if (process.platform !== 'win32') return 'exiftool';
     const rutasPosibles = [
         path.join(baseDir, 'resources', 'exiftool', 'exiftool-13.59_64', 'exiftool_win.exe'),
         path.join(baseDir, 'resources', 'exiftool', 'exiftool_win.exe'),
@@ -173,7 +174,7 @@ try {
         } else {
             // ❌ Si el proyecto no existe, CREARLO automáticamente
             telemetry.warn(MODULE, `⚠️ Proyecto ID ${metadatosCliente.proyectoId} no encontrado, creándolo...`);
-            
+
             const nuevoProyecto = await this.db.crearProyecto(
                 idNumerico,
                 metadatosCliente.cliente || 'Cliente automático',
@@ -186,7 +187,7 @@ try {
                 true,  // ✅ skipDuplicateCheck
                 `Proyecto creado automáticamente desde sellado`
             );
-            
+
             await this.db.registrarSello(
                 idNumerico,
                 idHex,
@@ -203,12 +204,12 @@ try {
     } else {
         // ✅ SIN proyectoId: buscar por nombre o crear
         let proyectoFinalId = null;
-        
+
         // Buscar por nombre
         if (metadatosCliente.proyecto_nombre) {
             const todos = await this.db.obtenerTodos();
-            const existente = todos.find(p => 
-                p.proyecto_nombre && 
+            const existente = todos.find(p =>
+                p.proyecto_nombre &&
                 p.proyecto_nombre.toLowerCase() === metadatosCliente.proyecto_nombre.toLowerCase()
             );
             if (existente) {
@@ -216,7 +217,7 @@ try {
                 telemetry.debug(MODULE, `📌 Proyecto encontrado por nombre: ${existente.proyecto_nombre} (ID: ${existente.id})`);
             }
         }
-        
+
         // Si no existe, crearlo
         if (!proyectoFinalId) {
             const nombreProyecto = metadatosCliente.proyecto_nombre || `Proyecto_${idNumerico}`;
@@ -235,7 +236,7 @@ try {
             proyectoFinalId = nuevoProyecto.id;
             telemetry.info(MODULE, `✅ Proyecto creado: ${nombreProyecto} (ID: ${proyectoFinalId})`);
         }
-        
+
         // Registrar sello
         await this.db.registrarSello(
             idNumerico,
@@ -276,10 +277,9 @@ try {
         // PASO A: EXTRAER METADATOS ORIGINALES (SOLO CAMPOS ESCRITURABLES)
         // ============================================================
         telemetry.debug(MODULE, `📤 Extrayendo metadatos originales de: ${rutaEntrada}`);
-        const extractCmd = `"${exifPath}" -j -a -G1 "${rutaEntrada}"`;
-        const { stdout: extractStdout } = await execPromise(extractCmd);
+        const { stdout: extractStdout } = await execFilePromise(exifPath, ['-j', '-a', '-G1', rutaEntrada]);
         const metadatosOriginales = JSON.parse(extractStdout)[0] || {};
-        
+
         // ============================================================
         // PASO B: FILTRAR CAMPOS ESCRITURABLES
         // ============================================================
@@ -293,17 +293,17 @@ try {
             'LightSource', 'Flash', 'FocalLength',
             'ColorSpace', 'ExposureMode', 'WhiteBalance',
             'DigitalZoomRatio', 'SceneCaptureType',
-            'XMP:Rights', 'XMP:Creator', 'XMP:Description', 
+            'XMP:Rights', 'XMP:Creator', 'XMP:Description',
             'XMP:Title', 'XMP:Source'
         ];
-        
+
         const metadatosFiltrados = {};
         for (const [key, value] of Object.entries(metadatosOriginales)) {
             if (camposPermitidos.includes(key) && value !== undefined && value !== '') {
                 metadatosFiltrados[key] = value;
             }
         }
-        
+
         // ============================================================
         // PASO C: METADATOS DEL SELLO
         // ============================================================
@@ -318,42 +318,41 @@ try {
             'XMP:Source': 'Dragon3 Verificado',
             'Software': 'Dragon3 V22 Mentalist Core'
         };
-        
+
         // ============================================================
         // PASO D: COMBINAR (SÁNDWICH)
         // ============================================================
         const metadatosFinales = { ...metadatosFiltrados, ...metadatosSello };
-        
+
         // ============================================================
         // PASO E: CONSTRUIR COMANDO
         // ============================================================
-        let cmd = `"${exifPath}" -overwrite_original`;
-        
+        const exifArgs = ['-overwrite_original'];
+
         for (const [key, value] of Object.entries(metadatosFinales)) {
             if (value !== undefined && value !== null && value !== '') {
-                const escapedValue = String(value).replace(/"/g, '\\"');
-                cmd += ` -${key}="${escapedValue}"`;
+                exifArgs.push(`-${key}=${String(value)}`);
             }
         }
-        
-        cmd += ` "${rutaSalida}"`;
-        
+
+        exifArgs.push(rutaSalida);
+
         telemetry.debug(MODULE, `🔧 Inyectando ${Object.keys(metadatosFinales).length} campos de metadatos`);
-        
+
         // ============================================================
         // PASO F: EJECUTAR
         // ============================================================
-        const { stdout, stderr } = await execPromise(cmd);
+        const { stdout, stderr } = await execFilePromise(exifPath, exifArgs);
         telemetry.debug(MODULE, `ExifTool OK`, { stdout: stdout.trim() });
         if (stderr) telemetry.warn(MODULE, `ExifTool warnings: ${stderr.trim()}`);
-        
+
         // ============================================================
         // PASO G: VERIFICAR
         // ============================================================
-        const verifyCmd = `"${exifPath}" -j -ImageDescription -Artist -Copyright -Software -Make -Model "${rutaSalida}"`;
-        const { stdout: verifyStdout } = await execPromise(verifyCmd);
+        const verifyArgs = ['-j', '-ImageDescription', '-Artist', '-Copyright', '-Software', '-Make', '-Model', rutaSalida];
+        const { stdout: verifyStdout } = await execFilePromise(exifPath, verifyArgs);
         const verifyData = JSON.parse(verifyStdout)[0] || {};
-        
+
         if (verifyData.ImageDescription && verifyData.ImageDescription.includes('DRAGON3_ID')) {
             telemetry.info(MODULE, `✅ Sándwich forense completado: ${Object.keys(metadatosFinales).length} metadatos preservados e inyectados`);
         }
@@ -413,8 +412,8 @@ try {
                 const valActual1 = dctBlock[v1][u1];
                 const valActual2 = dctBlock[v2][u2];
                 const promedio = (valActual1 + valActual2) / 2;
-                let aplicarFuerza = fuerza;
-                if (Math.abs(dctBlock) > 1000) aplicarFuerza = fuerza * 0.8;
+                    let aplicarFuerza = fuerza;
+                    if (Math.abs(dctBlock[0][0]) > 1000) aplicarFuerza = fuerza * 0.8;
 
                 if (bitToInject === 1) {
                     dctBlock[v1][u1] = promedio + (aplicarFuerza / 2);
@@ -437,10 +436,10 @@ try {
 inyectarGeometria(buffer, width, height, idCompleto) {
     // ✅ EXTRAEMOS EL HASH SIN PREFIJO (IGUAL QUE EL V5)
     const hashLimpio = idCompleto.split('_')[1] || idCompleto;
-    
+
     const centro = MotorEspacial.calcularCentroUnico(
-        width, 
-        height, 
+        width,
+        height,
         hashLimpio,  // ← "000000C" (SIN PREFIJO)
         CONFIG.PRIVATE_KEY
     );

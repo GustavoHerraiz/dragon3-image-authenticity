@@ -4,16 +4,17 @@
 
 import sharp from 'sharp';
 import { MotorEspacial } from './MotorEspacial.js';
+import { analizarImagenMBH } from './analizador_v5.js';
 import { telemetry } from './telemetry.js';
 import { performance } from 'perf_hooks';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import util from 'util';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const execPromise = util.promisify(exec);
+const execFilePromise = util.promisify(execFile);
 
 const MODULE = 'AnalizadorV6';
 const CONFIG = {
@@ -34,6 +35,7 @@ for (let u = 0; u < 8; u++) {
 // ================================================================
 function getExifToolPath() {
     const baseDir = process.cwd();
+    if (process.platform !== 'win32') return 'exiftool';
     const rutasPosibles = [
         path.join(baseDir, 'resources', 'exiftool', 'exiftool-13.59_64', 'exiftool_win.exe'),
         path.join(baseDir, 'resources', 'exiftool', 'exiftool_win.exe'),
@@ -54,7 +56,7 @@ async function leerMetadatosExifTool(ruta) {
             telemetry.debug(MODULE, 'ExifTool no encontrado, usando Sharp para metadatos básicos');
             return null;
         }
-        const { stdout } = await execPromise(`"${exifPath}" -j "${ruta}"`);
+        const { stdout } = await execFilePromise(exifPath, ['-j', ruta]);
         const data = JSON.parse(stdout);
         if (data && data.length > 0) {
             return data[0];
@@ -102,6 +104,22 @@ class MotorForenseV6 {
         return dct;
     }
 
+    static diferenciaDctAzul(data, info, x, y) {
+        let suma11 = 0;
+        let suma22 = 0;
+
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                const idx = ((y + i) * info.width + (x + j)) * 4 + 2;
+                const valor = data[idx] - 128;
+                suma11 += valor * COS_TABLE[8 + j] * COS_TABLE[8 + i];
+                suma22 += valor * COS_TABLE[16 + j] * COS_TABLE[16 + i];
+            }
+        }
+
+        return 0.25 * (suma11 - suma22);
+    }
+
     static extraerConMetricas(data, info, offX, offY) {
         let sumDiff = new Array(64).fill(0);
         let count = new Array(64).fill(0);
@@ -109,15 +127,7 @@ class MotorForenseV6 {
         for (let y = offY; y <= info.height - 8; y += 8) {
             let pos = 0;
             for (let x = offX; x <= info.width - 8; x += 8) {
-                let block = Array(8).fill(0).map(() => Array(8).fill(0));
-                for (let i = 0; i < 8; i++) {
-                    for (let j = 0; j < 8; j++) {
-                        let idx = ((y + i) * info.width + (x + j)) * 4 + 2;
-                        block[i][j] = data[idx] - 128;
-                    }
-                }
-                const dct = this.dct8x8(block);
-                const diff = dct[1][1] - dct[2][2];
+                const diff = this.diferenciaDctAzul(data, info, x, y);
                 sumDiff[pos] += diff;
                 count[pos]++;
                 pos = (pos + 1) % 64;
@@ -137,9 +147,11 @@ class MotorForenseV6 {
         for (let i = 0; i < 32; i++) if (bits64[2*i] !== bits64[2*i+1]) pairs++;
 
         let bits32 = '';
-        for (let i = 0; i < 32; i++) bits32 += bits64[2*i];
+        for (let i = 0; i < 32; i++) {
+            bits32 += media[2 * i] - media[2 * i + 1] > 0 ? '1' : '0';
+        }
 
-        return { bits: bits32, score, pairs };
+        return { bits: bits32, score, pairs, medias: media };
     }
 
     static extraerBits(data, info, offX, offY) {
@@ -173,7 +185,11 @@ class MotorForenseV6 {
         return bits32;
     }
 
-    static async validar(bits, db) {
+    static async validar(bits, db, metrics = null) {
+        if (metrics && (metrics.score < CONFIG.SCORE_THRESHOLD || metrics.pairs < CONFIG.PAIRS_THRESHOLD)) {
+            return { ok: false, reason: 'weak-signal', score: metrics.score, pairs: metrics.pairs };
+        }
+
         const intentar = async (b) => {
             const idInt = (parseInt(b.substring(0, 28), 2)) >>> 0;
             const idHex = idInt.toString(16).toUpperCase().padStart(7, '0');
@@ -181,17 +197,21 @@ class MotorForenseV6 {
             const low = idInt & 0x3FFF;
             const high = (idInt >> 14) & 0x3FFF;
             const calc = ((low ^ high) * 19 ^ ((low ^ high) * 19 >> 6)) & 0x0F;
-            
+
             const reg = db ? await db.buscarPorHash(idHex) : null;
-            
-            return { 
-                ok: chk === calc && !!reg, 
-                id: idHex, 
-                cliente: reg?.cliente, 
-                obra: reg?.obra 
+
+            return {
+                ok: chk === calc && !!reg,
+                selloValido: chk === calc,
+                registrado: !!reg,
+                id: idHex,
+                cliente: reg?.cliente,
+                obra: reg?.obra,
+                score: metrics?.score,
+                pairs: metrics?.pairs
             };
         };
-        
+
         for (let i = 0; i < 32; i++) {
             let rot = bits.substring(i) + bits.substring(0, i);
             let r = await intentar(rot);
@@ -201,6 +221,76 @@ class MotorForenseV6 {
             if (rI.ok) return { ...rI };
         }
         return { ok: false };
+    }
+
+    static async validarParcial(metrics, db, candidatos = null) {
+        if (!metrics?.medias || metrics.score < CONFIG.SCORE_THRESHOLD) return null;
+
+        const registros = candidatos || (typeof db?.obtenerCandidatosSello === 'function'
+            ? await db.obtenerCandidatosSello()
+            : typeof db?.obtenerTodos === 'function' ? await db.obtenerTodos() : []);
+        const observados = metrics.medias;
+        const resultados = [];
+
+        for (const candidato of registros) {
+            const id = Number(candidato.id_numerico ?? candidato.id);
+            if (!Number.isInteger(id) || id < 0 || id > 0x0FFFFFFF) continue;
+
+            const checksum = (((id & 0x3FFF) ^ (id >> 14)) * 19);
+            const payload = ((id << 4) | ((checksum ^ (checksum >> 6)) & 0x0F)) >>> 0;
+            let mejor = { agreement: -Infinity, knownPairs: 0 };
+
+            for (let shift = 0; shift < 32; shift++) {
+                for (const invert of [false, true]) {
+                    let agreement = 0;
+                    let confidence = 0;
+                    let knownPairs = 0;
+                    for (let pair = 0; pair < 32; pair++) {
+                        const observed = observados[2 * pair] - observados[2 * pair + 1];
+                        const weight = Math.abs(observed);
+                        if (weight < 1) continue;
+                        const expectedBit = (payload >>> (31 - ((pair + shift) % 32))) & 1;
+                        const expectedSign = (expectedBit ^ (invert ? 1 : 0)) ? 1 : -1;
+                        agreement += expectedSign * observed;
+                        confidence += weight;
+                        knownPairs++;
+                    }
+                    if (knownPairs > mejor.knownPairs || (knownPairs === mejor.knownPairs && agreement > mejor.agreement)) {
+                        mejor = { agreement, confidence, knownPairs };
+                    }
+                }
+            }
+
+            resultados.push({
+                id,
+                hash: id.toString(16).toUpperCase().padStart(7, '0'),
+                cliente: candidato.cliente,
+                obra: candidato.obra,
+                knownPairs: mejor.knownPairs,
+                confidence: mejor.confidence,
+                normalizedScore: mejor.confidence ? mejor.agreement / mejor.confidence : 0
+            });
+        }
+
+        resultados.sort((left, right) => right.normalizedScore - left.normalizedScore);
+        const ganador = resultados[0];
+        const segundo = resultados[1];
+        if (!ganador || ganador.knownPairs < 8 || ganador.normalizedScore < 0.8 ||
+            ganador.normalizedScore <= (segundo?.normalizedScore || 0) + 0.1) return null;
+
+        return {
+            ok: true,
+            parcial: true,
+            selloValido: true,
+            registrado: true,
+            id: ganador.hash,
+            cliente: ganador.cliente,
+            obra: ganador.obra,
+            score: metrics.score,
+            pairs: metrics.pairs,
+            knownPairs: ganador.knownPairs,
+            confidence: ganador.normalizedScore
+        };
     }
 }
 
@@ -212,12 +302,12 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
     try {
         const metaOriginal = await sharp(ruta).metadata();
         const esPNG = metaOriginal.format === 'png';
-        
+
         // ================================================================
         // 🔥 LECTURA DE METADATOS CON EXIFTOOL (para PNG y JPG)
         // ================================================================
         const metaExif = await leerMetadatosExifTool(ruta);
-        
+
         let idEnMetadatos = null;
         let idCompletoMetadatos = null;
         let prefijoEnMetadatos = null;
@@ -231,7 +321,7 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
             artist = metaExif.Artist || null;
             copyright = metaExif.Copyright || null;
             software = metaExif.Software || null;
-            
+
             if (imageDescription && imageDescription.includes("DRAGON3_ID:")) {
                 const idCompleto = extraerIDCompleto(imageDescription);
                 if (idCompleto) {
@@ -256,26 +346,36 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
             }
         }
 
-        // 2. NORMALIZACIÓN PARA RADAR
+        // 2. Analizar primero los píxeles originales; JPEG queda como fallback.
+        const bufferOriginal = await sharp(ruta).png().toBuffer();
         const bufferRadar = await sharp(ruta).jpeg({ quality: 95 }).toBuffer();
-        const { data, info } = await sharp(bufferRadar).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        const { data, info } = await sharp(bufferOriginal).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 
         let match = { identificado: false };
         const MAX_TIMEOUT_MS = timeoutMs;
 
-        const escalas = [1.0, 0.5, 0.75, 1.5, 2.0, 1.25, 4/3, 10/3];
+        const escalas = [1.0, 0.8, 1.25, 0.75, 4/3, 0.5, 1.5, 2.0, 0.625, 1.2, 10/3];
         const variantes = [
-            { m: "NOR", b: bufferRadar },
-            { m: "MIR", b: await sharp(bufferRadar).flip().toBuffer() }
+            { m: "NOR", b: bufferOriginal },
+            { m: "MIR", b: await sharp(bufferOriginal).flip().toBuffer() },
+            { m: "JPEG", b: bufferRadar },
+            { m: "JPEG-MIR", b: await sharp(bufferRadar).flip().toBuffer() }
         ];
+        let candidatosParcial = null;
+        if (typeof db?.obtenerCandidatosSello === 'function') {
+            candidatosParcial = await db.obtenerCandidatosSello();
+        } else if (typeof db?.obtenerTodos === 'function') {
+            candidatosParcial = await db.obtenerTodos();
+        }
+        const validarParcialLocal = (metrics) => MotorForenseV6.validarParcial(metrics, db, candidatosParcial);
 
         // ================================================================
         // 🔥 FASE 1: ESCALA ORIGINAL (1.0) - SIN ROTACIONES NI FILTROS
         // ================================================================
         telemetry.debug(MODULE, '🔍 Fase 1: Extrayendo en escala original (1.0)...');
-        
-        const bitsOriginal = MotorForenseV6.extraerBits(data, info, 0, 0);
-        let resOriginal = await MotorForenseV6.validar(bitsOriginal, db);
+
+        const metricsOriginal = MotorForenseV6.extraerConMetricas(data, info, 0, 0);
+        let resOriginal = await MotorForenseV6.validar(metricsOriginal.bits, db, metricsOriginal);
         if (resOriginal.ok) {
             telemetry.info(MODULE, `✅ Hash encontrado en escala original: ${resOriginal.id}`);
             match = { ...resOriginal, identificado: true, escala: 1.0, modo: "NOR", rot: 0 };
@@ -284,29 +384,29 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
         // ================================================================
         // 🔥 FASE 2: DEEP SCAN EN ESCALA ORIGINAL (offsets 0-7)
         // ================================================================
-        if (!match.identificado) {
+        if (!match?.identificado) {
             telemetry.debug(MODULE, '🔍 Fase 2: Deep scan en escala original...');
             for (let y = 0; y < 8; y++) {
                 for (let x = 0; x < 8; x++) {
                     if (performance.now() - startTime > MAX_TIMEOUT_MS) break;
-                    const bits = MotorForenseV6.extraerBits(data, info, x, y);
-                    let res = await MotorForenseV6.validar(bits, db);
+                    const metrics = MotorForenseV6.extraerConMetricas(data, info, x, y);
+                    let res = await MotorForenseV6.validar(metrics.bits, db, metrics);
                     if (res.ok) {
                         telemetry.info(MODULE, `✅ Hash encontrado en deep scan: ${res.id} (offset ${x},${y})`);
                         match = { ...res, identificado: true, escala: 1.0, modo: "NOR", rot: 0 };
                         break;
                     }
                 }
-                if (match.identificado) break;
+                if (match?.identificado) break;
             }
         }
 
         // ================================================================
         // 🔥 FASE 3: OTRAS ESCALAS Y ROTACIONES (si falló en escala original)
         // ================================================================
-        if (!match.identificado) {
+        if (!match?.identificado) {
             telemetry.debug(MODULE, '🔍 Fase 3: Búsqueda en otras escalas y rotaciones...');
-            
+
             async function busquedaExhaustiva() {
                 for (let v of variantes) {
                     for (let deg of [0, 90, 180, 270]) {
@@ -320,10 +420,14 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
                             const { data: dRes, info: iRes } = await sharp(imgBase)
                                 .resize({ width: Math.round(info.width * f) })
                                 .ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-                            const bits = MotorForenseV6.extraerBits(dRes, iRes, 0, 0);
-                            let res = await MotorForenseV6.validar(bits, db);
+                            const metrics = MotorForenseV6.extraerConMetricas(dRes, iRes, 0, 0);
+                            let res = await MotorForenseV6.validar(metrics.bits, db, metrics);
                             if (res.ok) {
                                 return { ...res, identificado: true, escala: f, modo: v.m, rot: deg };
+                            }
+                            const parcial = await validarParcialLocal(metrics);
+                            if (parcial) {
+                                return { ...parcial, identificado: true, escala: f, modo: `${v.m}-PARCIAL`, rot: deg };
                             }
                         }
                     }
@@ -344,25 +448,46 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
                             const { data: dRes, info: iRes } = await sharp(imgBase)
                                 .resize({ width: Math.round(info.width * f) })
                                 .ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-                            
+
                             for (let y = 0; y < 8; y++) {
                                 for (let x = 0; x < 8; x++) {
                                     if (performance.now() - startTime > MAX_TIMEOUT_MS) break;
-                                    const bits = MotorForenseV6.extraerBits(dRes, iRes, x, y);
-                                    let res = await MotorForenseV6.validar(bits, db);
+                                    const metrics = MotorForenseV6.extraerConMetricas(dRes, iRes, x, y);
+                                    let res = await MotorForenseV6.validar(metrics.bits, db, metrics);
                                     if (res.ok) {
                                         match = { ...res, identificado: true, escala: f, modo: v.m, rot: deg };
                                         break;
                                     }
+                                    const parcial = await validarParcialLocal(metrics);
+                                    if (parcial) {
+                                        match = { ...parcial, identificado: true, escala: f, modo: `${v.m}-PARCIAL`, rot: deg };
+                                        break;
+                                    }
                                 }
-                                if (match.identificado) break;
+                                if (match?.identificado) break;
                             }
-                            if (match.identificado) break;
+                            if (match?.identificado) break;
                         }
-                        if (match.identificado) break;
+                        if (match?.identificado) break;
                     }
-                    if (match.identificado) break;
+                    if (match?.identificado) break;
                 }
+            }
+        }
+
+        if (!match?.identificado && fallbackAV5 && performance.now() - startTime < MAX_TIMEOUT_MS) {
+            const parcial = await MotorForenseV6.validarParcial(metricsOriginal, db);
+            if (parcial) {
+                match = { ...parcial, identificado: true, escala: 1, modo: 'PARCIAL', rot: 0 };
+            }
+        }
+
+        if (!match?.identificado && fallbackAV5 && performance.now() - startTime < MAX_TIMEOUT_MS) {
+            telemetry.debug(MODULE, '🔁 V6 sin coincidencia; activando fallback V5');
+            const restante = Math.max(1000, MAX_TIMEOUT_MS - (performance.now() - startTime));
+            const resultadoV5 = await analizarImagenMBH(ruta, db, restante);
+            if (resultadoV5?.identificado) {
+                return { ...resultadoV5, modo: 'V5-FALLBACK' };
             }
         }
 
@@ -383,7 +508,7 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
             }
 
             // B. VERIFICACIÓN VOGEL - USA match.id (SIN PREFIJO)
-            if (esPNG) {
+            if (esPNG && match.escala === 1 && match.rot === 0 && match.modo === 'NOR') {
                 const { data: dataPNG, info: infoPNG } = await sharp(ruta).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
                 const hits = verificarVogel(dataPNG, infoPNG, match.id);
                 if (hits >= 25) {
@@ -404,7 +529,12 @@ export async function analizarImagenRapido(ruta, db, timeoutMs = 15000, fallback
                 hash: match.id,
                 cliente: match.cliente,
                 obra: match.obra,
-                integridad_legal
+                integridad_legal,
+                score: match.score,
+                pairs: match.pairs,
+                escala: match.escala,
+                modo: match.modo,
+                rotacion: match.rot
             };
         }
 
@@ -422,10 +552,10 @@ function verificarVogel(buffer, info, idHex) {
     const totalPixeles = info.width * info.height;
     for (let i = 3; i < buffer.length; i += 4) if ((buffer[i] & 1) === 1) unosEnAlfa++;
     if (unosEnAlfa / totalPixeles > 0.99) return 0;
-    
+
     const centro = MotorEspacial.calcularCentroUnico(
-        info.width, 
-        info.height, 
+        info.width,
+        info.height,
         idHex,
         CONFIG.PRIVATE_KEY
     );
