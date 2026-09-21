@@ -1,25 +1,39 @@
 # Referencia de robustez del sello Dragon3
 
 **Fecha:** 21 de septiembre de 2026  
-**Versión:** estado previo a nuevas modificaciones del analizador V6  
+**Versión:** estado consolidado después de integrar detección parcial en transformaciones
+**Commit de código probado:** `669dc5d`
 **Prueba ejecutada:** `npm run test:robustez`  
 **Script:** `prod/Dragon3/backend/scripts/Generador/dragon3-desktop/src/tests/test_robustez_sello.js`  
-**Informe de ejecución:** `/tmp/dragon3-robustez-parcial-transformaciones.log`
+**Informe de ejecución:** `/tmp/dragon3-robustez-documentada.log`
+**Entorno:** Linux 6.8.0-139-generic x86_64, Node.js `v20.20.2`, npm `10.8.2`
+**Ejecución documentada:** 21 de septiembre de 2026, duración total `62.972 ms`
 
-**Extensión posterior:** ataques dobles y triples ejecutados el mismo día.
-**Resultado de la extensión:** **15/15 detectados**, sin regresiones en las pruebas obligatorias.
+La batería consolidada incorpora los ataques dobles y triples dentro del mismo test.
 
 ## Resultado de referencia
 
 | Medición | Resultado |
 |---|---:|
 | Pruebas obligatorias superadas | **18/18** |
-| Ataques exploratorios detectados | **42/42** |
-| Ataques dobles y triples adicionales | **15/15** |
+| Ataques exploratorios detectados | **57/57** |
+| Ataques dobles y triples incluidos | **15/15** |
 | Imagen limpia rechazada | **Sí** |
 | Falsos positivos observados | **0** |
 
 Este documento fija el estado de referencia del generador y del analizador V6 después de integrar la detección parcial durante la búsqueda de escalas y rotaciones. Cualquier modificación posterior del analizador debe repetir esta batería y no puede reducir estos resultados sin una decisión explícita.
+
+## Parámetros reproducibles
+
+- Imagen de entrada: PNG sintético RGB texturado de `768x512` píxeles.
+- Contenido: gradientes RGB, textura determinista y ruido determinista.
+- Identificador de prueba: `74565` (`0x12345`).
+- Hash esperado: `0012345`.
+- Candidatos registrados en el fixture: `1`.
+- Timeout por análisis: `12.000 ms`.
+- El test elimina sus artefactos temporales al terminar.
+- El tiempo máximo observado por caso fue `7.804 ms` en `JPEG Q5`.
+- Otros casos lentos: rotación arbitraria de 30 grados (`4.205 ms`), doble escala + WebP Q20 (`3.616 ms`), espejo horizontal (`3.055 ms`) y escala 150% (`2.389 ms`).
 
 ## Cobertura de la batería
 
@@ -100,7 +114,7 @@ Este documento fija el estado de referencia del generador y del analizador V6 de
 La prueba se considera válida cuando se cumplen simultáneamente estas condiciones:
 
 1. Las 18 pruebas obligatorias pasan.
-2. Los 42 ataques exploratorios son detectados.
+2. Los 57 ataques exploratorios son detectados.
 3. Los 15 ataques dobles y triples son detectados.
 4. La imagen sin sello es rechazada.
 5. El identificador recuperado coincide con el sello generado.
@@ -115,4 +129,4 @@ cd /opt/dragon3/prod/Dragon3/backend/scripts/Generador/dragon3-desktop
 npm run test:robustez
 ```
 
-El resultado debe compararse con esta referencia. El objetivo mínimo de no regresión es mantener **18/18**, **42/42** y el rechazo de la imagen limpia.
+El resultado debe compararse con esta referencia. El objetivo mínimo de no regresión es mantener **18/18**, **57/57** y el rechazo de la imagen limpia.

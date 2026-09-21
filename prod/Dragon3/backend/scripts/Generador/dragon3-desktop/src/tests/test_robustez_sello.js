@@ -11,6 +11,10 @@ const TEST_DIR = await fs.mkdtemp(path.join(os.tmpdir(), 'dragon3-robustez-'));
 const inputPath = path.join(TEST_DIR, 'original.png');
 const sealedPath = path.join(TEST_DIR, 'sellada.png');
 const artifacts = [];
+const testStartedAt = Date.now();
+const TEST_TIMEOUT_MS = Number(process.env.DRAGON3_ROBUSTEZ_TIMEOUT || 12000);
+const SOURCE_WIDTH = 768;
+const SOURCE_HEIGHT = 512;
 
 const record = {
     id: 1,
@@ -42,8 +46,8 @@ function check(condition, message) {
 }
 
 async function createSource() {
-    const width = 768;
-    const height = 512;
+    const width = SOURCE_WIDTH;
+    const height = SOURCE_HEIGHT;
     const channels = 3;
     const pixels = Buffer.alloc(width * height * channels);
 
@@ -68,10 +72,10 @@ async function writeArtifact(name, pipeline) {
 }
 
 async function analyze(name, file, required = false) {
-    const timeout = Number(process.env.DRAGON3_ROBUSTEZ_TIMEOUT || 12000);
-    const result = await analizarImagenRapido(file, db, timeout, true);
+    const startedAt = Date.now();
+    const result = await analizarImagenRapido(file, db, TEST_TIMEOUT_MS, true);
     const passed = result.identificado && result.hash === TEST_HASH;
-    return { name, required, passed, result };
+    return { name, required, passed, elapsedMs: Date.now() - startedAt, result };
 }
 
 async function main() {
@@ -178,18 +182,20 @@ async function main() {
     console.log(JSON.stringify({
         testDir: TEST_DIR,
         selloEsperado: TEST_HASH,
-        required: required.map(({ name, passed, result }) => ({
+        required: required.map(({ name, passed, elapsedMs, result }) => ({
             name,
             passed,
+            elapsedMs,
             identificado: result.identificado,
             hash: result.hash,
             score: result.score,
             pairs: result.pairs,
             error: result.error
         })),
-        exploratory: exploratory.map(({ name, passed, result }) => ({
+        exploratory: exploratory.map(({ name, passed, elapsedMs, result }) => ({
             name,
             passed,
+            elapsedMs,
             identificado: result.identificado,
             hash: result.hash,
             score: result.score,
@@ -199,6 +205,23 @@ async function main() {
             error: result.error
         })),
         summary: {
+            execution: {
+                startedAt: new Date(testStartedAt).toISOString(),
+                durationMs: Date.now() - testStartedAt,
+                node: process.version,
+                platform: process.platform,
+                arch: process.arch,
+                timeoutMs: TEST_TIMEOUT_MS,
+                source: {
+                    width: SOURCE_WIDTH,
+                    height: SOURCE_HEIGHT,
+                    channels: 3,
+                    type: 'PNG sintético texturado, gradientes RGB y ruido determinista'
+                },
+                registeredCandidates: 1,
+                testId: TEST_ID,
+                testHash: TEST_HASH
+            },
             cleanRejected: !cleanResult.identificado,
             requiredPassed: required.length - failedRequired.length,
             requiredTotal: required.length,
