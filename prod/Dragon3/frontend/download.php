@@ -6,6 +6,7 @@
 // Configuración
 $LOG_FILE = '/opt/dragon3/prod/Dragon3/frontend/logs/downloads.log';
 $DOWNLOAD_DIR = '/opt/dragon3/prod/Dragon3/frontend/downloads/';
+$RELEASE_URL = 'https://github.com/GustavoHerraiz/dragon3-image-authenticity/releases/latest/download/';
 
 // Mapeo de parámetros a archivos
 $FILES = [
@@ -30,8 +31,9 @@ $filepath = $DOWNLOAD_DIR . $file;
 
 // Verificar que el archivo existe
 if (!file_exists($filepath)) {
-    http_response_code(404);
-    die('El archivo de descarga no está disponible.');
+    // Las compilaciones publicadas por GitHub Actions se sirven desde la release.
+    header('Location: ' . $RELEASE_URL . $file, true, 302);
+    exit;
 }
 
 // ================================================================
